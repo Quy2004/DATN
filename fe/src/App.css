@@ -1,0 +1,87 @@
+#root {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.containerAll {
+  margin-top: 60px;
+  max-width: 1124px;
+  overflow: visible;
+}
+
+.logo {
+  height: 6em;
+  /* padding: 1.5em; */
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Header */
+header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  opacity: 0.9;
+  border-bottom:  1px solid #ccc;
+  transition: all 0.5s ease-in-out;
+  z-index: 1000;
+}
+header.sticky{
+  /* background-color: rgba(255, 255, 255, 0.94); */
+  opacity: 0.9;
+}
+/* body:not(.home) header{ */
+  /* background-color: #fff; Màu trắng cho header trên các trang khác */
+  /* opacity: 1;  */
+
+body:not(.home) header{
+  background-color: #fff; 
+  opacity: 1;
+
+}
+header .sticky #main-menu p{
+  color: #000;
+}
+#main-menu a{
+  font-weight: bold;
+}
+/*  */
+.img_homes img{
+  height: 200px;
+  width: 100%;
+}
+.inner-header{
+  width: 1170px;
+}

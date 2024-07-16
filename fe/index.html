@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dự Án 7</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script>
+    $(document).ready(function () {
+      // $(window).scroll(function () {
+      //   if ($(this).scrollTop()) {
+      //     $('header').addClass('sticky')
+      //   } else {
+      //     $('header').removeClass('sticky')
+      //   }
+      // })
+      $(window).scroll(function () {
+        if ($(this).scrollTop() && window.location.pathname === '/') {
+          $('header').addClass('sticky');
+        } else {
+          $('header').removeClass('sticky');
+        }
+      });
+    })
+  </script>
+</body>
+
+</html>

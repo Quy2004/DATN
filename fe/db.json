@@ -1,0 +1,44 @@
+{
+    "products": [
+      {
+        "id": 2,
+        "name": "Product 1",
+        "price": 20,
+        "desc": "Mô Tả 1",
+        "imgUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBzT7EJ45dmsKmHleI-2SNin0tS5vXOAkj0A&s",
+        "showDetail": false
+      },
+      {
+        "id": 3,
+        "name": "Product 1",
+        "price": 20,
+        "desc": "Mô Tả 1",
+        "imgUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBzT7EJ45dmsKmHleI-2SNin0tS5vXOAkj0A&s",
+        "showDetail": false
+      },
+      {
+        "id": 4,
+        "name": "Product 1",
+        "price": 20,
+        "desc": "Mô Tả 1",
+        "imgUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBzT7EJ45dmsKmHleI-2SNin0tS5vXOAkj0A&s",
+        "showDetail": false
+      },
+      {
+        "id": 5,
+        "name": "Product 1",
+        "price": 20,
+        "desc": "Mô Tả 1",
+        "imgUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBzT7EJ45dmsKmHleI-2SNin0tS5vXOAkj0A&s",
+        "showDetail": false
+      },
+      {
+        "id": 6,
+        "name": "Product 1",
+        "price": 20,
+        "desc": "Mô Tả 1",
+        "imgUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBzT7EJ45dmsKmHleI-2SNin0tS5vXOAkj0A&s",
+        "showDetail": false
+      }
+    ]
+  }
