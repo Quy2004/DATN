@@ -10,6 +10,11 @@ import TeaHolicTab from "./pages/ChuyenNhaPage/Tabs/TeaHomes";
 import BlogTab from "./pages/ChuyenNhaPage/Tabs/BlogHomes";
 import AllSideBar from "./pages/MenuPage/SideBar/AllSide";
 import TeaSideBar from "./pages/MenuPage/SideBar/TeaSideBar";
+import Signup from "./account/signup/signup";
+import Signin from "./account/signin/signin";
+import TeaPage from "./pages/TeaPage/TeaPage";
+import CoffeePage from "./pages/CoffeePage/Coffee";
+import Forgot from "./account/forgotPassword/forgot";
 
 // import AllHomes from "./pages/ChuyenNhaPage/Tabs/AllHomes";
 // import "./pages/HomePage/HomePage.css"
@@ -19,6 +24,8 @@ function App() {
     <Routes>
       <Route path="" element={<WebsiteLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="tea" element={<TeaPage/>}/>
+        <Route path="coffee" element={<CoffeePage/>}/>
         <Route path="menu" element={<MenuPage />}>
           <Route path="" element={<AllSideBar />} />
           <Route path="teaside" element={<TeaSideBar />} />
@@ -29,6 +36,9 @@ function App() {
           <Route path="teaholic" element={<TeaHolicTab />} />
           <Route path="blog" element={<BlogTab />} />
         </Route>
+        <Route path="signin" element={<Signin/>} />
+        <Route path="register" element={<Signup/>} />
+        <Route path="forgot" element={<Forgot/>}/>
       </Route>
     </Routes>
   );
