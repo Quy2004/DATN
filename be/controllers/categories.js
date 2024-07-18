@@ -15,7 +15,7 @@ class CategoryController {
       });
     }
   }
-
+  // Get Category Detail
   async getCategoryDetails(req, res) {
     try {
       const category = await Category.findById(req.params.id);
@@ -25,8 +25,8 @@ class CategoryController {
         });
       }
       res.status(200).json({
-          message: "Get Category Details Done",
-          data:category
+        message: "Get Category Details Done",
+        data: category,
       });
     } catch (error) {
       res.status(400).json({
@@ -34,6 +34,8 @@ class CategoryController {
       });
     }
   }
+
+  // Create Category
   async createCategory(req, res) {
     try {
       const category = await Category.create(req.body);
@@ -47,6 +49,8 @@ class CategoryController {
       });
     }
   }
+
+  // Update Category
   async updateCategory(req, res) {
     try {
       const category = await Category.findByIdAndUpdate(
@@ -71,6 +75,8 @@ class CategoryController {
       });
     }
   }
+
+  // Delete Category
   async deleteCategory(req, res) {
     try {
       const category = await Category.findByIdAndDelete(req.params.id);
