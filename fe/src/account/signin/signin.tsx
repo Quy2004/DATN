@@ -24,7 +24,7 @@ function Signin() {
                                         <input id="terms" aria-describedby="terms" type="checkbox" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800" required />
                                     </div>
                                     <div className="ml-3 text-sm">
-                                        <label htmlFor="terms" className="font-light text-gray-500 dark:text-gray-300 mr-12">Ghi nhớ đăng nhập </label> <Link to={"#"} className="ml-20 hover:underline text-red-600">Quên mật khẩu?</Link>
+                                        <label htmlFor="terms" className="font-light text-gray-500 dark:text-gray-300 mr-12">Ghi nhớ đăng nhập </label> <Link to={"/resetpass"} className="ml-20 hover:underline text-red-600">Quên mật khẩu?</Link>
                                     </div>
                                 </div>
                                 <button type="submit" className="w-full text-white bg-red-500 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Tạo tài khoản</button>

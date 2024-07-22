@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Homes from "../../components/Homes";
-import "./HomePage.css"
+// import "./HomePage.css"
 import React, { useState, useEffect } from 'react';
 
 
