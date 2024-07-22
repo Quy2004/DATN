@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
 import Homes from "../../components/Homes";
-// import "./HomePage.css"
+import "./HomePage.css"
 import React, { useState, useEffect } from 'react';
-
-
 
 const HomePage: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);

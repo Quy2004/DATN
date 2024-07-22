@@ -13,12 +13,12 @@ import Signin from "./account/signin/signin";
 import Signup from "./account/signup/signup";
 import Forgot from "./account/forgotPassword/forgot";
 import AdminLayout from "./pages/Layout/AdminLayout";
-import HomePage from "./pages/HomePage/HomePage";
 import { Category } from "./admin/Category/Category";
 import { ProductAdmin } from "./admin/ProductAdmin/Product";
 import OrderAdmin from "./admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "./admin/Comment/Comment";
 import ClientAdmin from "./admin/Client/ClientAdmin";
+import HomePage from "./pages/HomePage/HomePage";
 
 // import AllHomes from "./pages/ChuyenNhaPage/Tabs/AllHomes";
 
@@ -28,8 +28,7 @@ function App() {
     <Routes>
       <Route path="" element={<WebsiteLayout />}>
         <Route path="/" element={<HomePage />} />
-        {/* <Route path="tea" element={<Tea />} /> */}
-        <Route path="coffee" element={<HomePage />} />
+
         <Route path="menu" element={<MenuPage />}>
           <Route path="" element={<AllSideBar />} />
           <Route path="teaside" element={<TeaSideBar />} />

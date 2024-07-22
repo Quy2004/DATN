@@ -16,13 +16,13 @@ const Header: React.FC = () => {
                     <nav aria-label="Global" className="hidden md:block">
                         <ul className="flex items-center text-sm font-semibold" id="main-menu">
                             <li className="px-6 py-6">
-                                <Link className="" to="#" >
+                                <Link className="" to="tea" >
                                     <h3> Trà </h3>
                                 </Link>
                             </li>
 
                             <li className="px-4 py-6">
-                                <Link to="#">
+                                <Link to="coffee">
                                     <h3>Cà Phê</h3>
                                 </Link>
                             </li>
@@ -40,7 +40,7 @@ const Header: React.FC = () => {
                             </li>
 
                             <li className="px-4 py-6">
-                                <Link to="signin">
+                                <Link to="/signin">
                                     <h3>Tài Khoản</h3>
                                 </Link>
                             </li>
