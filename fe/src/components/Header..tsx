@@ -20,7 +20,6 @@ const Header: React.FC = () => {
                                     <h3> Trà </h3>
                                 </Link>
                             </li>
-
                             <li className="px-4 py-6">
                                 <Link to="coffee">
                                     <h3>Cà Phê</h3>
