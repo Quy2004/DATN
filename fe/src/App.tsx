@@ -28,7 +28,6 @@ function App() {
     <Routes>
       <Route path="" element={<WebsiteLayout />}>
         <Route path="/" element={<HomePage />} />
-
         <Route path="menu" element={<MenuPage />}>
           <Route path="" element={<AllSideBar />} />
           <Route path="teaside" element={<TeaSideBar />} />
