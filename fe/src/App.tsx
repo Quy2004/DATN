@@ -40,9 +40,9 @@ function App() {
           <Route path="teaholic" element={<TeaHolicTab />} />
           <Route path="blog" element={<BlogTab />} />
         </Route>
-        <Route path="taikhoan" element={<Signin />} />
+        <Route path="signin" element={<Signin />} />
         <Route path="register" element={<Signup />} />
-        <Route path="resetpass" element={<Forgot />} />
+        <Route path="forgot" element={<Forgot />} />
       </Route>
       <Route path="admin" element={<AdminLayout />} >
         <Route path="category" element={<Category />} />
