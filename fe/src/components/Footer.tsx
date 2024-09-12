@@ -1,3 +1,5 @@
+import { FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
+
 const Footer: React.FC = () => {
     return (
         <>
@@ -23,8 +25,8 @@ const Footer: React.FC = () => {
                                 </ul>
                             </div>
                             <div className="cow *:pb-5">
-                                <h4 className="font-bold text-base">Đặt hàng: 1800 1800</h4>
-                                <h4 className="font-bold text-base">Liên hệ</h4>
+                                <h4 className="font-bold text-base flex"><div className="mt-1 mr-2"><FaPhoneAlt /></div>Đặt hàng: 1800 1800</h4>
+                                <h4 className="font-bold text-base flex"><div className="mt-1 mr-2"><FaMapMarkerAlt /></div>Liên hệ</h4>
                                 <p className="text-xs w-40">
                                     Tầng 3-4 Hub Building
                                     195/10E Điện Biên Phủ, P.15,
