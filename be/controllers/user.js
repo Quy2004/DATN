@@ -1,4 +1,4 @@
-import User from "../models/user";
+import User from "../models/UserModel";
 
 class UserController {
     // Hiện thị tòàn bộ danh sách người dùng
