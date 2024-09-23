@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const Schema = mongoose.Schema;
 const UserSchema = new Schema(
   {
@@ -16,19 +17,16 @@ const UserSchema = new Schema(
       require: true,
       unique: true,
     },
-    avata: {
+    avatar: {
       type: [Object],
-      require: true,
+      default: "avatar",
+      
     },
-    userName:{
+    username:{
         type: String,
         require: true,
     },
     password: {
-        type: String,
-        require: true,
-    },
-    address: {
         type: String,
         require: true,
     },
@@ -50,5 +48,5 @@ const UserSchema = new Schema(
   }
 );
 
-const User = mongoose.model("users", UserSchema);
+const User = mongoose.models.users || mongoose.model("users", UserSchema);
 export default User;
