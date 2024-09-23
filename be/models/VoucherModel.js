@@ -24,10 +24,6 @@ const VoucherSchema = new Schema(
       type: Number,
       required: true,
     },
-    expiryDate: {
-      type: Date,
-      required: true,
-    },
     minOrderDate: {
       type: Date,
       required: true,
