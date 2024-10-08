@@ -3,23 +3,14 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 const UserSchema = new Schema(
   {
-    name: {
-      type: String,
-      require: true,
-    },
     email: {
       type: String,
       require: true,
       unique: true,
     },
-    phone: {
-      type: Number,
-      require: true,
-      unique: true,
-    },
     avatar: {
-      type: [Object],
-      default: "avatar",
+      type: String,
+      default: "be/image/avt.jpg",
       
     },
     username:{
@@ -36,9 +27,13 @@ const UserSchema = new Schema(
         default: "active",
 
     },
+    address_id:{
+        type: mongoose.Schema.Types.ObjectId, ref:'address',
+
+    },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "admin", "manager"],
         default: "user",
     }
   },
