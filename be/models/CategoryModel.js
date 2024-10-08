@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const Schema = mongoose.Schema;
 
@@ -6,10 +7,17 @@ const CategorySchema = new Schema(
   {
     title: {
       type: String,
-      require: true,
+      required: true,
     },
-    description: {
+    slug: {
       type: String,
+      unique: true,
+      lowercase: true,
+    },
+    parent_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
     },
   },
   {
@@ -17,6 +25,14 @@ const CategorySchema = new Schema(
     versionKey: false,
   }
 );
+
+// Tạo slug từ title trước khi lưu
+CategorySchema.pre("save", function (next) {
+  if (this.isModified("title")) {
+    this.slug = slugify(this.title, { lower: true, strict: true });
+  }
+  next();
+});
 
 const Category = mongoose.model("Category", CategorySchema);
 
