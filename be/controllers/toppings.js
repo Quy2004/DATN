@@ -40,6 +40,36 @@ class ToppingController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  // Cập nhật thông tin topping
+  async updateTopping(req, res) {
+    try {
+      const topping = await Topping.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
+      if (!topping) {
+        return res.status(404).json({ message: "Không tìm thấy topping" });
+      }
+      res
+        .status(200)
+        .json({ message: "Cập nhật topping thành công!!!", data: topping });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  // Xóa topping
+  async deleteTopping(req, res) {
+    try {
+      const topping = await Topping.findByIdAndDelete(req.params.id);
+      if (!topping) {
+        return res.status(404).json({ message: "Không tìm thấy topping" });
+      }
+      res.status(200).json({ message: "Xóa topping thành công!!!" });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }
 
 export default ToppingController;
