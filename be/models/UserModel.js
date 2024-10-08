@@ -16,33 +16,32 @@ const UserSchema = new Schema(
       require: true,
       unique: true,
     },
-    avata: {
+    avatar: {
       type: [Object],
       require: true,
     },
-    userName:{
-        type: String,
-        require: true,
+    userName: {
+      type: String,
+      require: true,
     },
     password: {
-        type: String,
-        require: true,
+      type: String,
+      require: true,
     },
     address: {
-        type: String,
-        require: true,
+      type: String,
+      require: true,
     },
-    status:{
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
-
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
     },
     role: {
-        type: String,
-        enum: ["user", "admin"],
-        default: "user",
-    }
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,

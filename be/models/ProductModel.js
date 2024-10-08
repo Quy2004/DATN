@@ -6,22 +6,49 @@ const ProductSchema = new Schema(
       type: String,
       require: true,
     },
+    category_id: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     price: {
       type: Number,
       require: true,
     },
+    discount: {
+      type: Number,
+      default: 0, // Nếu sản phẩm không giảm giá, giá trị mặc định là 0
+    }, 
+    // ảnh chính
     image: {
-      type: [Object],
-      require: true,
-    },
-    description: {
       type: String,
       require: true,
+    },
+    // ảnh phụ
+    gallery: {
+      type: Array,
+    },
+
+    description: {
+      type: String,
     },
     id_comment: {
       type: String,
       require: true,
     },
+    size_id: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Size", // Tham chiếu đến bảng `Size`
+      },
+    ],
+    topping_id: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Topping", // Tham chiếu đến bảng `Topping`
+      },
+    ],
   },
   {
     timestamps: true,
