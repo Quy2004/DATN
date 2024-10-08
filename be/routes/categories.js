@@ -7,5 +7,6 @@ const categoriesController = new CategoryController();
 categoriesRouter.get("/", categoriesController.getAllCategories);
 categoriesRouter.get("/:id", categoriesController.getCategoryDetails);
 categoriesRouter.post("/", categoriesController.createCategory);
-
+categoriesRouter.put("/:id", categoriesController.updateCategory);
+categoriesRouter.delete("/:id", categoriesController.deleteCategory);
 export default categoriesRouter;
