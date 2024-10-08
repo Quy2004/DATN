@@ -50,7 +50,36 @@ class SizeController{
     }
     
 
-    
+    // cập nhật size
+    async updateSize(req, res){
+        try {
+            const size= await Size.findByIdAndUpdate(req.params.id, req.body,{
+                new: true
+            })
+            if(!size){
+                return res.status(404).json({message: "Size không tìm thấy"})
+            }
+            res.status(200).json({
+                message: "Update Size Successfully",
+                data: size
+            })
+        } catch (error) {
+            res.status(error.message).json({message: error.message})
+        }
+    }
+
+    // xóa size
+    async deleteSize(req, res){
+        try {
+            const {id}= req.params;
+            const size= await Size.findByIdAndDelete({_id: id})
+             res.status(201).json({
+                 message: "Delete Size Successfully"
+             })
+        } catch (error) {
+            res.status(400).json({message: error.message});
+        }
+    }
 }
 
 export default SizeController
