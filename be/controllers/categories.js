@@ -1,12 +1,16 @@
 import Category from "../models/CategoryModel.js";
 
 class CategoryController {
-  // Get/category
-  async getAllCategory(req, res) {
+  // Lấy tất cả danh mục và các danh mục con (nếu có)
+  async getAllCategories(req, res) {
     try {
-      const categories = await Category.find({});
+     
+      const categories = await Category.find({})
+        .populate("parent_id", "title")
+        .exec();
+
       res.status(200).json({
-        message: "Get Category Done",
+        message: "Lấy danh mục thành công!",
         data: categories,
       });
     } catch (error) {
@@ -15,18 +19,29 @@ class CategoryController {
       });
     }
   }
-  // Get Category Detail
+
+  // Lấy chi tiết danh mục bao gồm cả danh mục con (nếu có)
   async getCategoryDetails(req, res) {
     try {
-      const category = await Category.findById(req.params.id);
+      const category = await Category.findById(req.params.id)
+        .populate("parent_id", "title")
+        .exec();
+
       if (!category) {
         return res.status(404).json({
-          message: "Category Not Found",
+          message: "Không tìm thấy danh mục",
         });
       }
+
+      // Tìm tất cả các danh mục con của danh mục hiện tại
+      const subcategories = await Category.find({ parent_id: category._id });
+
       res.status(200).json({
-        message: "Get Category Details Done",
-        data: category,
+        message: "Lấy chi tiết danh mục thành công!",
+        data: {
+          category,
+          subcategories, 
+        },
       });
     } catch (error) {
       res.status(400).json({
@@ -35,12 +50,12 @@ class CategoryController {
     }
   }
 
-  // Create Category
+  // Tạo danh mục mới
   async createCategory(req, res) {
     try {
       const category = await Category.create(req.body);
       res.status(201).json({
-        message: "Create Category Successfully!!!",
+        message: "Tạo danh mục thành công!",
         data: category,
       });
     } catch (error) {
@@ -50,7 +65,7 @@ class CategoryController {
     }
   }
 
-  // Update Category
+  // Cập nhật danh mục hiện có
   async updateCategory(req, res) {
     try {
       const category = await Category.findByIdAndUpdate(
@@ -62,11 +77,11 @@ class CategoryController {
       );
       if (!category) {
         return res.status(404).json({
-          message: "Category Not Found",
+          message: "Không tìm thấy danh mục",
         });
       }
       res.status(200).json({
-        message: "Update Category DOne",
+        message: "Cập nhật danh mục thành công!",
         data: category,
       });
     } catch (error) {
@@ -76,17 +91,17 @@ class CategoryController {
     }
   }
 
-  // Delete Category
+  // Xóa danh mục
   async deleteCategory(req, res) {
     try {
       const category = await Category.findByIdAndDelete(req.params.id);
       if (!category) {
         return res.status(404).json({
-          message: "Category Not Found",
+          message: "Không tìm thấy danh mục",
         });
       }
       res.status(200).json({
-        message: "Delete Categogy Successfully!!!",
+        message: "Xóa danh mục thành công!",
       });
     } catch (error) {
       res.status(400).json({

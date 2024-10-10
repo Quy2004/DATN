@@ -8,16 +8,24 @@ const UserSchema = new Schema(
       require: true,
       unique: true,
     },
-    avatar: {
-      type: String,
-      default: "be/image/avt.jpg",
-      
+    phone: {
+      type: Number,
+      require: true,
+      unique: true,
     },
-    username:{
+    avata: {
+      type: [Object],
+      require: true,
+    },
+    userName:{
         type: String,
         require: true,
     },
     password: {
+      type: String,
+      require: true,
+    },
+    address: {
         type: String,
         require: true,
     },
@@ -27,13 +35,9 @@ const UserSchema = new Schema(
         default: "active",
 
     },
-    address_id:{
-        type: mongoose.Schema.Types.ObjectId, ref:'address',
-
-    },
     role: {
         type: String,
-        enum: ["user", "admin", "manager"],
+        enum: ["user", "admin"],
         default: "user",
     }
   },
