@@ -1,4 +1,4 @@
-import Size from "../models/Size.js"
+import Size from "../models/SizeModel.js"
 
 class SizeController{
     // hiển thị toàn bộ danh mục
