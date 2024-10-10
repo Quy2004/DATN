@@ -6,6 +6,7 @@ import voucherRouter from "./voucher.js";
 import sizeRouter from './size';
 import toppingsRouter from "./toppings.js";
 import authRouter from './auth';
+import addressRouter from "./address.js";
 
 const router = Router();
 
@@ -20,4 +21,5 @@ router.use("/user", userRouter);
 router.use("/voucher", voucherRouter);
 router.use("/auth", authRouter); 
 router.use("/size", sizeRouter); 
+router.use("/address", addressRouter); 
 export default router;
