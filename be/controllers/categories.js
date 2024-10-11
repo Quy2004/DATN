@@ -4,14 +4,50 @@ class CategoryController {
   // Lấy tất cả danh mục và các danh mục con (nếu có)
   async getAllCategories(req, res) {
     try {
-     
-      const categories = await Category.find({})
+      const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
+
+      // Tạo điều kiện lọc 
+      let query = {};
+
+      if (all === "true") {
+        // Nếu `all=true`, lấy tất cả danh mục
+        query = {};
+      } else if (isDeleted === "true") {
+        // Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
+        query.isDeleted = true;
+      } else {
+        // Mặc định lấy các danh mục chưa bị xóa mềm
+        query.isDeleted = false;
+      }
+
+      // Nếu có từ khóa tìm kiếm, thêm điều kiện tìm kiếm theo title
+      if (search) {
+        query.title = { $regex: search, $options: "i" }; // Tìm kiếm không phân biệt hoa thường
+      }
+
+      // Số lượng mục trên mỗi trang
+      const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
+      const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
+      const skip = (currentPage - 1) * pageLimit;
+
+      // Thực hiện query với phân trang
+      const categories = await Category.find(query)
         .populate("parent_id", "title")
+        .skip(skip) // Bỏ qua các mục trước đó theo số trang
+        .limit(pageLimit) // Giới hạn số mục mỗi trang
         .exec();
+
+      // Tổng số danh mục để tính tổng số trang
+      const totalItems = await Category.countDocuments(query);
 
       res.status(200).json({
         message: "Lấy danh mục thành công!",
         data: categories,
+        pagination: {
+          totalItems,
+          currentPage,
+          totalPages: Math.ceil(totalItems / pageLimit),
+        },
       });
     } catch (error) {
       res.status(400).json({
@@ -23,7 +59,10 @@ class CategoryController {
   // Lấy chi tiết danh mục bao gồm cả danh mục con (nếu có)
   async getCategoryDetails(req, res) {
     try {
-      const category = await Category.findById(req.params.id)
+      const category = await Category.findOne({
+        _id: req.params.id,
+        isDeleted: false,
+      }) // Tìm danh mục chưa bị xóa mềm
         .populate("parent_id", "title")
         .exec();
 
@@ -33,14 +72,17 @@ class CategoryController {
         });
       }
 
-      // Tìm tất cả các danh mục con của danh mục hiện tại
-      const subcategories = await Category.find({ parent_id: category._id });
+      // Tìm tất cả các danh mục con chưa bị xóa mềm của danh mục hiện tại
+      const subcategories = await Category.find({
+        parent_id: category._id,
+        isDeleted: false,
+      });
 
       res.status(200).json({
         message: "Lấy chi tiết danh mục thành công!",
         data: {
           category,
-          subcategories, 
+          subcategories,
         },
       });
     } catch (error) {
@@ -90,8 +132,30 @@ class CategoryController {
       });
     }
   }
+  // Xóa mềm danh mục
+  async softDeleteCategory(req, res) {
+    try {
+      const category = await Category.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: true }, // Đánh dấu là xóa mềm
+        { new: true }
+      );
+      if (!category) {
+        return res.status(404).json({
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      res.status(200).json({
+        message: "Xóa mềm danh mục thành công!",
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+      });
+    }
+  }
 
-  // Xóa danh mục
+  // Xóa cứng danh mục
   async deleteCategory(req, res) {
     try {
       const category = await Category.findByIdAndDelete(req.params.id);
@@ -101,7 +165,33 @@ class CategoryController {
         });
       }
       res.status(200).json({
-        message: "Xóa danh mục thành công!",
+        message: "Xóa cứng danh mục thành công!",
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+      });
+    }
+  }
+  // Khôi phục
+  async restoreCategory(req, res) {
+    try {
+      // Tìm và cập nhật thuộc tính isDeleted của danh mục thành false
+      const category = await Category.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: false }, // Đặt lại isDeleted thành false để khôi phục
+        { new: true } // Trả về danh mục đã được cập nhật
+      );
+
+      if (!category) {
+        return res.status(404).json({
+          message: "Không tìm thấy danh mục để khôi phục",
+        });
+      }
+
+      res.status(200).json({
+        message: "Khôi phục danh mục thành công!",
+        data: category,
       });
     } catch (error) {
       res.status(400).json({
