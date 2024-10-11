@@ -1,11 +1,21 @@
-import { Table, Typography, Spin, Alert } from "antd";
+import {
+  Table,
+  Typography,
+  Spin,
+  Alert,
+  Popconfirm,
+  Button,
+  message,
+} from "antd";
 
 import instance from "../../services/api";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const { Title } = Typography;
 
 export const Category = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -15,6 +25,38 @@ export const Category = () => {
       } catch (error) {
         throw new Error("Lỗi khi tải dữ liệu từ API");
       }
+    },
+  });
+  const mutationSoftDelete = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/categories/${_id}/soft-delete`);
+      } catch (error) {
+        throw new Error("Xóa mềm danh mục thất bại");
+      }
+    },
+    onSuccess: () => {
+      messageApi.success("Xóa mềm danh mục thành công");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+    onError: (error) => {
+      messageApi.error(`Lỗi: ${error.message}`);
+    },
+  });
+  const mutationHardDelete = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.delete(`/categories/${_id}`);
+      } catch (error) {
+        throw new Error("Xóa cứng danh mục thất bại");
+      }
+    },
+    onSuccess: () => {
+      messageApi.success("Xóa cứng danh mục thành công");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+    onError: (error) => {
+      messageApi.error(`Lỗi: ${error.message}`);
     },
   });
 
@@ -34,6 +76,36 @@ export const Category = () => {
       title: "Danh mục cha",
       dataIndex: "parentTitle",
       key: "parentTitle",
+    },
+    {
+      title: "Hành động",
+      dataIndex: "action",
+      render: (_: any, category: any) => (
+        <div className="flex space-x-3">
+          <Popconfirm
+            title="Xóa mềm danh mục"
+            description="Bạn có chắc muốn xóa mềm danh mục này không?"
+            onConfirm={() => mutationSoftDelete.mutate(category._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="default" danger>
+              Xóa mềm
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title="Xóa cứng danh mục"
+            description="Bạn có chắc muốn xóa cứng danh mục này không?"
+            onConfirm={() => mutationHardDelete.mutate(category._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="primary" danger>
+              Xóa cứng
+            </Button>
+          </Popconfirm>
+        </div>
+      ),
     },
   ];
 
@@ -67,6 +139,7 @@ export const Category = () => {
   }
   return (
     <>
+      {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
         <div className="flex space-x-3"></div>
