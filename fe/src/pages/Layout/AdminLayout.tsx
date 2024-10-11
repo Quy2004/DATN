@@ -58,19 +58,19 @@ const AdminLayout = () => {
   // Determine breadcrumb based on current route
   const getBreadcrumb = () => {
     if (location.pathname.includes("product")) {
-      return "Quản lý sản phẩm / Danh Sách Sản Phẩm";
+      return "Quản lý sản phẩm ";
     } else if (location.pathname.includes("category")) {
-      return "Quản lý danh mục / Danh Sách Danh Mục";
+      return "Quản lý danh mục ";
     } else if (location.pathname.includes("order")) {
-      return "Quản lý đơn hàng / Danh Sách Đơn Hàng";
+      return "Quản lý đơn hàng ";
     } else if (location.pathname.includes("comment")) {
-      return "Quản lý bình luận / Danh Sách Bình Luận";
+      return "Quản lý bình luận ";
     } else if (location.pathname.includes("client")) {
-      return "Quản lý tài khoản / Danh Sách Tài Khoản";
+      return "Quản lý tài khoản ";
     } else if (location.pathname.includes("banner")) {
-      return "Quản lý banner / Danh Sách Banner";
+      return "Quản lý banner";
     } else {
-      return "Quản lý danh mục / Danh Sách Danh Mục"; // Default breadcrumb
+      return "Thống kê "; // Default breadcrumb
     }
   };
 
@@ -115,14 +115,16 @@ const AdminLayout = () => {
         </aside>
 
         <main className="main-content w-full flex-1 p-6 bg-gray-100">
-          <Button type="primary">
-            <Link to="/">
-              <BackwardFilled /> Quay lại
-            </Link>
-          </Button>
+          <div className="flex justify-end">
+            <Button type="primary">
+              <Link to="/">
+                <BackwardFilled /> Quay lại
+              </Link>
+            </Button>
+          </div>
 
           {/* Header */}
-          <div className="breadcrumb flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6">
+          <div className="breadcrumb flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6 mt-2">
             <span className="text-gray-600 font-medium">{getBreadcrumb()}</span>
             <span className="date-time text-gray-500 text-sm">{dateTime}</span>
           </div>
