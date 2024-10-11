@@ -27,7 +27,8 @@ export const Category = () => {
       }
     },
   });
-  const mutationSoftDelete = useMutation<void, Error, string>({
+  // Xóa mềm danh mục
+  const mutationSoftDeleteCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
         return await instance.patch(`/categories/${_id}/soft-delete`);
@@ -43,7 +44,8 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-  const mutationHardDelete = useMutation<void, Error, string>({
+  // Xóa cứng danh mục
+  const mutationHardDeleteCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
         return await instance.delete(`/categories/${_id}`);
@@ -53,6 +55,23 @@ export const Category = () => {
     },
     onSuccess: () => {
       messageApi.success("Xóa cứng danh mục thành công");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+    onError: (error) => {
+      messageApi.error(`Lỗi: ${error.message}`);
+    },
+  });
+  // Khôi phục danh mục
+  const mutationRestoreCategory = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/categories/${_id}/restore`);
+      } catch (error) {
+        throw new Error("Khôi phục danh mục thất bại");
+      }
+    },
+    onSuccess: () => {
+      messageApi.success("Khôi phục danh mục thành công");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
     onError: (error) => {
@@ -82,21 +101,36 @@ export const Category = () => {
       dataIndex: "action",
       render: (_: any, category: any) => (
         <div className="flex space-x-3">
-          <Popconfirm
-            title="Xóa mềm danh mục"
-            description="Bạn có chắc muốn xóa mềm danh mục này không?"
-            onConfirm={() => mutationSoftDelete.mutate(category._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="default" danger>
-              Xóa mềm
-            </Button>
-          </Popconfirm>
+          {category.isDeleted ? (
+            // Hiển thị nút khôi phục nếu danh mục đã bị xóa mềm
+            <Popconfirm
+              title="Khôi phục danh mục"
+              description="Bạn có chắc muốn khôi phục danh mục này không?"
+              onConfirm={() => mutationRestoreCategory.mutate(category._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="default">Khôi phục</Button>
+            </Popconfirm>
+          ) : (
+            // Hiển thị nút xóa mềm nếu danh mục chưa bị xóa mềm
+            <Popconfirm
+              title="Xóa mềm danh mục"
+              description="Bạn có chắc muốn xóa mềm danh mục này không?"
+              onConfirm={() => mutationSoftDeleteCategory.mutate(category._id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="default" danger>
+                Xóa mềm
+              </Button>
+            </Popconfirm>
+          )}
+
           <Popconfirm
             title="Xóa cứng danh mục"
             description="Bạn có chắc muốn xóa cứng danh mục này không?"
-            onConfirm={() => mutationHardDelete.mutate(category._id)}
+            onConfirm={() => mutationHardDeleteCategory.mutate(category._id)}
             okText="Yes"
             cancelText="No"
           >
