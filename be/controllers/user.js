@@ -51,7 +51,7 @@ class UserController {
 			}
 			user.status = "inactive";
 			await user.save();
-			res.status(200).json({ message: "Xóa git  dùng thành công" });
+			res.status(200).json({ message: "Khóa người dùng  dùng thành công" });
 		} catch (error) {
 			res.status(404).json({ message: error.message });
 		}
