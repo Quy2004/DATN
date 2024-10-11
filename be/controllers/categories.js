@@ -4,7 +4,6 @@ class CategoryController {
   // Lấy tất cả danh mục và các danh mục con (nếu có)
   async getAllCategories(req, res) {
     try {
-     
       const categories = await Category.find({})
         .populate("parent_id", "title")
         .exec();
@@ -40,7 +39,7 @@ class CategoryController {
         message: "Lấy chi tiết danh mục thành công!",
         data: {
           category,
-          subcategories, 
+          subcategories,
         },
       });
     } catch (error) {
@@ -90,8 +89,30 @@ class CategoryController {
       });
     }
   }
+  // Xóa mềm danh mục
+  async softDeleteCategory(req, res) {
+    try {
+      const category = await Category.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: true }, // Đánh dấu là xóa mềm
+        { new: true }
+      );
+      if (!category) {
+        return res.status(404).json({
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      res.status(200).json({
+        message: "Xóa mềm danh mục thành công!",
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+      });
+    }
+  }
 
-  // Xóa danh mục
+  // Xóa cứng danh mục
   async deleteCategory(req, res) {
     try {
       const category = await Category.findByIdAndDelete(req.params.id);
@@ -101,7 +122,7 @@ class CategoryController {
         });
       }
       res.status(200).json({
-        message: "Xóa danh mục thành công!",
+        message: "Xóa cứng danh mục thành công!",
       });
     } catch (error) {
       res.status(400).json({

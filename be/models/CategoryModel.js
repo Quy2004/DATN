@@ -19,6 +19,10 @@ const CategorySchema = new Schema(
       ref: "Category",
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

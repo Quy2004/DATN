@@ -9,4 +9,8 @@ categoriesRouter.get("/:id", categoriesController.getCategoryDetails);
 categoriesRouter.post("/", categoriesController.createCategory);
 categoriesRouter.put("/:id", categoriesController.updateCategory);
 categoriesRouter.delete("/:id", categoriesController.deleteCategory);
+categoriesRouter.patch(
+  "/:id/soft-delete",
+  categoriesController.softDeleteCategory
+);
 export default categoriesRouter;
