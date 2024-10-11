@@ -130,6 +130,32 @@ class CategoryController {
       });
     }
   }
+  // Khôi phục
+  async restoreCategory(req, res) {
+    try {
+      // Tìm và cập nhật thuộc tính isDeleted của danh mục thành false
+      const category = await Category.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: false }, // Đặt lại isDeleted thành false để khôi phục
+        { new: true } // Trả về danh mục đã được cập nhật
+      );
+
+      if (!category) {
+        return res.status(404).json({
+          message: "Không tìm thấy danh mục để khôi phục",
+        });
+      }
+
+      res.status(200).json({
+        message: "Khôi phục danh mục thành công!",
+        data: category,
+      });
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default CategoryController;

@@ -13,4 +13,5 @@ categoriesRouter.patch(
   "/:id/soft-delete",
   categoriesController.softDeleteCategory
 );
+categoriesRouter.patch("/:id/restore", categoriesController.restoreCategory);
 export default categoriesRouter;
