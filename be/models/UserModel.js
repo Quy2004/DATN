@@ -8,12 +8,7 @@ const UserSchema = new Schema(
       require: true,
       unique: true,
     },
-    phone: {
-      type: Number,
-      require: true,
-      unique: true,
-    },
-    avata: {
+    avatar: {
       type: [Object],
       require: true,
     },
@@ -25,10 +20,6 @@ const UserSchema = new Schema(
       type: String,
       require: true,
     },
-    address: {
-        type: String,
-        require: true,
-    },
     status:{
         type: String,
         enum: ["active", "inactive"],
@@ -37,7 +28,7 @@ const UserSchema = new Schema(
     },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "manager", "admin"],
         default: "user",
     }
   },

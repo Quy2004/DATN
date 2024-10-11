@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const addressSchema = new Schema({
-    user: {
+    user_id: {
         type: Schema.Types.ObjectId,
         ref: "Users", // Khóa ngoại tham chiếu đến User
         required: true,
@@ -25,6 +25,10 @@ const addressSchema = new Schema({
         type: String,
         enum: ["primary", "secondary"],
         default: "primary",
+    },
+    isDelete: {
+        type: Boolean,
+        default: false, // Mặc định là false
     },
 });
 
