@@ -10,6 +10,8 @@ import {
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PlusCircleFilled } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -61,6 +63,7 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
+
   // Khôi phục danh mục
   const mutationRestoreCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -176,7 +179,13 @@ export const Category = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
-        <div className="flex space-x-3"></div>
+        <div className="flex space-x-3">
+          <Button type="primary" icon={<PlusCircleFilled />}>
+            <Link to="/admin/category/add" style={{ color: "white" }}>
+              Thêm danh mục
+            </Link>
+          </Button>
+        </div>
       </div>
       <Table dataSource={dataSource} columns={columns} />
     </>
