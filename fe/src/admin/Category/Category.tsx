@@ -6,29 +6,48 @@ import {
   Popconfirm,
   Button,
   message,
+  Select,
 } from "antd";
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Option } from "antd/es/mentions";
 
 const { Title } = Typography;
 
 export const Category = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
+  const [filterStatus, setFilterStatus] = useState("active");
+  const navigate = useNavigate();
+
+  // Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
+  const updateUrlParams = () => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("filterStatus", filterStatus);
+    navigate({ search: searchParams.toString() });
+  };
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [filterStatus]);
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", filterStatus],
     queryFn: async () => {
-      try {
-        const response = await instance.get(`/categories`);
-        return response.data;
-      } catch (error) {
-        throw new Error("Lỗi khi tải dữ liệu từ API");
-      }
+      const response = await instance.get(
+        `/categories?isDeleted=${
+          filterStatus === "deleted" ? true : false
+        }&all=${filterStatus === "all" ? true : false}`
+      );
+      return response.data;
     },
+    staleTime: 1000 * 60 * 5,
   });
+
   // Xóa mềm danh mục
   const mutationSoftDeleteCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -81,6 +100,10 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
+  // Xử lý thay đổi trạng thái bộ lọc
+  const handleFilterChange = (value: string) => {
+    setFilterStatus(value);
+  };
 
   // Định nghĩa các cột cho bảng
   const columns = [
@@ -185,6 +208,17 @@ export const Category = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
+
+        <Select
+          value={filterStatus}
+          style={{ width: 200 }}
+          onChange={handleFilterChange}
+        >
+          <Option value="all">Tất cả danh mục</Option>
+          <Option value="active">Danh mục hoạt động</Option>
+          <Option value="deleted">Danh mục đã xóa mềm</Option>
+        </Select>
+
         <div className="flex space-x-3">
           <Button type="primary" icon={<PlusCircleFilled />}>
             <Link to="/admin/category/add" style={{ color: "white" }}>
