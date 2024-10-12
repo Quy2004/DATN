@@ -10,6 +10,8 @@ import {
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PlusCircleFilled } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -61,6 +63,7 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
+
   // Khôi phục danh mục
   const mutationRestoreCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -100,7 +103,7 @@ export const Category = () => {
       title: "Hành động",
       dataIndex: "action",
       render: (_: any, category: any) => (
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-4">
           {category.isDeleted ? (
             // Hiển thị nút khôi phục nếu danh mục đã bị xóa mềm
             <Popconfirm
@@ -110,7 +113,9 @@ export const Category = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="default">Khôi phục</Button>
+              <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                Khôi phục
+              </Button>
             </Popconfirm>
           ) : (
             // Hiển thị nút xóa mềm nếu danh mục chưa bị xóa mềm
@@ -121,7 +126,7 @@ export const Category = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="default" danger>
+              <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
                 Xóa mềm
               </Button>
             </Popconfirm>
@@ -134,10 +139,14 @@ export const Category = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" danger>
+            <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
               Xóa cứng
             </Button>
           </Popconfirm>
+
+          <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+            <Link to={`/admin/category/${category._id}/update`}>Cập nhật</Link>
+          </Button>
         </div>
       ),
     },
@@ -176,7 +185,13 @@ export const Category = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
-        <div className="flex space-x-3"></div>
+        <div className="flex space-x-3">
+          <Button type="primary" icon={<PlusCircleFilled />}>
+            <Link to="/admin/category/add" style={{ color: "white" }}>
+              Thêm danh mục
+            </Link>
+          </Button>
+        </div>
       </div>
       <Table dataSource={dataSource} columns={columns} />
     </>
