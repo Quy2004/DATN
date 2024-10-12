@@ -12,40 +12,49 @@ import {
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Option } from "antd/es/mentions";
+import Search from "antd/es/input/Search";
 
 const { Title } = Typography;
+
+const { Option } = Select;
 
 export const Category = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
   const updateUrlParams = () => {
     const searchParams = new URLSearchParams();
+    if (searchTerm) searchParams.set("search", searchTerm);
     searchParams.set("filterStatus", filterStatus);
     navigate({ search: searchParams.toString() });
   };
 
   useEffect(() => {
     updateUrlParams();
-  }, [filterStatus]);
+  }, [filterStatus, searchTerm]);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["categories", filterStatus],
+    queryKey: ["categories", filterStatus, searchTerm],
     queryFn: async () => {
-      const response = await instance.get(
-        `/categories?isDeleted=${
-          filterStatus === "deleted" ? true : false
-        }&all=${filterStatus === "all" ? true : false}`
-      );
-      return response.data;
+      try {
+        const response = await instance.get(
+          `/categories?isDeleted=${
+            filterStatus === "deleted" ? true : false
+          }&all=${filterStatus === "all" ? true : false}&search=${searchTerm}`
+        );
+        return response.data;
+      } catch (error) {
+        throw new Error("Lỗi khi tải dữ liệu từ API");
+      }
     },
-    staleTime: 1000 * 60 * 5,
   });
 
   // Xóa mềm danh mục
@@ -104,7 +113,9 @@ export const Category = () => {
   const handleFilterChange = (value: string) => {
     setFilterStatus(value);
   };
-
+  const handleSearch = (value: string) => {
+    setSearchTerm(value); // Lưu từ khóa tìm kiếm vào state
+  };
   // Định nghĩa các cột cho bảng
   const columns = [
     {
@@ -209,17 +220,22 @@ export const Category = () => {
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
 
-        <Select
-          value={filterStatus}
-          style={{ width: 200 }}
-          onChange={handleFilterChange}
-        >
-          <Option value="all">Tất cả danh mục</Option>
-          <Option value="active">Danh mục hoạt động</Option>
-          <Option value="deleted">Danh mục đã xóa mềm</Option>
-        </Select>
-
         <div className="flex space-x-3">
+          <Search
+            placeholder="Tìm kiếm danh mục"
+            onSearch={handleSearch}
+            allowClear
+            style={{ width: 300 }}
+          />
+          <Select
+            value={filterStatus}
+            style={{ width: 200 }}
+            onChange={handleFilterChange}
+          >
+            <Option value="all">Tất cả danh mục</Option>
+            <Option value="active">Danh mục hoạt động</Option>
+            <Option value="deleted">Danh mục đã xóa mềm</Option>
+          </Select>
           <Button type="primary" icon={<PlusCircleFilled />}>
             <Link to="/admin/category/add" style={{ color: "white" }}>
               Thêm danh mục
