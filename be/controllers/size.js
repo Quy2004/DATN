@@ -5,20 +5,21 @@ class SizeController {
 
 	async getAllSize(req, res) {
 		try {
-			const { isDeleted, all, search, page = 1, limit = 10 } = req.params;
-			// tạo điều kiện lọc
-			let query = {};
+			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
 
-			if (all === true) {
-				// all= true -> laasy ra all
-				query = {};
-			} else if (isDeleted === true) {
-				// isDeleted=true -> lay ra size da xoa
-				query.isDeleted = true;
-			} else {
-				// lấy ra size chưa bị xóa
-				query.isDeleted = false;
-			}
+      // Tạo điều kiện lọc 
+      let query = {};
+
+      if (all === "true") {
+        // Nếu `all=true`, lấy tất cả danh mục
+        query = {};
+      } else if (isDeleted === "true") {
+        // Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
+        query.isDeleted = true;
+      } else {
+        // Mặc định lấy các danh mục chưa bị xóa mềm
+        query.isDeleted = false;
+      }
 
 			// search - điều kiện search theo name
 			if (search) {
