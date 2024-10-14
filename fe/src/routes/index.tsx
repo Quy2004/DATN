@@ -23,6 +23,7 @@ import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
 import CategoryAddPage from "../admin/Category/add/page";
 import CategoryUpdatePage from "../admin/Category/edit/page";
+import Size from "../admin/Size/Size";
 
 const Router = () => {
   return (
@@ -50,6 +51,8 @@ const Router = () => {
           <Route path="category" element={<Category />} />
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
+          
+          <Route path="size" element={<Size />} />
 
           <Route path="product" element={<ProductAdmin />} />
           <Route path="order" element={<OrderAdmin />} />
