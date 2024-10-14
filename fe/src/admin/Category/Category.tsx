@@ -6,27 +6,57 @@ import {
   Popconfirm,
   Button,
   message,
+  Select,
 } from "antd";
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PlusCircleFilled } from "@ant-design/icons";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Search from "antd/es/input/Search";
 
 const { Title } = Typography;
+
+const { Option } = Select;
 
 export const Category = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
+  const [filterStatus, setFilterStatus] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
+  const updateUrlParams = () => {
+    const searchParams = new URLSearchParams();
+    if (searchTerm) searchParams.set("search", searchTerm);
+    searchParams.set("filterStatus", filterStatus);
+    navigate({ search: searchParams.toString() });
+  };
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [filterStatus, searchTerm]);
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories", filterStatus, searchTerm],
     queryFn: async () => {
       try {
-        const response = await instance.get(`/categories`);
+        const response = await instance.get(
+          `/categories?isDeleted=${
+            filterStatus === "deleted" ? true : false
+          }&all=${filterStatus === "all" ? true : false}&search=${searchTerm}`
+        );
         return response.data;
       } catch (error) {
         throw new Error("Lỗi khi tải dữ liệu từ API");
       }
     },
   });
+
   // Xóa mềm danh mục
   const mutationSoftDeleteCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -61,6 +91,7 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
+
   // Khôi phục danh mục
   const mutationRestoreCategory = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -78,7 +109,13 @@ export const Category = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-
+  // Xử lý thay đổi trạng thái bộ lọc
+  const handleFilterChange = (value: string) => {
+    setFilterStatus(value);
+  };
+  const handleSearch = (value: string) => {
+    setSearchTerm(value); // Lưu từ khóa tìm kiếm vào state
+  };
   // Định nghĩa các cột cho bảng
   const columns = [
     {
@@ -100,7 +137,7 @@ export const Category = () => {
       title: "Hành động",
       dataIndex: "action",
       render: (_: any, category: any) => (
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-4">
           {category.isDeleted ? (
             // Hiển thị nút khôi phục nếu danh mục đã bị xóa mềm
             <Popconfirm
@@ -110,7 +147,9 @@ export const Category = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="default">Khôi phục</Button>
+              <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                Khôi phục
+              </Button>
             </Popconfirm>
           ) : (
             // Hiển thị nút xóa mềm nếu danh mục chưa bị xóa mềm
@@ -121,7 +160,7 @@ export const Category = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="default" danger>
+              <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
                 Xóa mềm
               </Button>
             </Popconfirm>
@@ -134,10 +173,14 @@ export const Category = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" danger>
+            <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
               Xóa cứng
             </Button>
           </Popconfirm>
+
+          <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+            <Link to={`/admin/category/${category._id}/update`}>Cập nhật</Link>
+          </Button>
         </div>
       ),
     },
@@ -176,7 +219,29 @@ export const Category = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
-        <div className="flex space-x-3"></div>
+
+        <div className="flex space-x-3">
+          <Search
+            placeholder="Tìm kiếm danh mục"
+            onSearch={handleSearch}
+            allowClear
+            style={{ width: 300 }}
+          />
+          <Select
+            value={filterStatus}
+            style={{ width: 200 }}
+            onChange={handleFilterChange}
+          >
+            <Option value="all">Tất cả danh mục</Option>
+            <Option value="active">Danh mục hoạt động</Option>
+            <Option value="deleted">Danh mục đã xóa mềm</Option>
+          </Select>
+          <Button type="primary" icon={<PlusCircleFilled />}>
+            <Link to="/admin/category/add" style={{ color: "white" }}>
+              Thêm danh mục
+            </Link>
+          </Button>
+        </div>
       </div>
       <Table dataSource={dataSource} columns={columns} />
     </>
