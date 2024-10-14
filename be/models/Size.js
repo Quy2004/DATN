@@ -11,10 +11,9 @@ const SizeSchema = new Schema(
     priceSize: {
       type: Number,
     },
-    status: {
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
+    isDeleted: {
+        type: Boolean,
+        default: false,
     }
   },
   {
@@ -22,6 +21,7 @@ const SizeSchema = new Schema(
     versionKey: false,
   }
 );
+
 
 const Size = mongoose.model("Size", SizeSchema);
 
