@@ -8,6 +8,7 @@ productsRouter.get("/", productsController.getAllProducts);
 productsRouter.get("/:id", productsController.getProductDetail);
 productsRouter.post("/", productsController.createProduct);
 productsRouter.put("/:id", productsController.updateProduct);
-productsRouter.delete("/:id", productsController.deleteProduct);
-
+productsRouter.patch("/:id/soft-delete", productsController.softDeleteProduct);
+productsRouter.delete("/:id/hard-delete", productsController.hardDeleteProduct);
+productsRouter.patch("/:id/restore", productsController.restoreProduct);
 export default productsRouter;

@@ -1,54 +1,71 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
+import mongoosePaginate from "mongoose-paginate-v2";
+
 const Schema = mongoose.Schema;
+
 const ProductSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: [true, "Tên sản phẩm là bắt buộc"],
+      trim: true,
     },
     category_id: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
+        required: true,
       },
     ],
-    price: {
-      type: Number,
-      require: true,
-    },
     discount: {
       type: Number,
-      default: 0, // Nếu sản phẩm không giảm giá, giá trị mặc định là 0
-    }, 
-    // ảnh chính
+      default: 0,
+      min: [0, "Giảm giá phải là một số dương"],
+    },
     image: {
       type: String,
-      require: true,
     },
-    // ảnh phụ
-    gallery: {
-      type: Array,
+    thumbnail: {
+      type: [String],
     },
-
     description: {
       type: String,
+      trim: true,
     },
-    id_comment: {
+
+    product_sizes: [
+      {
+        size_id: { type: mongoose.Schema.Types.ObjectId, ref: "Size" },
+        price: { type: Number, required: true },
+        stock: { type: Number, required: true },
+      },
+    ],
+
+    product_toppings: [
+      {
+        topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
+        stock: { type: Number, required: true },
+      },
+    ],
+    stock: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    status: {
       type: String,
-      require: true,
+      enum: ["available", "unavailable"],
+      default: "available",
     },
-    size_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Size", // Tham chiếu đến bảng `Size`
-      },
-    ],
-    topping_id: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Topping", // Tham chiếu đến bảng `Topping`
-      },
-    ],
+    slug: {
+      type: String,
+      unique: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -56,5 +73,15 @@ const ProductSchema = new Schema(
   }
 );
 
+ProductSchema.pre("save", function (next) {
+  if (this.isModified("name") && !this.slug) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+  next();
+});
+
+ProductSchema.plugin(mongoosePaginate);
+
 const Product = mongoose.model("Product", ProductSchema);
+
 export default Product;
