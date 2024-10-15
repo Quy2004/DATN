@@ -112,13 +112,37 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
-  async deleteProduct(req, res) {
+  // Xóa mềm
+  async softDeleteProduct(req, res) {
+    try {
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: true },
+        { new: true }
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+      }
+
+      res.status(200).json({
+        message: "Xóa mềm sản phẩm thành công",
+        data: product,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  //Xóa cứng
+  async hardDeleteProduct(req, res) {
     try {
       const product = await Product.findByIdAndDelete(req.params.id);
+
       if (!product) {
-        return res.status(404).json({ message: "Product Not Found" });
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
       }
-      res.status(200).json({ message: "Delete Product Successfully!!!" });
+
+      res.status(200).json({ message: "Xóa sản phẩm vĩnh viễn thành công" });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
