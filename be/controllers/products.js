@@ -63,13 +63,19 @@ class ProductController {
   }
   async getProductDetail(req, res) {
     try {
-      const product = await Product.findById(req.params.id);
-      if (!product) {
-        return res.status(404).json({ message: "Product NotFound" });
+      const product = await Product.findById(req.params.id)
+        .populate("category_id")
+        .populate("product_sizes.size_id")
+        .populate("product_toppings.topping_id");
+
+      if (!product || product.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
       }
-      res
-        .status(200)
-        .json({ message: "Get Product Details Done", data: product });
+
+      res.status(200).json({
+        message: "Lấy chi tiết sản phẩm thành công",
+        data: product,
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
