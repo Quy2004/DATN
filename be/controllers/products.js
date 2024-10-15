@@ -80,29 +80,34 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async createProduct(req, res) {
     try {
       const product = await Product.create(req.body);
-      res
-        .status(201)
-        .json({ message: "Create Product Successfully!!!", data: product });
+      res.status(201).json({
+        message: "Tạo sản phẩm thành công",
+        data: product,
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
+
+  // Cập nhật sản phẩm
   async updateProduct(req, res) {
     try {
       const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
       });
-      if (!product) {
-        return res.status(404).json({
-          message: " Product Not Found",
-        });
+
+      if (!product || product.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
       }
-      res
-        .status(200)
-        .json({ message: "Update Product Successfully!!!", data: product });
+
+      res.status(200).json({
+        message: "Cập nhật sản phẩm thành công",
+        data: product,
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
