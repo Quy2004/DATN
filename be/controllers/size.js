@@ -7,19 +7,19 @@ class SizeController {
 		try {
 			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
 
-      // Tạo điều kiện lọc 
-      let query = {};
+			// Tạo điều kiện lọc
+			let query = {};
 
-      if (all === "true") {
-        // Nếu `all=true`, lấy tất cả danh mục
-        query = {};
-      } else if (isDeleted === "true") {
-        // Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
-        query.isDeleted = true;
-      } else {
-        // Mặc định lấy các danh mục chưa bị xóa mềm
-        query.isDeleted = false;
-      }
+			if (all === "true") {
+				// Nếu `all=true`, lấy tất cả danh mục
+				query = {};
+			} else if (isDeleted === "true") {
+				// Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
+				query.isDeleted = true;
+			} else {
+				// Mặc định lấy các danh mục chưa bị xóa mềm
+				query.isDeleted = false;
+			}
 
 			// search - điều kiện search theo name
 			if (search) {
@@ -121,52 +121,50 @@ class SizeController {
 		}
 	}
 
-    async softDeleteSize(req, res) {
-        try {
-            const size= await Size.findByIdAndUpdate(
-                req.params.id,
-                { isDeleted: true },
-                { new: true }
-            );
+	async softDeleteSize(req, res) {
+		try {
+			const size = await Size.findByIdAndUpdate(
+				req.params.id,
+				{ isDeleted: true },
+				{ new: true },
+			);
 
-            if(!size) {
-                return res.status(404).json({ message: "Size not found" });
-            }
-            res.status(200).json({
-                message: "Delete Size Successfully",
-                data: size,
-            });
-        } catch (error) {
-            res.status(400).json({
-                message: error.message,
-              });
-        }
-    }
+			if (!size) {
+				return res.status(404).json({ message: "Size not found" });
+			}
+			res.status(200).json({
+				message: "Delete Size Successfully",
+				data: size,
+			});
+		} catch (error) {
+			res.status(400).json({
+				message: error.message,
+			});
+		}
+	}
 
+	// Khôi phục danh mục khi bị xóa mềm
+	async restoreSize(req, res) {
+		try {
+			const size = await Size.findByIdAndUpdate(
+				req.params.id,
+				{ isDeleted: false },
+				{ new: true },
+			);
 
-    // Khôi phục danh mục khi bị xóa mềm
-    async restoreSize(req, res){
-        
-            try {
-                const size= await Size.findByIdAndUpdate(
-                    req.params.id,
-                    { isDeleted: false },
-                    { new: true }
-                );
-    
-                if(!size) {
-                    return res.status(404).json({ message: "Size not found" });
-                }
-                res.status(200).json({
-                    message: "Delete Size Successfully",
-                    data: size,
-                });
-            } catch (error) {
-                res.status(400).json({
-                    message: error.message,
-                  });
-                }
-    }
+			if (!size) {
+				return res.status(404).json({ message: "Size not found" });
+			}
+			res.status(200).json({
+				message: "Delete Size Successfully",
+				data: size,
+			});
+		} catch (error) {
+			res.status(400).json({
+				message: error.message,
+			});
+		}
+	}
 }
 
 export default SizeController;

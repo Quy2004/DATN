@@ -5,25 +5,24 @@ const UserSchema = new Schema(
   {
     email: {
       type: String,
-      require: true,
+      required: true,
       unique: true,
     },
-    avatar: {
+    avatars: {
       type: [Object],
-      require: true,
+      default: "be/image/avt.jpg"
     },
     userName:{
         type: String,
-        require: true,
+        required: true,
     },
     password: {
       type: String,
-      require: true,
+      required: true,
     },
-    status:{
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
+    isDeleted:{
+        type: Boolean,
+        default: false,
 
     },
     role: {
