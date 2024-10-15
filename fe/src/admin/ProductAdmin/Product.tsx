@@ -64,6 +64,7 @@ const ProductManagerPage: React.FC = () => {
       return response.data.data;
     },
   });
+  // Xóa mềm
   const mutationSoftDelete = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
@@ -74,6 +75,22 @@ const ProductManagerPage: React.FC = () => {
     },
     onSuccess: () => {
       messageApi.success("Xóa mềm sản phẩm thành công");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error) => {
+      messageApi.error(`Lỗi: ${error.message}`);
+    },
+  });
+  const mutationHardDelete = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.delete(`/products/${_id}/hard-delete`);
+      } catch (error) {
+        throw new Error("Xóa cứng sản phẩm thất bại");
+      }
+    },
+    onSuccess: () => {
+      messageApi.success("Xóa cứng sản phẩm thành công");
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (error) => {
@@ -169,6 +186,15 @@ const ProductManagerPage: React.FC = () => {
             cancelText="Không"
           >
             <Button type="primary">Xóa mềm</Button>
+          </Popconfirm>
+          {/* Xóa cứng */}
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+            onConfirm={() => mutationHardDelete.mutate(product._id)} // Xác nhận xóa cứng
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button danger>Xóa cứng</Button>
           </Popconfirm>
         </Space>
       ),
