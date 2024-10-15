@@ -147,6 +147,27 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+  // Khôi phục sản phẩm đã xóa mềm
+  async restoreProduct(req, res) {
+    try {
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: false },
+        { new: true }
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+      }
+
+      res.status(200).json({
+        message: "Khôi phục sản phẩm thành công",
+        data: product,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }
 
 export default ProductController;
