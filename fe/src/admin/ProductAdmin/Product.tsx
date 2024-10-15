@@ -64,7 +64,22 @@ const ProductManagerPage: React.FC = () => {
       return response.data.data;
     },
   });
-
+  const mutationSoftDelete = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/products/${_id}/soft-delete`);
+      } catch (error) {
+        throw new Error("Xóa mềm sản phẩm thất bại");
+      }
+    },
+    onSuccess: () => {
+      messageApi.success("Xóa mềm sản phẩm thành công");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error) => {
+      messageApi.error(`Lỗi: ${error.message}`);
+    },
+  });
   const columns = [
     {
       title: "STT",
@@ -139,6 +154,23 @@ const ProductManagerPage: React.FC = () => {
         <span style={{ color: status === "available" ? "green" : "red" }}>
           {status === "available" ? "Có sẵn" : "Hết hàng"}
         </span>
+      ),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_: any, product: Product) => (
+        <Space size="middle">
+          {/* Xóa mềm */}
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+            onConfirm={() => mutationSoftDelete.mutate(product._id)} // Xác nhận xóa mềm
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button type="primary">Xóa mềm</Button>
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
