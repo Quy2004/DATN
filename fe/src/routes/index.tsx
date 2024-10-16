@@ -16,13 +16,15 @@ import Signin from "../account/signin/signin";
 import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
-import { Category } from "../admin/Category/Category";
+
 import ProductManagerPage from "../admin/ProductAdmin/Product";
 import OrderAdmin from "../admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
 import CategoryAddPage from "../admin/Category/add/page";
 import CategoryUpdatePage from "../admin/Category/edit/page";
+import CategoryManagerPage from "../admin/Category/Category";
+import ProductAddPage from "../admin/ProductAdmin/add/page";
 
 const Router = () => {
   return (
@@ -47,11 +49,12 @@ const Router = () => {
           <Route path="forgot" element={<Forgot />} />
         </Route>
         <Route path="admin" element={<AdminLayout />}>
-          <Route path="category" element={<Category />} />
+          <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
 
           <Route path="product" element={<ProductManagerPage />} />
+          <Route path="product/add" element={<ProductAddPage />} />
 
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
