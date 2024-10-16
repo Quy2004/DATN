@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../../services/api";
 import Title from "antd/es/typography/Title";
 import { Link, useNavigate } from "react-router-dom";
-import { DoubleLeftOutlined, UploadOutlined } from "@ant-design/icons";
+import { DoubleLeftOutlined, FileImageOutlined } from "@ant-design/icons";
 
 import {
   ProductFormValues,
@@ -83,15 +83,14 @@ const ProductAddPage: React.FC = () => {
       category_id: values.category_id,
       image: image,
       thumbnail: thumbnails,
+      price: values.price,
       product_sizes: values.product_sizes.map((size: ProductSize) => ({
         size_id: size.size_id,
-        price: size.price,
-        stock: size.stock,
+        status: size.status,
       })),
       product_toppings: values.product_toppings.map(
         (topping: ProductTopping) => ({
           topping_id: topping.topping_id,
-          stock: topping.stock,
         })
       ),
       stock: values.stock,
@@ -175,6 +174,13 @@ const ProductAddPage: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
+          <Form.Item
+            label="Giá sản phẩm"
+            name="price"
+            rules={[{ required: true, message: "Vui lòng nhập giá sản phẩm" }]}
+          >
+            <Input placeholder="Nhập giá sản phẩm" />
+          </Form.Item>
           {/* Upload Ảnh Chính */}
           <Form.Item label="Upload ảnh chính">
             <Upload
@@ -183,7 +189,7 @@ const ProductAddPage: React.FC = () => {
               beforeUpload={uploadMainImage}
               maxCount={1}
             >
-              <Button icon={<UploadOutlined />}>Chọn ảnh chính</Button>
+              <Button icon={<FileImageOutlined />}></Button>
             </Upload>
           </Form.Item>
 
@@ -196,7 +202,7 @@ const ProductAddPage: React.FC = () => {
               beforeUpload={uploadThumbnails}
               maxCount={4}
             >
-              <Button icon={<UploadOutlined />}>Chọn ảnh phụ</Button>
+              <Button icon={<FileImageOutlined />}></Button>
             </Upload>
           </Form.Item>
 
@@ -207,13 +213,13 @@ const ProductAddPage: React.FC = () => {
                   {fields.map((field) => (
                     <div
                       key={field.key}
-                      className="flex items-center space-x-4 mb-4 w-full max-w-3xl"
+                      className="flex items-center space-x-4 mb-4 w-full"
                     >
                       <Form.Item
                         name={[field.name, "size_id"]}
                         label="Size"
                         rules={[{ required: true, message: "Chọn size" }]}
-                        className="flex-1"
+                        className="flex-1 mb-0"
                       >
                         <Select
                           placeholder="Chọn size"
@@ -230,41 +236,36 @@ const ProductAddPage: React.FC = () => {
                       </Form.Item>
 
                       <Form.Item
-                        name={[field.name, "price"]}
-                        label="Giá"
-                        rules={[{ required: true, message: "Nhập giá" }]}
-                        className="flex-1"
+                        name={[field.name, "status"]}
+                        label="Trạng thái"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Vui lòng chọn trạng thái",
+                          },
+                        ]}
+                        className="flex-1 mb-0"
                       >
-                        <InputNumber
-                          placeholder="Giá"
-                          min={0}
+                        <Select
+                          placeholder="Chọn trạng thái"
                           className="w-full"
-                        />
-                      </Form.Item>
-
-                      <Form.Item
-                        name={[field.name, "stock"]}
-                        label="Tồn kho"
-                        rules={[{ required: true, message: "Nhập tồn kho" }]}
-                        className=""
-                      >
-                        <InputNumber
-                          placeholder="Tồn kho"
-                          min={0}
-                          className="mx-3"
-                        />
+                        >
+                          <Option value="available">Có sẵn</Option>
+                          <Option value="unavailable">Hết hàng</Option>
+                        </Select>
                       </Form.Item>
 
                       <Button
                         onClick={() => remove(field.name)}
                         danger
-                        className="text-red-500"
+                        className="text-red-500 mb-0"
                       >
                         Xóa
                       </Button>
                     </div>
                   ))}
 
+                  {/* Add Button */}
                   <Button
                     className="mt-2 bg-blue-500 text-white"
                     onClick={() => add()}
@@ -284,11 +285,12 @@ const ProductAddPage: React.FC = () => {
                       key={field.key}
                       className="flex items-center space-x-4 mb-4 w-full max-w-3xl mt-6"
                     >
+                      {/* Topping Selection */}
                       <Form.Item
                         name={[field.name, "topping_id"]}
                         label="Topping"
                         rules={[{ required: true, message: "Chọn topping" }]}
-                        className="flex-1"
+                        className="flex-1 mb-0"
                       >
                         <Select
                           placeholder="Chọn topping"
@@ -304,29 +306,18 @@ const ProductAddPage: React.FC = () => {
                         </Select>
                       </Form.Item>
 
-                      <Form.Item
-                        name={[field.name, "stock"]}
-                        label="Tồn kho"
-                        rules={[{ required: true, message: "Nhập tồn kho" }]}
-                        className="flex-1"
-                      >
-                        <InputNumber
-                          placeholder="Tồn kho"
-                          min={0}
-                          className="w-full"
-                        />
-                      </Form.Item>
-
+                      {/* Remove Button */}
                       <Button
                         onClick={() => remove(field.name)}
                         danger
-                        className="text-red-500"
+                        className="text-red-500 mb-0"
                       >
                         Xóa
                       </Button>
                     </div>
                   ))}
 
+                  {/* Add Button */}
                   <Button
                     className="mt-5 bg-green-500 text-white mx-3"
                     onClick={() => add()}

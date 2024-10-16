@@ -12,16 +12,15 @@ const SizeSchema = new Schema(
       type: Number,
     },
     isDeleted: {
-        type: Boolean,
-        default: false,
-    }
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
     versionKey: false,
   }
 );
-
 
 const Size = mongoose.model("Size", SizeSchema);
 
