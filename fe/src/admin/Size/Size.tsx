@@ -24,27 +24,37 @@ import {
     const queryClient = useQueryClient();
     const [filterStatus, setFilterStatus] = useState("active");
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1); // State cho phân trang
+    const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
   
     const navigate = useNavigate();
     const location = useLocation();
+    const params = new URLSearchParams(location.search);
   
-    const updateUrlParams = () => {
-      const searchParams = new URLSearchParams();
-      if (searchTerm) searchParams.set("search", searchTerm);
-      searchParams.set("filterStatus", filterStatus);
-      navigate({ search: searchParams.toString() });
-    };
+    // Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
+  const updateUrlParams = () => {
+    const searchParams = new URLSearchParams();
+    if (searchTerm) searchParams.set("search", searchTerm);
+    searchParams.set("filterStatus", filterStatus);
+    searchParams.set("page", currentPage.toString());
+    searchParams.set("limit", pageSize.toString());
+    navigate({ search: searchParams.toString() });
+  };
   
     useEffect(() => {
       updateUrlParams();
-    }, [filterStatus, searchTerm]);
+    }, [filterStatus, searchTerm, currentPage, pageSize]);
   
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ["size", filterStatus, searchTerm],
+        queryKey: ["size", filterStatus, searchTerm, currentPage, pageSize],
         queryFn: async () => {
           try {
             const response = await instance.get(
-              `/size?isDeleted=${filterStatus === "deleted" ? true : false}&all=${filterStatus === "all" ? true : false}&search=${searchTerm}`
+              `/size?isDeleted=${
+                filterStatus === "deleted" ? true : false
+              }&all=${
+                filterStatus === "all" ? true : false
+              }&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`
             );
             return response.data;
           } catch (error) {
@@ -107,13 +117,21 @@ import {
       },
     });
   
-    const handleFilterChange = (value: string) => {
-      setFilterStatus(value);
-    };
-  
-    const handleSearch = (value: string) => {
-      setSearchTerm(value);
-    };
+    // Xử lý thay đổi trạng thái bộ lọc
+  const handleFilterChange = (value: string) => {
+    setFilterStatus(value);
+    setCurrentPage(1);
+  };
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+     // Xử lý thay đổi phân trang
+  const handleTableChange = (pagination: any) => {
+    setCurrentPage(pagination.current); // Cập nhật trang hiện tại
+    setPageSize(pagination.pageSize); // Cập nhật số lượng mỗi trang
+  };
   
     const columns = [
       {
@@ -234,7 +252,18 @@ import {
             </Button>
           </div>
         </div>
-        <Table dataSource={dataSource} columns={columns} />
+        <Table
+        dataSource={dataSource}
+        columns={columns}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: data?.pagination?.totalItems || 0,
+          showSizeChanger: true,
+          pageSizeOptions: ["10", "20", "50", "100"],
+        }}
+        onChange={handleTableChange}
+      />
       </>
     );
   };

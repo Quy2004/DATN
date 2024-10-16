@@ -50,6 +50,7 @@ const AdminLayout = () => {
     { name: "Quản lí danh mục", link: "category", icon: <FaList /> },
     { name: "Quản lí size", link: "size", icon: <FaList /> },
     { name: "Quản lí sản phẩm", link: "product", icon: <FaBoxOpen /> },
+    { name: "Quản lí voucher", link: "voucher", icon: <FaBoxOpen /> },
     { name: "Quản lí đơn hàng", link: "order", icon: <FaShoppingCart /> },
     { name: "Quản lí bình luận", link: "comment", icon: <FaComments /> },
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
@@ -64,6 +65,8 @@ const AdminLayout = () => {
       return "Quản lý danh mục ";
     } else if (location.pathname.includes("size")) {
       return "Quản lý size ";
+    } else if (location.pathname.includes("voucher")) {
+      return "Quản voucher";
     } else if (location.pathname.includes("order")) {
       return "Quản lý đơn hàng ";
     } else if (location.pathname.includes("comment")) {
