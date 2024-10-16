@@ -25,15 +25,11 @@ export interface Topping {
     nameTopping: string;
     priceTopping?: number;
 }
-// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)type ProductSize = {
+// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)
 export interface ProductSize {
-    size_id: {
-        name: string;
-    };
-    status: string;
+    size_id: Size;
+    status: "available" | "unavailable";
 }
-
-
 // Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
 export interface ProductTopping {
     topping_id: Topping;
