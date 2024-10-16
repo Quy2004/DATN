@@ -117,10 +117,18 @@ const ClientAdmin = () => {
 			key: "email",
 		},
 		{
-			title: "Hình ảnh",
-			dataIndex: "avatar",
-			key: "avatar",
-		},
+            title: "Hình ảnh",
+            dataIndex: "avatar",
+            key: "avatar",
+            render: (avatar: string) => (
+              <img 
+                src={avatar} 
+                alt="Avatar" 
+                style={{ width: 50, height: 50, borderRadius: '50%' }} 
+              />
+            ),
+          },
+          
 		{
 			title: "Trạng thái",
 			dataIndex: "role",

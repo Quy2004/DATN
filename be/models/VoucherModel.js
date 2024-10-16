@@ -13,10 +13,12 @@ const VoucherSchema = new Schema(
     discription:{
       type: String,
     },
+    // phaàn trăm giảm giá
     discountPercentage: {
       type: Number,
       required: true,
     },
+    // giảm giá tối đa
     maxDiscount:{
       type: Number,
     },
@@ -24,6 +26,7 @@ const VoucherSchema = new Schema(
       type: Number,
       required: true,
     },
+    // ngày bắt đầu
     minOrderDate: {
       type: Date,
       required: true,
@@ -34,14 +37,14 @@ const VoucherSchema = new Schema(
         message: "Ngày bắt đầu không được trước thời điểm hiện tại."
       }
     },
+    // ngày kết thúc
     maxOrderDate: {
       type: Date,
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
