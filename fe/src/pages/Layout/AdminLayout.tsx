@@ -66,7 +66,7 @@ const AdminLayout = () => {
     } else if (location.pathname.includes("size")) {
       return "Quản lý size ";
     } else if (location.pathname.includes("voucher")) {
-      return "Quản voucher";
+      return "Quản lý voucher";
     } else if (location.pathname.includes("order")) {
       return "Quản lý đơn hàng ";
     } else if (location.pathname.includes("comment")) {
