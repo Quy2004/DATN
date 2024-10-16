@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Input, Button, Select, InputNumber, Space, message } from "antd";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../../services/api";
 import Title from "antd/es/typography/Title";
 import { Link, useNavigate } from "react-router-dom";
-import { DoubleLeftOutlined } from "@ant-design/icons";
+import { DoubleLeftOutlined, UploadOutlined } from "@ant-design/icons";
 
 import {
   ProductFormValues,
@@ -14,12 +14,15 @@ import {
   Topping,
 } from "../../../types/product";
 import { Category } from "../../../types/category";
+import Upload, { RcFile } from "antd/es/upload";
+import axios from "axios";
 
 const { Option } = Select;
 
 const ProductAddPage: React.FC = () => {
   const [, contextHolder] = message.useMessage();
-
+  const [image, setImage] = useState<string>("");
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -48,11 +51,38 @@ const ProductAddPage: React.FC = () => {
     },
   });
 
+  // Upload Ảnh Cloudinary
+  const uploadImage = async (file: RcFile, isMainImage: boolean) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "duan_totnghiep");
+
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/duantotnghiep/image/upload",
+        formData
+      );
+      if (isMainImage) {
+        setImage(res.data.secure_url);
+      } else {
+        setThumbnails((prev) => [...prev, res.data.secure_url]);
+      }
+      message.success("Ảnh đã được upload thành công!");
+    } catch (error) {
+      message.error("Upload ảnh thất bại!");
+    }
+  };
+
   const onFinish = async (values: ProductFormValues) => {
+    if (!image) {
+      return message.error("Vui lòng upload ảnh chính.");
+    }
+
     const productData = {
       ...values,
       category_id: values.category_id,
-
+      image: image,
+      thumbnail: thumbnails,
       product_sizes: values.product_sizes.map((size: ProductSize) => ({
         size_id: size.size_id,
         price: size.price,
@@ -82,6 +112,16 @@ const ProductAddPage: React.FC = () => {
       message.error("Thêm sản phẩm thất bại!");
       console.error(error);
     }
+  };
+
+  const uploadMainImage = (file: RcFile) => {
+    uploadImage(file, true);
+    return false;
+  };
+
+  const uploadThumbnails = (file: RcFile) => {
+    uploadImage(file, false);
+    return false;
   };
 
   return (
@@ -134,6 +174,30 @@ const ProductAddPage: React.FC = () => {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+          {/* Upload Ảnh Chính */}
+          <Form.Item label="Upload ảnh chính">
+            <Upload
+              name="file"
+              listType="picture-card"
+              beforeUpload={uploadMainImage}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh chính</Button>
+            </Upload>
+          </Form.Item>
+
+          {/* Upload Ảnh Phụ */}
+          <Form.Item label="Upload ảnh phụ">
+            <Upload
+              name="files"
+              listType="picture-card"
+              multiple
+              beforeUpload={uploadThumbnails}
+              maxCount={4}
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh phụ</Button>
+            </Upload>
           </Form.Item>
 
           <div className="flex flex-col items-center">
@@ -306,7 +370,7 @@ const ProductAddPage: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item >
+          <Form.Item>
             <div className="flex justify-center mx-80">
               <Space>
                 <Button
