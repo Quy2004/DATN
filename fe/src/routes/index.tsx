@@ -25,6 +25,7 @@ import CategoryAddPage from "../admin/Category/add/page";
 import CategoryUpdatePage from "../admin/Category/edit/page";
 import CategoryManagerPage from "../admin/Category/Category";
 import ProductAddPage from "../admin/ProductAdmin/add/page";
+import ProductEditPage from "../admin/ProductAdmin/edit/page";
 
 const Router = () => {
   return (
@@ -55,6 +56,7 @@ const Router = () => {
 
           <Route path="product" element={<ProductManagerPage />} />
           <Route path="product/add" element={<ProductAddPage />} />
+          <Route path="product/:id/update" element={<ProductEditPage />} />
 
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />

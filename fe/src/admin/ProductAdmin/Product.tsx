@@ -193,6 +193,11 @@ const ProductManagerPage: React.FC = () => {
               Xóa cứng
             </Button>
           </Popconfirm>
+          <Link to={`/admin/product/${product._id}/update`}>
+            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+              Cập nhật
+            </Button>
+          </Link>
         </Space>
       ),
     },
