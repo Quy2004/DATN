@@ -97,6 +97,53 @@ const ClientAdmin = () => {
 		},
 	});
 
+	// Update user role (user API)
+	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
+		mutationFn: async ({ _id }) => {
+			try {
+				return await instance.patch(`/user/${_id}/user`);
+			} catch (error) {
+				throw new Error("Cập nhật vai trò user thất bại");
+			}
+		},
+		onSuccess: () => {
+			messageApi.success("Cập nhật vai trò user thành công");
+			queryClient.invalidateQueries({ queryKey: ["user"] });
+		},
+		onError: error => {
+			messageApi.error(`Lỗi: ${error.message}`);
+		},
+	});
+
+	// Update manager role (manager API)
+	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
+		mutationFn: async ({ _id }) => {
+			try {
+				return await instance.patch(`/user/${_id}/manager`);
+			} catch (error) {
+				throw new Error("Cập nhật vai trò manager thất bại");
+			}
+		},
+		onSuccess: () => {
+			messageApi.success("Cập nhật vai trò manager thành công");
+			queryClient.invalidateQueries({ queryKey: ["user"] });
+		},
+		onError: error => {
+			messageApi.error(`Lỗi: ${error.message}`);
+		},
+	});
+
+	// Xử lý thay đổi vai trò
+	const handleRoleChange = (_id: string, newRole: string) => {
+		if (newRole === "user") {
+			mutationUpdateUserRole.mutate({ _id });
+		} else if (newRole === "manager") {
+			mutationUpdateManagerRole.mutate({ _id });
+		} else {
+			messageApi.error("Vai trò không hợp lệ");
+		}
+	};
+
 	// Xử lý thay đổi trạng thái bộ lọc
 	const handleFilterChange = (value: string) => {
 		setFilterStatus(value);
@@ -141,10 +188,22 @@ const ClientAdmin = () => {
 		},
 
 		{
-			title: "Trạng thái",
+			title: "Vai trò",
 			dataIndex: "role",
 			key: "role",
+			render: (role: string, user: any) => (
+				<Select
+					value={role}
+					onChange={(newRole) => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
+					style={{ width: 150 }}
+				>
+					<Option value="admin">Admin</Option>
+					<Option value="user">User</Option>
+					<Option value="manager">Manager</Option>
+				</Select>
+			),
 		},
+		  
 		{
 			title: "Hành động",
 			dataIndex: "action",
@@ -175,10 +234,6 @@ const ClientAdmin = () => {
 							</Button>
 						</Popconfirm>
 					)}
-
-					<Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-						<Link to={`/admin/user/${user._id}/update`}>Cập nhật</Link>
-					</Button>
 				</div>
 			),
 		},
