@@ -2,6 +2,7 @@ import { Category } from "./category";
 export interface Product {
     _id: string;
     name: string;
+    price: number
     category_id: Category[];
     image: string;
     thumbnail: string[];
@@ -24,12 +25,15 @@ export interface Topping {
     nameTopping: string;
     priceTopping?: number;
 }
-// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)
+// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)type ProductSize = {
 export interface ProductSize {
-    size_id: Size;
-    price: number;
-    stock: number;
+    size_id: {
+        name: string;
+    };
+    status: string;
 }
+
+
 // Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
 export interface ProductTopping {
     topping_id: Topping;
@@ -38,6 +42,7 @@ export interface ProductTopping {
 // Interface tổng hợp cho Product
 export interface ProductFormValues {
     name: string;
+    price: number;
     category_id: string;
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
