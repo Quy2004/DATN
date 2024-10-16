@@ -17,7 +17,7 @@ import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 import { Category } from "../admin/Category/Category";
-import { ProductAdmin } from "../admin/ProductAdmin/Product";
+import ProductManagerPage, { ProductAdmin } from "../admin/ProductAdmin/Product";
 import OrderAdmin from "../admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
@@ -58,7 +58,7 @@ const Router = () => {
           <Route path="size/add" element={<SizeAddPage />} />
           <Route path="size/:id/update" element={<SizeUpdatePage />} />
 
-          <Route path="product" element={<ProductAdmin />} />
+          <Route path="product" element={<ProductManagerPage />} />
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
           <Route path="client" element={<ClientAdmin />} />
