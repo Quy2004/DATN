@@ -5,39 +5,29 @@ const UserSchema = new Schema(
   {
     email: {
       type: String,
-      require: true,
+      required: true,
       unique: true,
     },
-    phone: {
-      type: Number,
-      require: true,
-      unique: true,
-    },
-    avata: {
+    avatars: {
       type: [Object],
-      require: true,
+      default: "be/image/avt.jpg"
     },
     userName:{
         type: String,
-        require: true,
+        required: true,
     },
     password: {
       type: String,
-      require: true,
+      required: true,
     },
-    address: {
-        type: String,
-        require: true,
-    },
-    status:{
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
+    isDeleted:{
+        type: Boolean,
+        default: false,
 
     },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "manager", "admin"],
         default: "user",
     }
   },

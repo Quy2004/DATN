@@ -2,17 +2,60 @@ import User from "../models/UserModel";
 
 class UserController {
 	// Hiện thị toàn bộ danh sách người dùng
-		async getAllUsers(req, res) {
-			try {
-				const user = await User.find({});
-				res.status(200).json({
-					message: "Get Users Done",
-					data: user,
-				});
-			} catch (error) {
-				res.status(400).json({ message: error.message });
+	async getAllUsers(req, res) {
+		try {
+			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
+
+			// Tạo điều kiện lọc
+			let query = {};
+
+			if (all === "true") {
+				// Nếu `all=true`, lấy tất cả danh mục
+				query = {};
+			} else if (isDeleted === "true") {
+				// Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
+				query.isDeleted = true;
+			} else {
+				// Mặc định lấy các danh mục chưa bị xóa mềm
+				query.isDeleted = false;
 			}
-	}
+
+			// search - điều kiện search theo name
+			if (search) {
+				query.name = { $regex: search, $options: "i" };
+				// không phân biệt viết hoa hay viết thường
+			}
+
+			// số lượng trên mỗi trang
+			const pageLimit = parseInt(limit, 10) || 10;
+			const currentPage = parseInt(page, 10) || 1;
+			const skip = (currentPage - 1) * pageLimit;
+
+			// thực hiện phân trang
+			const user = await User.find(query)
+				.sort({ createdAt: -1 }) // sắp xếp theo ngày tạo giảm dần
+				.skip(skip)
+				.limit(pageLimit)
+				.exec();
+
+			// Tổng số danh mục để tính tổng số trang
+			const totalItems = await User.countDocuments(query);
+
+			res.status(200).json({
+				message: "Get user Done",
+				data: user,
+				pagination: {
+					totalItems,
+					currentPage,
+					totalPages: Math.ceil(totalItems / pageLimit),
+				},
+			});
+		} catch (error) {
+			res.status(400).json({ message: error.message });
+		}
+	  }
+	  
+	  
 	// Hiển thị chi tiết người dùng
 	async getUserById(req, res) {
 		try {
@@ -42,34 +85,46 @@ class UserController {
 	// Xóa người dùng(xóa mềm)
 	async deleteUser(req, res) {
 		try {
-			const { id } = req.params;
-			const user = await User.findById(id);
-			if (!user || user.status == "inactive") {
-				res
-					.status(400)
-					.json({ message: "Người dùng không tồn tại hoặc đã bị xóa" });
-			}
-			user.status = "inactive";
-			await user.save();
-			res.status(200).json({ message: "Xóa git  dùng thành công" });
-		} catch (error) {
-			res.status(404).json({ message: error.message });
-		}
+            const user= await User.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: true },
+                { new: true }
+            );
+
+            if(!user) {
+                return res.status(404).json({ message: "user not found" });
+            }
+            res.status(200).json({
+                message: "Delete user Successfully",
+                data: user,
+            });
+        } catch (error) {
+            res.status(400).json({
+                message: error.message,
+              });
+        }
 	}
 	// Khôi phục tài khoản
 	async restoreUser(req, res) {
 		try {
-			const { id } = req.params;
-			const user = await User.findById(id);
-			if (!user || user.status == "active") {
-				res.status(400).json({ message: "Người dùng đang hoạt động" });
-			}
-			user.status = "active";
-			await user.save();
-			res.status(200).json({ message: "Khôi phục người dùng thành công" });
-		} catch (error) {
-			res.status(404).json({ message: error.message });
-		}
+            const user= await User.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: false },
+                { new: true }
+            );
+
+            if(!user) {
+                return res.status(404).json({ message: "user not found" });
+            }
+            res.status(200).json({
+                message: "Restore user Successfully",
+                data: user,
+            });
+        } catch (error) {
+            res.status(400).json({
+                message: error.message,
+              });
+        }
 	}
 
 	// cấp quyền quản lí cho nhân viên 
