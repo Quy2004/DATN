@@ -3,42 +3,31 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 const UserSchema = new Schema(
   {
-    name: {
-      type: String,
-      require: true,
-    },
     email: {
       type: String,
-      require: true,
+      required: true,
       unique: true,
     },
-    phone: {
-      type: Number,
-      require: true,
-      unique: true,
-    },
-    avatar: {
+    avatars: {
       type: [Object],
-      default: "avatar",
-      
+      default: "be/image/avt.jpg"
     },
-    username:{
+    userName:{
         type: String,
-        require: true,
+        required: true,
     },
     password: {
-        type: String,
-        require: true,
+      type: String,
+      required: true,
     },
-    status:{
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
+    isDeleted:{
+        type: Boolean,
+        default: false,
 
     },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "manager", "admin"],
         default: "user",
     }
   },
