@@ -99,12 +99,6 @@ const ProductManagerPage: React.FC = () => {
   });
   const columns = [
     {
-      title: "STT",
-      key: "key",
-      render: (text: string, record: any, index: number) => index + 1, // STT bắt đầu từ 1
-    },
-
-    {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
@@ -176,26 +170,34 @@ const ProductManagerPage: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
-      render: (_: any, product: Product) => (
+      render: (_: string, product: Product) => (
         <Space size="middle">
-          {/* Xóa mềm */}
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
             onConfirm={() => mutationSoftDelete.mutate(product._id)} // Xác nhận xóa mềm
             okText="Có"
             cancelText="Không"
           >
-            <Button type="primary">Xóa mềm</Button>
+            <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
+              Xóa mềm
+            </Button>
           </Popconfirm>
-          {/* Xóa cứng */}
+
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
             onConfirm={() => mutationHardDelete.mutate(product._id)} // Xác nhận xóa cứng
             okText="Có"
             cancelText="Không"
           >
-            <Button danger>Xóa cứng</Button>
+            <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+              Xóa cứng
+            </Button>
           </Popconfirm>
+          <Link to={`/admin/product/${product._id}/update`}>
+            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+              Cập nhật
+            </Button>
+          </Link>
         </Space>
       ),
     },

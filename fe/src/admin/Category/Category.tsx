@@ -15,12 +15,13 @@ import { PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
+import { Category } from "../../types/category";
 
 const { Title } = Typography;
 
 const { Option } = Select;
 
-export const Category = () => {
+export const CategoryManagerPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("active");
@@ -150,7 +151,7 @@ export const Category = () => {
     {
       title: "Hành động",
       dataIndex: "action",
-      render: (_: any, category: any) => (
+      render: (_: string, category: Category) => (
         <div className="flex flex-wrap gap-4">
           {category.isDeleted ? (
             // Hiển thị nút khôi phục nếu danh mục đã bị xóa mềm
@@ -200,7 +201,7 @@ export const Category = () => {
     },
   ];
 
-  const dataSource = data?.data?.map((item: any, index: number) => ({
+  const dataSource = data?.data?.map((item: Category, index: number) => ({
     key: index + 1,
     title: item.title,
     parentTitle: item.parent_id?.title || "Không có",
@@ -273,4 +274,4 @@ export const Category = () => {
   );
 };
 
-export default Category;
+export default CategoryManagerPage;
