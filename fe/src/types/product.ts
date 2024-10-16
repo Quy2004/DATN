@@ -26,13 +26,13 @@ export interface Topping {
 }
 // Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)
 export interface ProductSize {
-    size_id: string;
+    size_id: Size;
     price: number;
     stock: number;
 }
 // Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
 export interface ProductTopping {
-    topping_id: string;
+    topping_id: Topping;
     stock: number;
 }
 // Interface tổng hợp cho Product
@@ -44,4 +44,12 @@ export interface ProductFormValues {
     stock: number;
     discount: number;
     status: "available" | "unavailable";
+}
+export interface UploadFile {
+    uid: string;
+    name: string;
+    status?: string;
+    url?: string;
+    thumbUrl?: string;
+
 }
