@@ -18,7 +18,7 @@ const SizeAddPage = () => {
   // Mutation để thêm size
   const { mutate} = useMutation({
     mutationFn: async (size: FieldType) => {
-      return await instance.post(`/size`, size);
+      return await instance.post(`/sizes`, size);
     },
     onSuccess: () => {
       messageApi.success("Thêm size thành công");
