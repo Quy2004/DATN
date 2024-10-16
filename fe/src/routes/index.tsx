@@ -28,7 +28,7 @@ import CategoryManagerPage from "../admin/Category/Category";
 import ProductAddPage from "../admin/ProductAdmin/add/page";
 import ProductEditPage from "../admin/ProductAdmin/edit/page";
 
-import Size from "../admin/Size/Size";
+import SizeManagerPage from "../admin/Size/Size";
 import SizeAddPage from "../admin/Size/add/page";
 import SizeUpdatePage from "../admin/Size/edit/page";
 import Voucher from "../admin/Voucher/Voucher";
@@ -62,7 +62,7 @@ const Router = () => {
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
 
-          <Route path="size" element={<Size />} />
+          <Route path="size" element={<SizeManagerPage />} />
           <Route path="size/add" element={<SizeAddPage />} />
           <Route path="size/:id/update" element={<SizeUpdatePage />} />
 
