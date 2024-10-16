@@ -1,46 +1,33 @@
 import mongoose from "mongoose";
+
 const Schema = mongoose.Schema;
 const UserSchema = new Schema(
   {
-    name: {
-      type: String,
-      require: true,
-    },
     email: {
       type: String,
-      require: true,
+      required: true,
       unique: true,
     },
-    phone: {
-      type: Number,
-      require: true,
-      unique: true,
-    },
-    avata: {
+    avatars: {
       type: [Object],
-      require: true,
+      default: "be/image/avt.jpg"
     },
     userName:{
         type: String,
-        require: true,
+        required: true,
     },
     password: {
-        type: String,
-        require: true,
+      type: String,
+      required: true,
     },
-    address: {
-        type: String,
-        require: true,
-    },
-    status:{
-        type: String,
-        enum: ["active", "inactive"],
-        default: "active",
+    isDeleted:{
+        type: Boolean,
+        default: false,
 
     },
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "manager", "admin"],
         default: "user",
     }
   },
@@ -50,5 +37,5 @@ const UserSchema = new Schema(
   }
 );
 
-const User = mongoose.model("users", UserSchema);
+const User = mongoose.models.users || mongoose.model("users", UserSchema);
 export default User;
