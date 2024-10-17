@@ -14,6 +14,7 @@ export interface ProductTopping {
     topping_id: Topping;
     stock: number;
 }
+
 // Định nghĩa Product (sản phẩm)
 export interface Product {
     _id: string;

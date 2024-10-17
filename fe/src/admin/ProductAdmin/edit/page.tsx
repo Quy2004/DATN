@@ -22,11 +22,11 @@ import {
   ProductFormValues,
   ProductSize,
   ProductTopping,
-  Size,
-  Topping,
 } from "../../../types/product";
 import { Category } from "../../../types/category";
 import ReactQuill from "react-quill";
+import { Size } from "../../../types/size";
+import { Topping } from "../../../types/topping";
 
 const { Option } = Select;
 

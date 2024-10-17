@@ -59,7 +59,7 @@ const VoucherUpdatePage = () => {
   
 
   // Mutation để cập nhật voucher
-  const { mutate, isLoading: isMutating } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (voucher: FieldType) => {
       return await instance.put(`/vouchers/${id}`, voucher); // Gửi yêu cầu cập nhật voucher
     },
@@ -220,7 +220,6 @@ const VoucherUpdatePage = () => {
 						<Button
 							type="primary"
 							htmlType="submit"
-              loading={isMutating}
 						>
 							Thêm voucher
 						</Button>

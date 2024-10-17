@@ -14,12 +14,13 @@ class ProductController {
         isDeleted,
       } = req.query;
 
-      const query = {};
+      // Tạo query để tìm kiếm, lọc theo các tiêu chí
+      let query = {
+        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
+        name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
+      };
 
-      if (search) {
-        query.name = { $regex: search, $options: "i" };
-      }
-
+      // Lọc theo danh mục
       if (category) {
         query.category_id = category;
       }

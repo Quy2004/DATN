@@ -10,14 +10,14 @@ import {
   ProductFormValues,
   ProductSize,
   ProductTopping,
-  Size,
-  Topping,
 } from "../../../types/product";
 import { Category } from "../../../types/category";
 import Upload, { RcFile } from "antd/es/upload";
 import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import CSS cho React Quill
+import { Size } from "../../../types/size";
+import { Topping } from "../../../types/topping";
 const { Option } = Select;
 
 const ProductAddPage: React.FC = () => {
