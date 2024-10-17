@@ -44,6 +44,7 @@ export interface ProductFormValues {
     category_id: string;
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
+    description: string;
     stock: number;
     discount: number;
     status: "available" | "unavailable";
@@ -56,3 +57,4 @@ export interface UploadFile {
     thumbUrl?: string;
 
 }
+
