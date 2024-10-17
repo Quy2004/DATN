@@ -1,21 +1,7 @@
 
 import { Category } from "./category";
-
-export interface Size {
-    _id: string;
-    name: string;
-    priceSize?: number;
-    isDeleted: boolean;
-    category_id: Category[];
-}
-
-// Định nghĩa Topping
-export interface Topping {
-    _id: string;
-    nameTopping: string;
-    priceTopping?: number;
-    statusTopping: string;
-}
+import { Size } from "./size";
+import { Topping } from "./topping";
 
 // Định nghĩa ProductSize (kích thước của sản phẩm cụ thể)
 export interface ProductSize {
@@ -28,7 +14,6 @@ export interface ProductTopping {
     topping_id: Topping;
     stock: number;
 }
-
 // Định nghĩa Product (sản phẩm)
 export interface Product {
     _id: string;

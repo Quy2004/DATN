@@ -44,7 +44,7 @@ const AdminLayout = () => {
       setDateTime(currentTime);
     }, 1000);
 
-    return () => clearInterval(interval); 
+    return () => clearInterval(interval);
   }, []);
 
   const [activeTab, setActiveTab] = useState("Tất cả");
