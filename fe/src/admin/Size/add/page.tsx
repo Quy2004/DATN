@@ -4,13 +4,10 @@ import { Button, Form, FormProps, Input, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
+import { Size } from "../../../types/product";
 
-type FieldType = {
-  name?: string;
-  priceSize: number;
-  category_id?: string;
-};
 
+const { Option } = Select; // Nhập Option từ Select
 const SizeAddPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -18,7 +15,7 @@ const SizeAddPage = () => {
 
   // Mutation để thêm size
   const { mutate } = useMutation({
-    mutationFn: async (size: FieldType) => {
+    mutationFn: async (size: Size) => {
       return await instance.post(`/sizes`, size);
     },
     onSuccess: () => {
@@ -45,7 +42,7 @@ const SizeAddPage = () => {
   });
 
   // Xử lý khi submit form
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
+  const onFinish: FormProps<Size>["onFinish"] = (values) => {
     console.log("Success:", values);
     mutate(values);
   };
@@ -71,7 +68,7 @@ const SizeAddPage = () => {
           onFinish={onFinish}
           autoComplete="off"
         >
-          <Form.Item<FieldType>
+          <Form.Item<Size>
             label="Tên size"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
@@ -97,7 +94,7 @@ const SizeAddPage = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item<FieldType>
+          <Form.Item<Size>
             label="Giá"
             name="priceSize"
             rules={[{ required: true, message: "Vui lòng nhập giá size!" }]}
