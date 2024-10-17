@@ -11,32 +11,40 @@ class ProductController {
         status,
         size,
         topping,
+        isDeleted,
       } = req.query;
 
-      // Tạo query để tìm kiếm, lọc theo các tiêu chí
-      let query = {
-        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
-        name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
-      };
+      // Initialize query as an empty object
+      const query = {};
 
-      // Lọc theo danh mục
+      // Add search filter
+      if (search) {
+        query.name = { $regex: search, $options: "i" };
+      }
+
+      // Filter by category
       if (category) {
         query.category_id = category;
       }
 
-      // Lọc theo trạng thái sản phẩm
+      // Filter by product status
       if (status) {
         query.status = status;
       }
 
-      // Lọc theo size
+      // Filter by size
       if (size) {
         query["product_sizes.size_id"] = size;
       }
 
-      // Lọc theo topping
+      // Filter by topping
       if (topping) {
         query["product_toppings.topping_id"] = topping;
+      }
+
+      // Filter by isDeleted (soft deletion)
+      if (isDeleted !== undefined) {
+        query.isDeleted = isDeleted === "true"; // Convert to boolean
       }
 
       const options = {
@@ -61,6 +69,7 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async getProductDetail(req, res) {
     try {
       const product = await Product.findById(req.params.id)

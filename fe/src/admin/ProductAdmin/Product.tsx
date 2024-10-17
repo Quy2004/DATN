@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Space,
@@ -14,67 +14,44 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
-
-type Category = {
-  _id: string;
-  title: string;
-  parent_id: string | null;
-};
-
-type Size = {
-  _id: string;
-  name: string;
-  priceSize?: number;
-};
-type ProductSize = {
-  size_id: {
-    name: string;
-  };
-  status: string;
-};
-type Topping = {
-  _id: string;
-  nameTopping: string;
-  priceTopping?: number;
-  statusTopping: string;
-};
-
-
-type Product = {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  thumbnail: Array<string>;
-  category_id: Array<Category>;
-  product_sizes: Array<{
-    size_id: Size;
-    status: string;
-  }>;
-  product_toppings: Array<{
-    topping_id: Topping;
-  }>;
-  description: string;
-  stock: number;
-  status: string;
-};
+import { Product, ProductSize } from "../../types/product";
+import { Category } from "../../types/category";
+import Search from "antd/es/input/Search";
 
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Trạng thái lưu sản phẩm được chọn
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchValue = params.get("search") || "";
+    setSearchTerm(searchValue);
+  }, [location.search]);
+
+  // Cập nhật URL khi searchTerm thay đổi
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (searchTerm) {
+      params.set("search", searchTerm);
+    }
+    navigate({ search: params.toString() }, { replace: true });
+  }, [searchTerm, navigate]);
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", searchTerm],
     queryFn: async () => {
-      const response = await instance.get("products");
+      const response = await instance.get(`products?search=${searchTerm}`);
       return response.data.data;
     },
   });
@@ -124,6 +101,10 @@ const ProductManagerPage: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedProduct(null); // Reset sản phẩm khi đóng Modal
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
   };
 
   // Cột trong bảng
@@ -243,6 +224,15 @@ const ProductManagerPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Quản lý sản phẩm</Title>
+        <div className="flex space-x-3">
+          <Search
+            placeholder="Tìm kiếm sản phẩm"
+            onSearch={handleSearch}
+            allowClear
+            style={{ width: 300 }}
+          />
+        </div>
+
         <Button type="primary" icon={<PlusCircleFilled />}>
           <Link to="/admin/product/add" style={{ color: "white" }}>
             Thêm sản phẩm

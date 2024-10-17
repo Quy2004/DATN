@@ -1,19 +1,6 @@
+
 import { Category } from "./category";
-export interface Product {
-    _id: string;
-    name: string;
-    price: number
-    category_id: Category[];
-    image: string;
-    thumbnail: string[];
-    product_sizes: ProductSize[];
-    product_toppings: ProductTopping[];
-    slug: string;
-    stock: number;
-    discount: number;
-    status: "available" | "unavailable";
-    isDeleted: boolean;
-}
+
 export interface Size {
     _id: string;
     name: string;
@@ -21,23 +8,45 @@ export interface Size {
     isDeleted: boolean;
     category_id: Category[];
 }
-// Interface cho topping sản phẩm
+
+// Định nghĩa Topping
 export interface Topping {
     _id: string;
     nameTopping: string;
     priceTopping?: number;
+    statusTopping: string;
 }
-// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)
+
+// Định nghĩa ProductSize (kích thước của sản phẩm cụ thể)
 export interface ProductSize {
     size_id: Size;
     status: "available" | "unavailable";
 }
-// Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
+
+// Định nghĩa ProductTopping (topping của sản phẩm cụ thể)
 export interface ProductTopping {
     topping_id: Topping;
     stock: number;
 }
-// Interface tổng hợp cho Product
+
+// Định nghĩa Product (sản phẩm)
+export interface Product {
+    _id: string;
+    name: string;
+    price: number;
+    image: string;
+    thumbnail: string[];
+    category_id: Category[];
+    product_sizes: ProductSize[];
+    product_toppings: ProductTopping[];
+    description: string;
+    stock: number;
+    discount: number;
+    status: "available" | "unavailable";
+    isDeleted: boolean;
+}
+
+// Định nghĩa ProductFormValues (cho form sản phẩm)
 export interface ProductFormValues {
     name: string;
     price: number;
@@ -49,12 +58,12 @@ export interface ProductFormValues {
     discount: number;
     status: "available" | "unavailable";
 }
+
+// Định nghĩa UploadFile (dùng cho upload hình ảnh)
 export interface UploadFile {
     uid: string;
     name: string;
     status?: string;
     url?: string;
     thumbUrl?: string;
-
 }
-
