@@ -38,3 +38,15 @@ h3{
 h3:hover {
     color: #ea8025 ;
 }
+
+button{
+    color: #ea8025 ;
+    -o-transition: .5s;
+    -ms-transition: .5s;
+    -moz-transition: .5s;
+    -webkit-transition: .5s;
+    transition: .5s;
+}
+button:hover {
+    color: #ea8025 ;
+}

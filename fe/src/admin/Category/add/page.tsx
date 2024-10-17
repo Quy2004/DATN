@@ -26,7 +26,7 @@ const CategoryAddPage = () => {
   });
 
   // Mutation để thêm danh mục
-  const { mutate, isLoading: isMutating } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (category: FieldType) => {
       return await instance.post(`/categories`, category);
     },
@@ -100,7 +100,7 @@ const CategoryAddPage = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" loading={isMutating}>
+            <Button type="primary" htmlType="submit">
               Thêm danh mục
             </Button>
           </Form.Item>

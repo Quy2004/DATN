@@ -8,6 +8,7 @@ toppingsRouter.get("/", toppingsController.getAllToppings);
 toppingsRouter.get("/:id", toppingsController.getToppingDetail);
 toppingsRouter.post("/", toppingsController.createTopping);
 toppingsRouter.put("/:id", toppingsController.updateTopping);
-toppingsRouter.delete("/:id", toppingsController.deleteTopping);
+toppingsRouter.patch("/:id/soft-delete", toppingsController.softDeleteTopping);
+toppingsRouter.delete("/:id/hard-delete", toppingsController.hardDeleteTopping);
 
 export default toppingsRouter;

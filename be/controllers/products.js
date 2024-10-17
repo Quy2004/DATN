@@ -11,6 +11,7 @@ class ProductController {
         status,
         size,
         topping,
+        isDeleted,
       } = req.query;
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
@@ -61,6 +62,7 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async getProductDetail(req, res) {
     try {
       const product = await Product.findById(req.params.id)

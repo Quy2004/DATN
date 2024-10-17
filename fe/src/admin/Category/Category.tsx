@@ -7,13 +7,14 @@ import {
   Button,
   message,
   Select,
+  TablePaginationConfig,
 } from "antd";
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
 import { Category } from "../../types/category";
 
@@ -26,25 +27,32 @@ export const CategoryManagerPage = () => {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("active");
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // State cho phân trang
-  const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
+
   // Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
-  const updateUrlParams = () => {
-    const searchParams = new URLSearchParams();
-    if (searchTerm) searchParams.set("search", searchTerm);
-    searchParams.set("filterStatus", filterStatus);
-    searchParams.set("page", currentPage.toString());
-    searchParams.set("limit", pageSize.toString());
-    navigate({ search: searchParams.toString() });
-  };
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams(location.search);
+    if (searchTerm) params.set("search", searchTerm);
+    params.set("filterStatus", filterStatus);
+    params.set("page", currentPage.toString());
+    params.set("limit", pageSize.toString());
+    navigate({ search: params.toString() });
+  }, [
+    filterStatus,
+    searchTerm,
+    currentPage,
+    pageSize,
+    location.search,
+    navigate,
+  ]); // Đảm bảo tất cả dependencies ở đây
 
   useEffect(() => {
     updateUrlParams();
-  }, [filterStatus, searchTerm, currentPage, pageSize]);
+  }, [filterStatus, searchTerm, currentPage, pageSize, updateUrlParams]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["categories", filterStatus, searchTerm, currentPage, pageSize],
@@ -126,9 +134,9 @@ export const CategoryManagerPage = () => {
     setCurrentPage(1);
   };
   // Xử lý thay đổi phân trang
-  const handleTableChange = (pagination: any) => {
-    setCurrentPage(pagination.current); // Cập nhật trang hiện tại
-    setPageSize(pagination.pageSize); // Cập nhật số lượng mỗi trang
+  const handleTableChange = (pagination: TablePaginationConfig) => {
+    setCurrentPage(pagination.current || 1);
+    setPageSize(pagination.pageSize || 10);
   };
 
   // Định nghĩa các cột cho bảng

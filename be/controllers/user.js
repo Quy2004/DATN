@@ -4,46 +4,63 @@ class UserController {
 	// Hiện thị toàn bộ danh sách người dùng
 	async getAllUsers(req, res) {
 		try {
-			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
-
+			const { isDeleted, all, search, allUser, role, page = 1, limit = 10 } = req.query;
+	
 			// Tạo điều kiện lọc
 			let query = {};
-
+	
 			if (all === "true") {
-				// Nếu `all=true`, lấy tất cả danh mục
+				// Nếu `all=true`, lấy tất cả người dùng
 				query = {};
 			} else if (isDeleted === "true") {
-				// Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
+				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
 				query.isDeleted = true;
 			} else {
-				// Mặc định lấy các danh mục chưa bị xóa mềm
+				// Mặc định lấy các người dùng chưa bị xóa mềm
 				query.isDeleted = false;
 			}
-
-			// search - điều kiện search theo name
+	
+			// Thêm điều kiện tìm kiếm theo tên người dùng
 			if (search) {
-				query.name = { $regex: search, $options: "i" };
-				// không phân biệt viết hoa hay viết thường
+				query.userName = { $regex: search, $options: "i" }; // không phân biệt viết hoa hay viết thường
 			}
-
+	
+			if (role === "allUser") {
+				// Nếu `all=true`, lấy tất cả người dùng
+				query = {};
+			} else if (role === "admin") {
+				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
+				query.role = "admin";
+			} else if (role === "manager") {
+				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
+				query.role = "manager";
+			} else{
+				query.role = "user";
+			}
+	
 			// số lượng trên mỗi trang
 			const pageLimit = parseInt(limit, 10) || 10;
 			const currentPage = parseInt(page, 10) || 1;
 			const skip = (currentPage - 1) * pageLimit;
-
+	
 			// thực hiện phân trang
-			const user = await User.find(query)
+			const users = await User.find(query)
 				.sort({ createdAt: -1 }) // sắp xếp theo ngày tạo giảm dần
 				.skip(skip)
 				.limit(pageLimit)
 				.exec();
+	
 
-			// Tổng số danh mục để tính tổng số trang
+				users.sort((a, b) => {
+					const roleOrder = { admin: 1, manager: 2, user: 3 }; // Admin trước, Manager sau, User cuối
+					return roleOrder[a.role] - roleOrder[b.role];
+				});	
+			// Tổng số người dùng để tính tổng số trang
 			const totalItems = await User.countDocuments(query);
-
+	
 			res.status(200).json({
-				message: "Get user Done",
-				data: user,
+				message: "Get users done",
+				data: users,
 				pagination: {
 					totalItems,
 					currentPage,
@@ -53,7 +70,8 @@ class UserController {
 		} catch (error) {
 			res.status(400).json({ message: error.message });
 		}
-	  }
+	}
+	
 	  
 	  
 	// Hiển thị chi tiết người dùng

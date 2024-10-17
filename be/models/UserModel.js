@@ -37,5 +37,17 @@ const UserSchema = new Schema(
   }
 );
 
+// Hook trước khi lưu một user
+UserSchema.pre('save', async function (next) {
+  const userCount = await this.constructor.countDocuments();
+
+  // Nếu chưa có user nào, gán role là 'admin'
+  if (userCount === 0) {
+      this.role = 'admin';
+  }
+
+  next();
+});
+
 const User = mongoose.models.users || mongoose.model("users", UserSchema);
 export default User;

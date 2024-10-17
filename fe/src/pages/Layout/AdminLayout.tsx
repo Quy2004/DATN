@@ -8,6 +8,10 @@ import {
   FaComments,
   FaUser,
   FaImage,
+  FaChartBar,
+  FaRulerCombined,
+  FaIceCream,
+  FaTags,
 } from "react-icons/fa"; // Import icons
 import { Button } from "antd";
 import { BackwardFilled } from "@ant-design/icons"; // Import icons
@@ -40,17 +44,18 @@ const AdminLayout = () => {
       setDateTime(currentTime);
     }, 1000);
 
-    return () => clearInterval(interval); // Cleanup on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   const [activeTab, setActiveTab] = useState("Tất cả");
 
   const tabs = [
-    { name: "Thống kê", link: "category", icon: <FaList /> },
+    { name: "Thống kê", link: "", icon: <FaChartBar /> },
     { name: "Quản lí danh mục", link: "category", icon: <FaList /> },
-    { name: "Quản lí size", link: "size", icon: <FaList /> },
+    { name: "Quản lí size", link: "size", icon: <FaRulerCombined /> },
+    { name: "Quản lí topping", link: "topping", icon: <FaIceCream /> },
     { name: "Quản lí sản phẩm", link: "product", icon: <FaBoxOpen /> },
-    { name: "Quản lí voucher", link: "voucher", icon: <FaBoxOpen /> },
+    { name: "Quản lí voucher", link: "voucher", icon: <FaTags /> },
     { name: "Quản lí đơn hàng", link: "order", icon: <FaShoppingCart /> },
     { name: "Quản lí bình luận", link: "comment", icon: <FaComments /> },
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
@@ -65,6 +70,8 @@ const AdminLayout = () => {
       return "Quản lý danh mục ";
     } else if (location.pathname.includes("size")) {
       return "Quản lý size ";
+    } else if (location.pathname.includes("topping")) {
+      return "Quản lý topping ";
     } else if (location.pathname.includes("voucher")) {
       return "Quản lý voucher";
     } else if (location.pathname.includes("order")) {
@@ -83,7 +90,7 @@ const AdminLayout = () => {
   return (
     <>
       <div className="flex w-full">
-        <aside className="sidebar p-[20px] w-[250px] h-[900px] bg-[#33418E]">
+        <aside className="sidebar p-[20px] w-[250px] h-vh bg-[#33418E]">
           <div className="logo mb-[50px] w-full *:mx-auto text-center">
             <img
               className="w-[90x] h-[90px] rounded-[50%]"
