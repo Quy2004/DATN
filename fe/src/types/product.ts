@@ -57,4 +57,3 @@ export interface UploadFile {
     thumbUrl?: string;
 
 }
-

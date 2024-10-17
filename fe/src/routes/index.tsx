@@ -34,6 +34,8 @@ import SizeUpdatePage from "../admin/Size/edit/page";
 import Voucher from "../admin/Voucher/Voucher";
 import VoucherAddPage from "../admin/Voucher/add/page";
 import VoucherUpdatePage from "../admin/Voucher/edit/page";
+import ToppingManagerPage from "../admin/Topping/Topping";
+import ToppingAddPage from "../admin/Topping/add/page";
 
 const Router = () => {
   return (
@@ -74,6 +76,8 @@ const Router = () => {
           <Route path="product/add" element={<ProductAddPage />} />
           <Route path="product/:id/update" element={<ProductEditPage />} />
 
+          <Route path="topping" element={<ToppingManagerPage />} />
+          <Route path="topping/add" element={<ToppingAddPage />} />
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
           <Route path="client" element={<ClientAdmin />} />

@@ -40,7 +40,7 @@ const ProductAddPage: React.FC = () => {
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
     queryKey: ["sizes"],
     queryFn: async () => {
-      const response = await instance.get(`/size`);
+      const response = await instance.get(`/sizes`);
       return response.data;
     },
   });
