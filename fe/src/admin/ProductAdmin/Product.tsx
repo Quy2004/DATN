@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
   Descriptions,
+  Select,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
@@ -24,8 +25,11 @@ const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Trạng thái lưu sản phẩm được chọn
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,29 +37,45 @@ const ProductManagerPage: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchValue = params.get("search") || "";
+    const categoryValue = params.get("category") || undefined;
     setSearchTerm(searchValue);
+    setSelectedCategory(categoryValue);
   }, [location.search]);
 
-  // Cập nhật URL khi searchTerm thay đổi
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (searchTerm) {
       params.set("search", searchTerm);
+    } else if (selectedCategory) {
+      params.set("category", selectedCategory);
     }
     navigate({ search: params.toString() }, { replace: true });
-  }, [searchTerm, navigate]);
+  }, [searchTerm, selectedCategory, navigate]);
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products", searchTerm],
+    queryKey: ["products", searchTerm, selectedCategory],
     queryFn: async () => {
-      const response = await instance.get(`products?search=${searchTerm}`);
+      const categoryParam =
+        selectedCategory && selectedCategory !== "allCategory"
+          ? `&category=${selectedCategory}`
+          : "";
+      const response = await instance.get(
+        `products?search=${searchTerm}${categoryParam}`
+      );
       return response.data.data;
     },
   });
-
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`/categories`);
+      return response.data;
+    },
+  });
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
   const mutationSoftDelete = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -198,7 +218,7 @@ const ProductManagerPage: React.FC = () => {
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingCategories) {
     return (
       <div style={{ textAlign: "center", padding: "50px 0" }}>
         <Spin tip="Đang tải dữ liệu..." size="large" />
@@ -230,6 +250,19 @@ const ProductManagerPage: React.FC = () => {
             onSearch={handleSearch}
             allowClear
             style={{ width: 300 }}
+          />
+          <Select
+            value={selectedCategory}
+            onChange={(value) => setSelectedCategory(value)}
+            style={{ width: 200 }}
+            placeholder="Chọn danh mục"
+            options={[
+              { label: "Tất cả danh mục", value: "allCategory" },
+              ...(categories?.data.map((category: Category) => ({
+                label: category.title,
+                value: category._id,
+              })) || []),
+            ]}
           />
         </div>
 

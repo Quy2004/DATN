@@ -14,20 +14,16 @@ class ProductController {
         isDeleted,
       } = req.query;
 
-      // Initialize query as an empty object
       const query = {};
 
-      // Add search filter
       if (search) {
         query.name = { $regex: search, $options: "i" };
       }
 
-      // Filter by category
       if (category) {
         query.category_id = category;
       }
 
-      // Filter by product status
       if (status) {
         query.status = status;
       }
