@@ -25,7 +25,7 @@ class UserController {
 				query.userName = { $regex: search, $options: "i" }; // không phân biệt viết hoa hay viết thường
 			}
 	
-			if (allUser === "all") {
+			if (role === "allUser") {
 				// Nếu `all=true`, lấy tất cả người dùng
 				query = {};
 			} else if (role === "admin") {
