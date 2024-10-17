@@ -279,7 +279,7 @@ const ProductManagerPage: React.FC = () => {
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
         title="Chi tiết sản phẩm"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
