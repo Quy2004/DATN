@@ -8,6 +8,7 @@ import { Category } from "../../../types/category";
 type FieldType = {
   name?: string;
   priceSize: number;
+  category_id?: string;
 };
 
 const SizeAddPage = () => {
