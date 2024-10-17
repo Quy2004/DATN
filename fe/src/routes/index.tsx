@@ -17,7 +17,7 @@ import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 
-import ProductManagerPage from "../admin/ProductAdmin/Product";
+
 import OrderAdmin from "../admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
@@ -37,6 +37,8 @@ import VoucherUpdatePage from "../admin/Voucher/edit/page";
 import ToppingManagerPage from "../admin/Topping/Topping";
 import ToppingAddPage from "../admin/Topping/add/page";
 import ToppingUpdatePage from "../admin/Topping/edit/page";
+import ProductManagerPage from "../admin/ProductAdmin/Product";
+
 
 const Router = () => {
   return (
