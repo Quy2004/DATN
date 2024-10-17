@@ -11,13 +11,19 @@ class ProductController {
         status,
         size,
         topping,
+        isDeleted,
       } = req.query;
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
       let query = {
-        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
         name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
       };
+
+      if (isDeleted === "true") {
+        query.isDeleted = true;
+      } else {
+        query.isDeleted = false;
+      }
 
       // Lọc theo danh mục
       if (category) {
@@ -61,6 +67,7 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
   async getProductDetail(req, res) {
     try {
       const product = await Product.findById(req.params.id)

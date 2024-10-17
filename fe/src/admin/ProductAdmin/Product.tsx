@@ -64,7 +64,7 @@ const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Trạng thái lưu sản phẩm được chọn
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const {
     data: products,
