@@ -14,33 +14,35 @@ class ProductController {
         isDeleted,
       } = req.query;
 
-      const query = {};
+      // Tạo query để tìm kiếm, lọc theo các tiêu chí
+      let query = {
+        name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
+      };
 
-      if (search) {
-        query.name = { $regex: search, $options: "i" };
+      if (isDeleted === "true") {
+        query.isDeleted = true;
+      } else {
+        query.isDeleted = false;
       }
 
+      // Lọc theo danh mục
       if (category) {
         query.category_id = category;
       }
 
+      // Lọc theo trạng thái sản phẩm
       if (status) {
         query.status = status;
       }
 
-      // Filter by size
+      // Lọc theo size
       if (size) {
         query["product_sizes.size_id"] = size;
       }
 
-      // Filter by topping
+      // Lọc theo topping
       if (topping) {
         query["product_toppings.topping_id"] = topping;
-      }
-
-      // Filter by isDeleted (soft deletion)
-      if (isDeleted !== undefined) {
-        query.isDeleted = isDeleted === "true"; // Convert to boolean
       }
 
       const options = {

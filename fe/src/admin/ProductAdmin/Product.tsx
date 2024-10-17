@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   Space,
@@ -10,72 +10,74 @@ import {
   Alert,
   Modal,
   Descriptions,
-  Select,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Title from "antd/es/typography/Title";
-import { Product, ProductSize } from "../../types/product";
-import { Category } from "../../types/category";
-import Search from "antd/es/input/Search";
+
+type Category = {
+  _id: string;
+  title: string;
+  parent_id: string | null;
+};
+
+type Size = {
+  _id: string;
+  name: string;
+  priceSize?: number;
+};
+type ProductSize = {
+  size_id: {
+    name: string;
+  };
+  status: string;
+};
+type Topping = {
+  _id: string;
+  nameTopping: string;
+  priceTopping?: number;
+  statusTopping: string;
+};
+
+
+type Product = {
+  _id: string;
+  name: string;
+  price: number;
+  image: string;
+  thumbnail: Array<string>;
+  category_id: Array<Category>;
+  product_sizes: Array<{
+    size_id: Size;
+    status: string;
+  }>;
+  product_toppings: Array<{
+    topping_id: Topping;
+  }>;
+  stock: number;
+  status: string;
+};
 
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const searchValue = params.get("search") || "";
-    const categoryValue = params.get("category") || undefined;
-    setSearchTerm(searchValue);
-    setSelectedCategory(categoryValue);
-  }, [location.search]);
-
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (searchTerm) {
-      params.set("search", searchTerm);
-    } else if (selectedCategory) {
-      params.set("category", selectedCategory);
-    }
-    navigate({ search: params.toString() }, { replace: true });
-  }, [searchTerm, selectedCategory, navigate]);
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products", searchTerm, selectedCategory],
+    queryKey: ["products"],
     queryFn: async () => {
-      const categoryParam =
-        selectedCategory && selectedCategory !== "allCategory"
-          ? `&category=${selectedCategory}`
-          : "";
-      const response = await instance.get(
-        `products?search=${searchTerm}${categoryParam}`
-      );
+      const response = await instance.get("products");
       return response.data.data;
     },
   });
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await instance.get(`/categories`);
-      return response.data;
-    },
-  });
+
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
   const mutationSoftDelete = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -121,10 +123,6 @@ const ProductManagerPage: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedProduct(null); // Reset sản phẩm khi đóng Modal
-  };
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
   };
 
   // Cột trong bảng
@@ -218,7 +216,7 @@ const ProductManagerPage: React.FC = () => {
     },
   ];
 
-  if (isLoading || isLoadingCategories) {
+  if (isLoading) {
     return (
       <div style={{ textAlign: "center", padding: "50px 0" }}>
         <Spin tip="Đang tải dữ liệu..." size="large" />
@@ -244,28 +242,6 @@ const ProductManagerPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Quản lý sản phẩm</Title>
-        <div className="flex space-x-3">
-          <Search
-            placeholder="Tìm kiếm sản phẩm"
-            onSearch={handleSearch}
-            allowClear
-            style={{ width: 300 }}
-          />
-          <Select
-            value={selectedCategory}
-            onChange={(value) => setSelectedCategory(value)}
-            style={{ width: 200 }}
-            placeholder="Chọn danh mục"
-            options={[
-              { label: "Tất cả danh mục", value: "allCategory" },
-              ...(categories?.data.map((category: Category) => ({
-                label: category.title,
-                value: category._id,
-              })) || []),
-            ]}
-          />
-        </div>
-
         <Button type="primary" icon={<PlusCircleFilled />}>
           <Link to="/admin/product/add" style={{ color: "white" }}>
             Thêm sản phẩm
@@ -279,7 +255,7 @@ const ProductManagerPage: React.FC = () => {
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
         title="Chi tiết sản phẩm"
-        open={isModalVisible}
+        visible={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
@@ -337,13 +313,6 @@ const ProductManagerPage: React.FC = () => {
                     .map((category: Category) => category.title)
                     .join(", ")}
                 </span>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả sản phẩm" span={2}>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: selectedProduct.description,
-                  }}
-                />
               </Descriptions.Item>
 
               {/* Kích thước sản phẩm */}
