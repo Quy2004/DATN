@@ -25,7 +25,7 @@ class UserController {
 				query.userName = { $regex: search, $options: "i" }; // không phân biệt viết hoa hay viết thường
 			}
 	
-			if (allUser === "all") {
+			if (role === "allUser") {
 				// Nếu `all=true`, lấy tất cả người dùng
 				query = {};
 			} else if (role === "admin") {
@@ -50,6 +50,11 @@ class UserController {
 				.limit(pageLimit)
 				.exec();
 	
+
+				users.sort((a, b) => {
+					const roleOrder = { admin: 1, manager: 2, user: 3 }; // Admin trước, Manager sau, User cuối
+					return roleOrder[a.role] - roleOrder[b.role];
+				});	
 			// Tổng số người dùng để tính tổng số trang
 			const totalItems = await User.countDocuments(query);
 	
