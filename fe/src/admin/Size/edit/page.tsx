@@ -20,7 +20,7 @@ const SizeUpdatePage = () => {
   const { data: sizeData, isLoading: isSizeLoading } = useQuery({
     queryKey: ["size", id],
     queryFn: async () => {
-      const response = await instance.get(`/size/${id}`); // Lấy thông tin size từ API
+      const response = await instance.get(`/sizes/${id}`); // Lấy thông tin size từ API
       return response.data.data;
     },
     enabled: !!id, // Chỉ chạy truy vấn nếu có id
@@ -38,7 +38,7 @@ const SizeUpdatePage = () => {
   // Mutation để cập nhật size
   const { mutate } = useMutation({
     mutationFn: async (size: FieldType) => {
-      return await instance.put(`/size/${id}`, size); // Gửi yêu cầu cập nhật size
+      return await instance.put(`/sizes/${id}`, size); // Gửi yêu cầu cập nhật size
     },
     onSuccess: () => {
       messageApi.success("Cập nhật size thành công");

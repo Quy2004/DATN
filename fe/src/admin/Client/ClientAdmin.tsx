@@ -50,7 +50,7 @@ const ClientAdmin = () => {
 		queryFn: async () => {
 			try {
 				const response = await instance.get(
-					`/user?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
+					`/users?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
 						filterStatus === "all" ? true : false
 					}&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`,
 				);
@@ -65,7 +65,7 @@ const ClientAdmin = () => {
 	const mutationSoftDeleteUser = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/user/${_id}/soft-delete`);
+				return await instance.patch(`/users/${_id}/soft-delete`);
 			} catch (error) {
 				throw new Error("Xóa mềm user thất bại");
 			}
@@ -83,7 +83,7 @@ const ClientAdmin = () => {
 	const mutationRestoreUser = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/user/${_id}/restore`);
+				return await instance.patch(`/users/${_id}/restore`);
 			} catch (error) {
 				throw new Error("Khôi phục user thất bại");
 			}
@@ -101,7 +101,7 @@ const ClientAdmin = () => {
 	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/user/${_id}/user`);
+				return await instance.patch(`/users/${_id}/user`);
 			} catch (error) {
 				throw new Error("Cập nhật vai trò user thất bại");
 			}
@@ -119,7 +119,7 @@ const ClientAdmin = () => {
 	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/user/${_id}/manager`);
+				return await instance.patch(`/users/${_id}/manager`);
 			} catch (error) {
 				throw new Error("Cập nhật vai trò manager thất bại");
 			}
