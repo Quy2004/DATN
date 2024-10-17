@@ -16,6 +16,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
 import { Size} from "../../types/product";
+import { Category } from "../../types/category";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -61,6 +62,7 @@ export const SizeManagerPage = () => {
     },
   });
 
+
   // Soft delete size
   const mutationSoftDeleteSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -77,7 +79,32 @@ export const SizeManagerPage = () => {
     onError: (error) => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
+    
   });
+
+  // Lấy danh sách danh mục từ API
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get("/categories"); // Gọi API lấy danh mục
+      return response.data;
+    },
+  });
+
+  // Tìm tên danh mục dựa trên category_id
+  const getCategoryName = (category_id: string): string => {
+    // Kiểm tra nếu categoriesData tồn tại và là mảng
+    if (!categoriesData || !Array.isArray(categoriesData.data) || categoriesData.data.length === 0) {
+        return "Không xác định";
+    }
+
+    // Tìm category theo category_id
+    const category = categoriesData.data.find((category: Category) => category._id === category_id);
+
+    // Trả về tên danh mục nếu tìm thấy, nếu không trả về "Không xác định"
+    return category ? category.title : "Không xác định"; // Sử dụng `title` thay vì `name`
+};
+
 
   // Hard delete size
   const mutationHardDeleteSize = useMutation<void, Error, string>({
@@ -148,6 +175,11 @@ export const SizeManagerPage = () => {
       key: "priceSize",
     },
     {
+      title: "Danh mục",
+      dataIndex: "category_id",
+      key: "category_id",
+    },
+    {
       title: "Hành động",
       dataIndex: "action",
       render: (_: string, size: Size) => (
@@ -203,6 +235,7 @@ export const SizeManagerPage = () => {
     key: index + 1,
     name: item.name,
     priceSize: item.priceSize,
+    category_id: getCategoryName(item.category_id),
     isDeleted: item.isDeleted,
   }));
 
