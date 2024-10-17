@@ -20,7 +20,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
 import Search from "antd/es/input/Search";
-import { Option } from "antd/es/mentions";
 
 type Category = {
   _id: string;
@@ -60,6 +59,7 @@ type Product = {
   product_toppings: Array<{
     topping_id: Topping;
   }>;
+  description: string;
   stock: number;
   status: string;
 };
@@ -74,6 +74,9 @@ const ProductManagerPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     undefined
   );
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
+    undefined
+  );
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,32 +85,42 @@ const ProductManagerPage: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const searchValue = params.get("search") || "";
     const categoryValue = params.get("category") || undefined;
+    const statusValue = params.get("status") || undefined;
+
     setSearchTerm(searchValue);
     setSelectedCategory(categoryValue);
+    setSelectedStatus(statusValue);
   }, [location.search]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+
     if (searchTerm) {
       params.set("search", searchTerm);
-    } else if (selectedCategory) {
+    } else if (selectedCategory && selectedCategory !== "allCategory") {
       params.set("category", selectedCategory);
+    } else if (selectedStatus && selectedStatus !== "allStatus") {
+      params.set("status", selectedStatus);
     }
+
     navigate({ search: params.toString() }, { replace: true });
-  }, [searchTerm, selectedCategory, navigate]);
+  }, [searchTerm, selectedCategory, selectedStatus, location.search, navigate]);
+
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products", searchTerm, selectedCategory],
+    queryKey: ["products", searchTerm, selectedCategory, selectedStatus],
     queryFn: async () => {
       const categoryParam =
         selectedCategory && selectedCategory !== "allCategory"
           ? `&category=${selectedCategory}`
           : "";
+      const statusParam = selectedStatus ? `&status=${selectedStatus}` : "";
+
       const response = await instance.get(
-        `products?search=${searchTerm}${categoryParam}`
+        `products?search=${searchTerm}${categoryParam}${statusParam}`
       );
       return response.data.data;
     },
@@ -121,13 +134,9 @@ const ProductManagerPage: React.FC = () => {
     },
   });
   const handleSearch = (value: string) => {
-    setSearchTerm(value); // Cập nhật từ khóa tìm kiếm
+    setSearchTerm(value);
   };
 
-  // Xử lý khi chọn danh mục
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value); // Cập nhật danh mục được chọn
-  };
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
   const mutationSoftDelete = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -267,7 +276,7 @@ const ProductManagerPage: React.FC = () => {
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingCategories) {
     return (
       <div style={{ textAlign: "center", padding: "50px 0" }}>
         <Spin tip="Đang tải dữ liệu..." size="large" />
@@ -311,6 +320,16 @@ const ProductManagerPage: React.FC = () => {
                 label: category.title,
                 value: category._id,
               })) || []),
+            ]}
+          />
+          <Select
+            value={selectedStatus}
+            onChange={(value) => setSelectedStatus(value)}
+            style={{ width: 150 }}
+            placeholder="Chọn trạng thái"
+            options={[
+              { label: "Có sẵn", value: "available" },
+              { label: "Hết hàng", value: "unavailable" },
             ]}
           />
         </div>
@@ -387,7 +406,13 @@ const ProductManagerPage: React.FC = () => {
                     .join(", ")}
                 </span>
               </Descriptions.Item>
-
+              <Descriptions.Item label="Mô tả sản phẩm" span={2}>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: selectedProduct.description,
+                  }}
+                />
+              </Descriptions.Item>
               {/* Kích thước sản phẩm */}
               <Descriptions.Item label="Kích thước và trạng thái" span={2}>
                 <span className="text-gray-700">

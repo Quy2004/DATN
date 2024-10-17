@@ -24,7 +24,10 @@ class ProductController {
       if (category) {
         query.category_id = category;
       }
-
+      // Lọc theo trạng thái xóa mềm
+      if (isDeleted !== undefined) {
+        query.isDeleted = isDeleted === "true"; // Kiểm tra nếu isDeleted là chuỗi 'true'
+      }
       // Lọc theo trạng thái sản phẩm
       if (status) {
         query.status = status;
