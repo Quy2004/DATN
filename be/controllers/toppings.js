@@ -77,7 +77,30 @@ class ToppingController {
   // Tạo mới một topping
   async createTopping(req, res) {
     try {
-      const topping = await Topping.create(req.body);
+      // Kiểm tra xem topping đã tồn tại hay chưa
+      const existingTopping = await Topping.findOne({
+        nameTopping: req.body.nameTopping,
+        isDeleted: false,
+      });
+
+      if (existingTopping) {
+        return res.status(400).json({ message: "Tên topping đã tồn tại!" });
+      }
+
+      // Kiểm tra nếu priceTopping là số hợp lệ và lớn hơn 0
+      const { priceTopping, statusTopping } = req.body;
+
+      if (!priceTopping || isNaN(priceTopping) || priceTopping <= 0) {
+        return res.status(400).json({ message: "Giá topping không hợp lệ!" });
+      }
+
+      // Tạo mới topping
+      const topping = await Topping.create({
+        nameTopping: req.body.nameTopping,
+        priceTopping,
+        statusTopping,
+      });
+
       res
         .status(201)
         .json({ message: "Tạo topping thành công!!!", data: topping });
