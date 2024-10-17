@@ -83,7 +83,7 @@ const AdminLayout = () => {
   return (
     <>
       <div className="flex w-full">
-        <aside className="sidebar p-[20px] w-[250px] h-[900px] bg-[#33418E]">
+        <aside className="sidebar p-[20px] w-[250px] h-vh bg-[#33418E]">
           <div className="logo mb-[50px] w-full *:mx-auto text-center">
             <img
               className="w-[90x] h-[90px] rounded-[50%]"
