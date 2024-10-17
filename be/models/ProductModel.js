@@ -8,7 +8,7 @@ const ProductSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, "Tên sản phẩm là bắt buộc"],
+      required: [true, "Tên sản phẩm không được bỏ trống"],
       trim: true,
     },
     category_id: [
@@ -18,13 +18,18 @@ const ProductSchema = new Schema(
         required: true,
       },
     ],
+    price: {
+      type: Number,
+      required: true,
+    },
     discount: {
       type: Number,
       default: 0,
-      min: [0, "Giảm giá phải là một số dương"],
+      min: [0, "Giảm giá phải là số dương"],
     },
     image: {
       type: String,
+      required: [true, "Hình ảnh chính là bắt buộc"],
     },
     thumbnail: {
       type: [String],
@@ -37,15 +42,17 @@ const ProductSchema = new Schema(
     product_sizes: [
       {
         size_id: { type: mongoose.Schema.Types.ObjectId, ref: "Size" },
-        price: { type: Number, required: true },
-        stock: { type: Number, required: true },
+        status: {
+          type: String,
+          enum: ["available", "unavailable"],
+          default: "available",
+        },
       },
     ],
 
     product_toppings: [
       {
         topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
-        stock: { type: Number, required: true },
       },
     ],
     stock: {
@@ -73,6 +80,7 @@ const ProductSchema = new Schema(
   }
 );
 
+// Sử dụng slugify để tạo slug từ tên sản phẩm
 ProductSchema.pre("save", function (next) {
   if (this.isModified("name") && !this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
@@ -80,6 +88,7 @@ ProductSchema.pre("save", function (next) {
   next();
 });
 
+// Thêm plugin paginate
 ProductSchema.plugin(mongoosePaginate);
 
 const Product = mongoose.model("Product", ProductSchema);
