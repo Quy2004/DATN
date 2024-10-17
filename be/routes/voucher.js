@@ -8,6 +8,8 @@ voucherRouter.get("/", voucherController.getAllVouchers);
 voucherRouter.get("/:id", voucherController.getVouchersByID);
 voucherRouter.post("/", voucherController.createVoucher);
 voucherRouter.put("/:id", voucherController.updateVoucher);
-voucherRouter.patch("/:id", voucherController.deleteVoucher);
+voucherRouter.delete("/:id", voucherController.deleteVoucher);
+voucherRouter.patch("/:id/soft-delete", voucherController.deleteSoftVoucher);
+voucherRouter.patch("/:id/restore", voucherController.restoreVoucher);
 
 export default voucherRouter;

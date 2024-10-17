@@ -17,9 +17,10 @@ router.get("/", (req, res) => {
 router.use("/categories", categoriesRouter);
 router.use("/products", productsRouter);
 router.use("/toppings", toppingsRouter);
-router.use("/user", userRouter);
-router.use("/voucher", voucherRouter);
+router.use("/users", userRouter);
+router.use("/vouchers", voucherRouter);
 router.use("/auth", authRouter); 
-router.use("/size", sizeRouter); 
+router.use("/sizes", sizeRouter); 
 router.use("/address", addressRouter); 
+
 export default router;

@@ -16,16 +16,24 @@ import Signin from "../account/signin/signin";
 import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
-import { Category } from "../admin/Category/Category";
-import ProductManagerPage, { ProductAdmin } from "../admin/ProductAdmin/Product";
+
+import ProductManagerPage from "../admin/ProductAdmin/Product";
 import OrderAdmin from "../admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
 import CategoryAddPage from "../admin/Category/add/page";
 import CategoryUpdatePage from "../admin/Category/edit/page";
-import Size from "../admin/Size/Size";
+
+import CategoryManagerPage from "../admin/Category/Category";
+import ProductAddPage from "../admin/ProductAdmin/add/page";
+import ProductEditPage from "../admin/ProductAdmin/edit/page";
+
+import SizeManagerPage from "../admin/Size/Size";
 import SizeAddPage from "../admin/Size/add/page";
 import SizeUpdatePage from "../admin/Size/edit/page";
+import Voucher from "../admin/Voucher/Voucher";
+import VoucherAddPage from "../admin/Voucher/add/page";
+import VoucherUpdatePage from "../admin/Voucher/edit/page";
 
 const Router = () => {
   return (
@@ -50,15 +58,22 @@ const Router = () => {
           <Route path="forgot" element={<Forgot />} />
         </Route>
         <Route path="admin" element={<AdminLayout />}>
-          <Route path="category" element={<Category />} />
+          <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
-          
-          <Route path="size" element={<Size />} />
+
+          <Route path="size" element={<SizeManagerPage />} />
           <Route path="size/add" element={<SizeAddPage />} />
           <Route path="size/:id/update" element={<SizeUpdatePage />} />
 
+          <Route path="voucher" element={<Voucher />} />
+          <Route path="voucher/add" element={<VoucherAddPage />} />
+          <Route path="voucher/:id/update" element={<VoucherUpdatePage />} />
+
           <Route path="product" element={<ProductManagerPage />} />
+          <Route path="product/add" element={<ProductAddPage />} />
+          <Route path="product/:id/update" element={<ProductEditPage />} />
+
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
           <Route path="client" element={<ClientAdmin />} />

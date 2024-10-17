@@ -17,28 +17,26 @@ import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
 
 const { Title } = Typography;
+
 const { Option } = Select;
 
-const ClientAdmin = () => {
+const Voucher = () => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const queryClient = useQueryClient();
 	const [filterStatus, setFilterStatus] = useState("active");
 	const [searchTerm, setSearchTerm] = useState("");
-
-	const [filterRole, setFilterRole] = useState("allUser"); // lọc role
 	const [currentPage, setCurrentPage] = useState(1); // State cho phân trang
 	const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
 
 	const navigate = useNavigate();
 	const location = useLocation();
-
 	const params = new URLSearchParams(location.search);
 	// Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
+
 	const updateUrlParams = () => {
 		const searchParams = new URLSearchParams();
 		if (searchTerm) searchParams.set("search", searchTerm);
 		searchParams.set("filterStatus", filterStatus);
-		searchParams.set("filterRole", filterRole); // Thêm điều kiện vai trò
 		searchParams.set("page", currentPage.toString());
 		searchParams.set("limit", pageSize.toString());
 		navigate({ search: searchParams.toString() });
@@ -46,23 +44,18 @@ const ClientAdmin = () => {
 
 	useEffect(() => {
 		updateUrlParams();
-	}, [filterStatus, filterRole, searchTerm, currentPage, pageSize]);
+	}, [filterStatus, searchTerm, currentPage, pageSize]);
 
 	const { data, isLoading, isError, error } = useQuery({
-		queryKey: [
-			"user",
-			filterStatus,
-			filterRole,
-			searchTerm,
-			currentPage,
-			pageSize,
-		], // Cập nhật key
+		queryKey: ["vouchers", filterStatus, searchTerm, currentPage, pageSize],
 		queryFn: async () => {
 			try {
 				const response = await instance.get(
-					`/users?isDeleted=${filterStatus === "deleted"}&all=${
-						filterStatus === "all"
-					}&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}`, // Thêm điều kiện vai trò
+					`/vouchers?isDeleted=${
+						filterStatus === "deleted" ? true : false
+					}&all=${
+						filterStatus === "all" ? true : false
+					}&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`,
 				);
 				return response.data;
 			} catch (error) {
@@ -71,99 +64,65 @@ const ClientAdmin = () => {
 		},
 	});
 
-	// Soft delete user
-	const mutationSoftDeleteUser = useMutation<void, Error, string>({
+	// xóa mềm voucher
+	const mutationSoftDeleteVoucher = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/users/${_id}/soft-delete`);
+				return await instance.patch(`/vouchers/${_id}/soft-delete`);
 			} catch (error) {
-				throw new Error("Xóa mềm user thất bại");
+				throw new Error("Xóa mềm voucher thất bại");
 			}
 		},
 		onSuccess: () => {
-			messageApi.success("Xóa mềm user thành công");
-			queryClient.invalidateQueries({ queryKey: ["user"] });
+			messageApi.success("Xóa mềm voucher thành công");
+			queryClient.invalidateQueries({ queryKey: ["vouchers"] });
 		},
 		onError: error => {
 			messageApi.error(`Lỗi: ${error.message}`);
 		},
 	});
 
-	// Restore user
-	const mutationRestoreUser = useMutation<void, Error, string>({
+	// xóa cứng voucher
+	const mutationHardDeleteVoucher = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/users/${_id}/restore`);
+				return await instance.delete(`/vouchers/${_id}`);
 			} catch (error) {
-				throw new Error("Khôi phục user thất bại");
+				throw new Error("Xóa cứng voucher thất bại");
 			}
 		},
 		onSuccess: () => {
-			messageApi.success("Khôi phục user thành công");
-			queryClient.invalidateQueries({ queryKey: ["user"] });
+			messageApi.success("Xóa cứng voucher thành công");
+			queryClient.invalidateQueries({ queryKey: ["vouchers"] });
 		},
 		onError: error => {
 			messageApi.error(`Lỗi: ${error.message}`);
 		},
 	});
 
-	// Update user role (user API)
-	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
-		mutationFn: async ({ _id }) => {
+	// khôi phục voucher
+	const mutationRestoreVoucher = useMutation<void, Error, string>({
+		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/users/${_id}/user`);
+				return await instance.patch(`/vouchers/${_id}/restore`);
 			} catch (error) {
-				throw new Error("Cập nhật vai trò user thất bại");
+				throw new Error("Khôi phục voucher thất bại");
 			}
 		},
 		onSuccess: () => {
-			messageApi.success("Cập nhật vai trò user thành công");
-			queryClient.invalidateQueries({ queryKey: ["user"] });
+			messageApi.success("Khôi phục voucher thành công");
+			queryClient.invalidateQueries({ queryKey: ["vouchers"] });
 		},
 		onError: error => {
 			messageApi.error(`Lỗi: ${error.message}`);
 		},
 	});
-
-	// Update manager role (manager API)
-	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
-		mutationFn: async ({ _id }) => {
-			try {
-				return await instance.patch(`/users/${_id}/manager`);
-			} catch (error) {
-				throw new Error("Cập nhật vai trò manager thất bại");
-			}
-		},
-		onSuccess: () => {
-			messageApi.success("Cập nhật vai trò manager thành công");
-			queryClient.invalidateQueries({ queryKey: ["user"] });
-		},
-		onError: error => {
-			messageApi.error(`Lỗi: ${error.message}`);
-		},
-	});
-
-	// Xử lý thay đổi vai trò
-	const handleRoleChange = (_id: string, newRole: string) => {
-		if (newRole === "user") {
-			mutationUpdateUserRole.mutate({ _id });
-		} else if (newRole === "manager") {
-			mutationUpdateManagerRole.mutate({ _id });
-		} else {
-			messageApi.error("Vai trò không hợp lệ");
-		}
-	};
 
 	// Xử lý thay đổi trạng thái bộ lọc
 	const handleFilterChange = (value: string) => {
 		setFilterStatus(value);
 		setCurrentPage(1);
 	};
-	const handleRoleFilterChange = (value: string) => {
-		setFilterRole(value);
-		setCurrentPage(1);
-	};
-
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
 		setCurrentPage(1);
@@ -173,6 +132,8 @@ const ClientAdmin = () => {
 		setCurrentPage(pagination.current); // Cập nhật trang hiện tại
 		setPageSize(pagination.pageSize); // Cập nhật số lượng mỗi trang
 	};
+
+	// Đinh nghĩa table
 	const columns = [
 		{
 			title: "STT",
@@ -181,87 +142,102 @@ const ClientAdmin = () => {
 		},
 		{
 			title: "Tên",
-			dataIndex: "userName",
-			key: "userName",
+			dataIndex: "name",
+			key: "name",
 		},
 		{
-			title: "Email",
-			dataIndex: "email",
-			key: "email",
+			title: "Mã voucher",
+			dataIndex: "code",
+			key: "code",
 		},
 		{
-			title: "Hình ảnh",
-			dataIndex: "avatar",
-			key: "avatar",
-			render: (avatar: string) => (
-				<img
-					src={avatar}
-					alt="Avatar"
-					style={{ width: 50, height: 50, borderRadius: "50%" }}
-				/>
-			),
+			title: "Phần trăm giảm giá",
+			dataIndex: "discountPercentage",
+			key: "discountPercentage",
 		},
-
 		{
-			title: "Vai trò",
-			dataIndex: "role",
-			key: "role",
-			render: (role: string, user: any) => (
-				<Select
-					value={role}
-					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
-					style={{ width: 150 }}
-				>
-					<Option value="admin">Admin</Option>
-					<Option value="user">User</Option>
-					<Option value="manager">Manager</Option>
-				</Select>
-			),
+			title: "Giảm giá tối đa",
+			dataIndex: "maxDiscount",
+			key: "maxDiscount",
 		},
-
+		{
+			title: "Số lượng",
+			dataIndex: "quantity",
+			key: "quantity",
+		},
+		{
+			title: "Ngày bắt đầu",
+			dataIndex: "minOrderDate",
+			key: "minOrderDate",
+		},
+		{
+			title: "Ngày kết thúc",
+			dataIndex: "maxOrderDate",
+			key: "maxOrderDate",
+		},
 		{
 			title: "Hành động",
 			dataIndex: "action",
-			render: (_: any, user: any) => (
+			render: (_: any, voucher: any) => (
 				<div className="flex flex-wrap gap-4">
-					{user.isDeleted ? (
+					{voucher.isDeleted ? (
+						// Hiển thị nút khôi phục nếu voucher đã bị xóa mềm
 						<Popconfirm
-							title="Khôi phục user"
-							description="Bạn có chắc muốn mở khóa tài khoản này không?"
-							onConfirm={() => mutationRestoreUser.mutate(user._id)}
+							title="Khôi phục voucher"
+							description="Bạn có chắc muốn khôi phục voucher này không?"
+							onConfirm={() => mutationRestoreVoucher.mutate(voucher._id)}
 							okText="Yes"
 							cancelText="No"
 						>
 							<Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-								Mở khóa
+								Khôi phục
 							</Button>
 						</Popconfirm>
 					) : (
+						// Hiển thị nút xóa mềm nếu voucher chưa bị xóa mềm
 						<Popconfirm
-							title="Khóa user"
-							description="Bạn có chắc muốn khóa tài khoản này không?"
-							onConfirm={() => mutationSoftDeleteUser.mutate(user._id)}
+							title="Xóa mềm voucher"
+							description="Bạn có chắc muốn xóa mềm voucher này không?"
+							onConfirm={() => mutationSoftDeleteVoucher.mutate(voucher._id)}
 							okText="Yes"
 							cancelText="No"
 						>
 							<Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-								Khóa tài khoản
+								Xóa mềm
 							</Button>
 						</Popconfirm>
 					)}
+
+					<Popconfirm
+						title="Xóa cứng voucher"
+						description="Bạn có chắc muốn xóa cứng voucher này không?"
+						onConfirm={() => mutationHardDeleteVoucher.mutate(voucher._id)}
+						okText="Yes"
+						cancelText="No"
+					>
+						<Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
+							Xóa cứng
+						</Button>
+					</Popconfirm>
+					<Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+						<Link to={`/admin/voucher/${voucher._id}/update`}>Cập nhật</Link>
+					</Button>
 				</div>
 			),
 		},
 	];
 
 	const dataSource = data?.data?.map((item: any, index: number) => ({
-		_id: item._id,
 		key: index + 1,
-		userName: item.userName,
-		email: item.email,
-		avatar: item.avatar,
-		role: item.role,
+		name: item.name,
+		code: item.code,
+		discountPercentage: item.discountPercentage,
+		maxDiscount: item.maxDiscount,
+		quantity: item.quantity,
+		minOrderDate: item.minOrderDate,
+		maxOrderDate: item.maxOrderDate,
 		isDeleted: item.isDeleted,
+        _id: item._id
 	}));
 
 	if (isLoading) {
@@ -292,11 +268,11 @@ const ClientAdmin = () => {
 		<>
 			{contextHolder}
 			<div className="flex items-center justify-between mb-5">
-				<Title level={3}>Danh sách user</Title>
+				<Title level={3}>Danh sách voucher</Title>
 
 				<div className="flex space-x-3">
 					<Search
-						placeholder="Tìm kiếm user"
+						placeholder="Tìm kiếm voucher"
 						onSearch={handleSearch}
 						allowClear
 						style={{ width: 300 }}
@@ -306,20 +282,21 @@ const ClientAdmin = () => {
 						style={{ width: 200 }}
 						onChange={handleFilterChange}
 					>
-						<Option value="all">Tất cả user</Option>
-						<Option value="active">User hoạt động</Option>
-						<Option value="deleted">User đã bị khóa</Option>
+						<Option value="all">Tất cả voucher</Option>
+						<Option value="active">voucher hoạt động</Option>
+						<Option value="deleted">voucher đã xóa mềm</Option>
 					</Select>
-					<Select
-						value={filterRole}
-						style={{ width: 200 }}
-						onChange={handleRoleFilterChange} // Gọi hàm thay đổi vai trò
+					<Button
+						type="primary"
+						icon={<PlusCircleFilled />}
 					>
-						<Option value="allUser">Tất cả vai trò</Option>
-						<Option value="admin">Quản lý</Option>
-						<Option value="manager">Nhân viên</Option>
-						<Option value="user">Người dùng</Option>
-					</Select>
+						<Link
+							to="/admin/voucher/add"
+							style={{ color: "white" }}
+						>
+							Thêm voucher
+						</Link>
+					</Button>
 				</div>
 			</div>
 			<Table
@@ -337,4 +314,5 @@ const ClientAdmin = () => {
 		</>
 	);
 };
-export default ClientAdmin;
+
+export default Voucher;
