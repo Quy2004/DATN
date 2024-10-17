@@ -13,17 +13,9 @@ import dayjs from "dayjs";
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
+import { Voucher } from "../../../types/voucher";
 
-type FieldType = {
-	name: string;
-	code?: string;
-	description?: string;
-	discountPercentage: number;
-	maxDiscount: number;
-	quantity: number;
-	minOrderDate: Date;
-	maxOrderDate: Date;
-};
+
 
 const VoucherUpdatePage = () => {
 	const { id } = useParams(); // Lấy id voucher từ URL
@@ -60,7 +52,7 @@ const VoucherUpdatePage = () => {
 
   // Mutation để cập nhật voucher
   const { mutate } = useMutation({
-    mutationFn: async (voucher: FieldType) => {
+    mutationFn: async (voucher: Voucher) => {
       return await instance.put(`/vouchers/${id}`, voucher); // Gửi yêu cầu cập nhật voucher
     },
     onSuccess: () => {
@@ -78,7 +70,7 @@ const VoucherUpdatePage = () => {
 
 
 	// Xử lý khi submit form
-	const onFinish = (values: FieldType) => {
+	const onFinish = (values: Voucher) => {
 		mutate(values); // Gọi mutation để cập nhật voucher
 	};
 
@@ -116,7 +108,7 @@ const VoucherUpdatePage = () => {
           autoComplete="off"
         >
 					{/* Tên voucher */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Tên voucher"
 						name="name"
 						rules={[{ required: true, message: "Vui lòng nhập tên voucher!" }]}
@@ -125,7 +117,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Mã voucher */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Mã voucher"
 						name="code"
 					>
@@ -133,7 +125,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Mô tả */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Mô tả"
 						name="description"
 					>
@@ -141,7 +133,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Phần trăm giảm giá */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Phần trăm giảm giá"
 						name="discountPercentage"
 						rules={[
@@ -157,7 +149,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Giảm giá tối đa */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Giảm giá tối đa"
 						name="maxDiscount"
 						rules={[
@@ -172,7 +164,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Số lượng */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Số lượng"
 						name="quantity"
 						rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
@@ -184,7 +176,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Ngày bắt đầu */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Ngày bắt đầu"
 						name="minOrderDate"
 						rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu!" }]}
@@ -199,7 +191,7 @@ const VoucherUpdatePage = () => {
 					</Form.Item>
 
 					{/* Ngày kết thúc */}
-					<Form.Item<FieldType>
+					<Form.Item<Voucher>
 						label="Ngày kết thúc"
 						name="maxOrderDate"
 						rules={[
