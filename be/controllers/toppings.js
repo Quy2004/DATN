@@ -112,12 +112,26 @@ class ToppingController {
   // Cập nhật thông tin topping
   async updateTopping(req, res) {
     try {
+      // Kiểm tra xem tên topping mới đã tồn tại cho một topping khác chưa (loại trừ topping hiện tại)
+      const existingTopping = await Topping.findOne({
+        nameTopping: req.body.nameTopping,
+        isDeleted: false,
+        _id: { $ne: req.params.id }, // Loại trừ topping hiện tại khỏi kiểm tra trùng lặp
+      });
+
+      if (existingTopping) {
+        return res.status(400).json({ message: "Tên topping đã tồn tại!" });
+      }
+
+      // Cập nhật topping
       const topping = await Topping.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
       });
-      if (!topping) {
+
+      if (!topping || topping.isDeleted) {
         return res.status(404).json({ message: "Không tìm thấy topping" });
       }
+
       res
         .status(200)
         .json({ message: "Cập nhật topping thành công!!!", data: topping });
