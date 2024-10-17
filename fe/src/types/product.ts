@@ -19,7 +19,7 @@ export interface Size {
     name: string;
     priceSize?: number;
     isDeleted: boolean;
-    category_id: Category[];
+    category_id: string;
 }
 // Interface cho topping sản phẩm
 export interface Topping {
