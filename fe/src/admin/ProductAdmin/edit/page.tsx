@@ -26,6 +26,7 @@ import {
   Topping,
 } from "../../../types/product";
 import { Category } from "../../../types/category";
+import ReactQuill from "react-quill";
 
 const { Option } = Select;
 
@@ -103,6 +104,7 @@ const ProductEditPage: React.FC = () => {
         category_id: products.category_id[0]?._id,
         stock: products.stock,
         discount: products.discount,
+        description: products.description,
         status: products.status,
         product_sizes: products.product_sizes.map((size: ProductSize) => ({
           size_id: size.size_id._id,
@@ -404,6 +406,14 @@ const ProductEditPage: React.FC = () => {
               )}
             </Form.List>
           </div>
+          <Form.Item
+            label="Mô tả sản phẩm"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            className="mt-5"
+          >
+            <ReactQuill theme="snow" placeholder="Nhập mô tả sản phẩm" />
+          </Form.Item>
 
           {/* Tồn kho */}
           <Form.Item

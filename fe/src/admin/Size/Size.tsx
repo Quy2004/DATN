@@ -15,7 +15,7 @@ import { PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
-import { Size } from "../../types/product";
+import { Size} from "../../types/product";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -50,7 +50,7 @@ export const SizeManagerPage = () => {
     queryFn: async () => {
       try {
         const response = await instance.get(
-          `/size?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
+          `/sizes?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
             filterStatus === "all" ? true : false
           }&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`
         );
@@ -61,11 +61,12 @@ export const SizeManagerPage = () => {
     },
   });
 
+
   // Soft delete size
   const mutationSoftDeleteSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.patch(`/size/${_id}/soft-delete`);
+        return await instance.patch(`/sizes/${_id}/soft-delete`);
       } catch (error) {
         throw new Error("Xóa mềm size thất bại");
       }
@@ -77,13 +78,38 @@ export const SizeManagerPage = () => {
     onError: (error) => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
+    
   });
+
+  // Lấy danh sách danh mục từ API
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get("/categories"); // Gọi API lấy danh mục
+      return response.data;
+    },
+  });
+
+  // Tìm tên danh mục dựa trên category_id
+  const getCategoryName = (category_id: string): string => {
+    // Kiểm tra nếu categoriesData tồn tại và là mảng
+    if (!categoriesData || !Array.isArray(categoriesData.data) || categoriesData.data.length === 0) {
+        return "Không xác định";
+    }
+
+    // Tìm category theo category_id
+    const category = categoriesData.data.find((category: Category) => category._id === category_id);
+
+    // Trả về tên danh mục nếu tìm thấy, nếu không trả về "Không xác định"
+    return category ? category.title : "Không xác định"; // Sử dụng `title` thay vì `name`
+};
+
 
   // Hard delete size
   const mutationHardDeleteSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.delete(`/size/${_id}`);
+        return await instance.delete(`/sizes/${_id}`);
       } catch (error) {
         throw new Error("Xóa cứng size thất bại");
       }
@@ -101,7 +127,7 @@ export const SizeManagerPage = () => {
   const mutationRestoreSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.patch(`/size/${_id}/restore`);
+        return await instance.patch(`/sizes/${_id}/restore`);
       } catch (error) {
         throw new Error("Khôi phục size thất bại");
       }
@@ -146,6 +172,11 @@ export const SizeManagerPage = () => {
       title: "Giá size",
       dataIndex: "priceSize",
       key: "priceSize",
+    },
+    {
+      title: "Danh mục",
+      dataIndex: "category_id",
+      key: "category_id",
     },
     {
       title: "Hành động",
@@ -203,6 +234,7 @@ export const SizeManagerPage = () => {
     key: index + 1,
     name: item.name,
     priceSize: item.priceSize,
+    category_id: getCategoryName(item.category_id),
     isDeleted: item.isDeleted,
   }));
 

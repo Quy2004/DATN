@@ -1,12 +1,14 @@
 import { BackwardFilled } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Form, FormProps, Input, message } from "antd";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Form, FormProps, Input, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
+import { Category } from "../../../types/category";
 
 type FieldType = {
   name?: string;
   priceSize: number;
+  category_id?: string;
 };
 
 const SizeAddPage = () => {
@@ -17,7 +19,7 @@ const SizeAddPage = () => {
   // Mutation để thêm size
   const { mutate } = useMutation({
     mutationFn: async (size: FieldType) => {
-      return await instance.post(`/size`, size);
+      return await instance.post(`/sizes`, size);
     },
     onSuccess: () => {
       messageApi.success("Thêm size thành công");
@@ -30,6 +32,15 @@ const SizeAddPage = () => {
     },
     onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
+    },
+  });
+
+  // kết nối đền bảng category
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`/categories`);
+      return response.data;
     },
   });
 
@@ -66,6 +77,24 @@ const SizeAddPage = () => {
             rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
           >
             <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Danh mục"
+            name="category_id"
+            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+          >
+            <Select
+              placeholder="Chọn danh mục"
+              loading={isLoadingCategories}
+              disabled={isLoadingCategories}
+            >
+              {categories?.data?.map((category: Category) => (
+                <Option key={category._id} value={category._id}>
+                  {category.title}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item<FieldType>

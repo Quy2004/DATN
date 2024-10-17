@@ -22,7 +22,7 @@ class UserController {
 
 			// search - điều kiện search theo name
 			if (search) {
-				query.name = { $regex: search, $options: "i" };
+				query.userName = { $regex: search, $options: "i" };
 				// không phân biệt viết hoa hay viết thường
 			}
 

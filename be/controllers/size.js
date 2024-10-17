@@ -77,9 +77,9 @@ class SizeController {
   async createSize(req, res) {
     try {
       // Thêm giá trị mặc định cho priceSize nếu nó không có trong request body
-      const { name, priceSize = null } = req.body;
+      const { name, priceSize = null, category_id } = req.body;
 
-      const size = await Size.create({ name, priceSize });
+      const size = await Size.create({ name, priceSize, category_id });
 
       res.status(201).json({
         message: "Create Size Successfully",

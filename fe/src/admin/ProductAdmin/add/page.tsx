@@ -16,13 +16,15 @@ import {
 import { Category } from "../../../types/category";
 import Upload, { RcFile } from "antd/es/upload";
 import axios from "axios";
-
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css"; // Import CSS cho React Quill
 const { Option } = Select;
 
 const ProductAddPage: React.FC = () => {
   const [, contextHolder] = message.useMessage();
   const [image, setImage] = useState<string>("");
   const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [description, setDescription] = useState<string>("");
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -80,6 +82,7 @@ const ProductAddPage: React.FC = () => {
 
     const productData = {
       ...values,
+
       category_id: values.category_id,
       image: image,
       thumbnail: thumbnails,
@@ -93,12 +96,12 @@ const ProductAddPage: React.FC = () => {
           topping_id: topping.topping_id,
         })
       ),
+      description: values.description,
       stock: values.stock,
       discount: values.discount,
       status: values.status,
     };
-    // Thêm log ở đây để kiểm tra dữ liệu
-    console.log("Product Data: ", productData);
+
     try {
       await instance.post("/products", productData);
       message.success("Thêm sản phẩm thành công!");
@@ -129,7 +132,7 @@ const ProductAddPage: React.FC = () => {
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Thêm mới sản phẩm</Title>
         <Button type="primary" icon={<DoubleLeftOutlined />}>
-          <Link to="/admin/product/" style={{ color: "white" }}>
+          <Link to="/admin/product" style={{ color: "white" }}>
             Quay lại
           </Link>
         </Button>
@@ -328,6 +331,19 @@ const ProductAddPage: React.FC = () => {
               )}
             </Form.List>
           </div>
+          <Form.Item
+            label="Mô tả sản phẩm"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            className="mt-5"
+          >
+            <ReactQuill
+              theme="snow"
+              value={description}
+              onChange={setDescription}
+              placeholder="Nhập mô tả sản phẩm"
+            />
+          </Form.Item>
 
           <Form.Item
             className="mt-5"
