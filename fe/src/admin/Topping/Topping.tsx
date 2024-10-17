@@ -5,6 +5,8 @@ import { Alert, Button, message, Popconfirm, Spin, Table, Tag } from "antd";
 
 import Title from "antd/es/typography/Title";
 import { Topping } from "../../types/topping";
+import { PlusCircleFilled } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const ToppingManagerPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -101,7 +103,6 @@ const ToppingManagerPage = () => {
       dataIndex: "action",
       render: (_: string, topping: Topping) => (
         <div className="flex flex-wrap gap-4">
-          {" "}
           <Popconfirm
             title="Xóa mềm topping"
             description="Bạn có chắc muốn xóa mềm topping này không?"
@@ -168,6 +169,11 @@ const ToppingManagerPage = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách Topping</Title>
+        <Button type="primary" icon={<PlusCircleFilled />}>
+          <Link to="/admin/topping/add" style={{ color: "white" }}>
+            Thêm topping
+          </Link>
+        </Button>
       </div>
       <Table columns={columns} dataSource={dataSource} rowKey="_id" />
     </>
