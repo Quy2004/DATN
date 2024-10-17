@@ -16,7 +16,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
 import { Size} from "../../types/product";
-import { Category } from "../../types/category";
 
 const { Title } = Typography;
 const { Option } = Select;
