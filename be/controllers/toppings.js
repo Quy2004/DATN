@@ -141,17 +141,34 @@ class ToppingController {
   }
 
   // Xóa topping
-  async deleteTopping(req, res) {
+  // Xóa mềm topping
+  async softDeleteTopping(req, res) {
+    try {
+      const topping = await Topping.findByIdAndUpdate(req.params.id, {
+        isDeleted: true,
+      });
+      if (!topping || topping.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy topping" });
+      }
+      res.status(200).json({ message: "Xóa mềm topping thành công!!!" });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  // Xóa cứng topping (thực sự xóa khỏi cơ sở dữ liệu)
+  async hardDeleteTopping(req, res) {
     try {
       const topping = await Topping.findByIdAndDelete(req.params.id);
       if (!topping) {
         return res.status(404).json({ message: "Không tìm thấy topping" });
       }
-      res.status(200).json({ message: "Xóa topping thành công!!!" });
+      res.status(200).json({ message: "Xóa cứng topping thành công!!!" });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
 }
+
 
 export default ToppingController;
