@@ -16,14 +16,9 @@ class ProductController {
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
       let query = {
+        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
         name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
       };
-
-      if (isDeleted === "true") {
-        query.isDeleted = true;
-      } else {
-        query.isDeleted = false;
-      }
 
       // Lọc theo danh mục
       if (category) {

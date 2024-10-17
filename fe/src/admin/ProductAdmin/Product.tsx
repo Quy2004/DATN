@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Space,
@@ -14,7 +14,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
 type Category = {
@@ -66,6 +66,33 @@ const ProductManagerPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchValue = params.get("search") || "";
+    const categoryValue = params.get("category") || undefined;
+    setSearchTerm(searchValue);
+    setSelectedCategory(categoryValue);
+  }, [location.search]);
+
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (searchTerm) {
+      params.set("search", searchTerm);
+    } else if (selectedCategory) {
+      params.set("category", selectedCategory);
+    }
+    navigate({ search: params.toString() }, { replace: true });
+  }, [searchTerm, selectedCategory, navigate]);
   const {
     data: products,
     isLoading,

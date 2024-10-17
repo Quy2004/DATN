@@ -1,4 +1,18 @@
 import { Category } from "./category";
+
+
+// Định nghĩa ProductSize (kích thước của sản phẩm cụ thể)
+export interface ProductSize {
+    size_id: Size;
+    status: "available" | "unavailable";
+}
+
+// Định nghĩa ProductTopping (topping của sản phẩm cụ thể)
+export interface ProductTopping {
+    topping_id: Topping;
+    stock: number;
+}
+// Định nghĩa Product (sản phẩm)
 export interface Product {
     _id: string;
     name: string;
@@ -14,6 +28,10 @@ export interface Product {
     status: "available" | "unavailable";
     isDeleted: boolean;
 }
+
+
+// Định nghĩa ProductFormValues (cho form sản phẩm)
+
 export interface Size {
     _id: string;
     name: string;
@@ -38,6 +56,7 @@ export interface ProductTopping {
     stock: number;
 }
 // Interface tổng hợp cho Product
+
 export interface ProductFormValues {
     name: string;
     price: number;
