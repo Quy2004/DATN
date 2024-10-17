@@ -50,7 +50,7 @@ export const SizeManagerPage = () => {
     queryFn: async () => {
       try {
         const response = await instance.get(
-          `/size?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
+          `/sizes?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
             filterStatus === "all" ? true : false
           }&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`
         );
@@ -65,7 +65,7 @@ export const SizeManagerPage = () => {
   const mutationSoftDeleteSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.patch(`/size/${_id}/soft-delete`);
+        return await instance.patch(`/sizes/${_id}/soft-delete`);
       } catch (error) {
         throw new Error("Xóa mềm size thất bại");
       }
@@ -83,7 +83,7 @@ export const SizeManagerPage = () => {
   const mutationHardDeleteSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.delete(`/size/${_id}`);
+        return await instance.delete(`/sizes/${_id}`);
       } catch (error) {
         throw new Error("Xóa cứng size thất bại");
       }
@@ -101,7 +101,7 @@ export const SizeManagerPage = () => {
   const mutationRestoreSize = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
       try {
-        return await instance.patch(`/size/${_id}/restore`);
+        return await instance.patch(`/sizes/${_id}/restore`);
       } catch (error) {
         throw new Error("Khôi phục size thất bại");
       }
