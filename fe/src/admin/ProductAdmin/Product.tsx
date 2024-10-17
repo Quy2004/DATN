@@ -56,6 +56,7 @@ type Product = {
   product_toppings: Array<{
     topping_id: Topping;
   }>;
+  description: string;
   stock: number;
   status: string;
 };
@@ -313,6 +314,13 @@ const ProductManagerPage: React.FC = () => {
                     .map((category: Category) => category.title)
                     .join(", ")}
                 </span>
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả sản phẩm" span={2}>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: selectedProduct.description,
+                  }}
+                />
               </Descriptions.Item>
 
               {/* Kích thước sản phẩm */}
