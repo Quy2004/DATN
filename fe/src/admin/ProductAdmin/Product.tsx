@@ -10,12 +10,17 @@ import {
   Alert,
   Modal,
   Descriptions,
+  Select,
+  Tag,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
+
+import Search from "antd/es/input/Search";
+import { Option } from "antd/es/mentions";
 
 type Category = {
   _id: string;
@@ -40,7 +45,6 @@ type Topping = {
   priceTopping?: number;
   statusTopping: string;
 };
-
 
 type Product = {
   _id: string;
@@ -74,7 +78,6 @@ const ProductManagerPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const searchValue = params.get("search") || "";
@@ -82,7 +85,6 @@ const ProductManagerPage: React.FC = () => {
     setSearchTerm(searchValue);
     setSelectedCategory(categoryValue);
   }, [location.search]);
-
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -98,13 +100,34 @@ const ProductManagerPage: React.FC = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", searchTerm, selectedCategory],
     queryFn: async () => {
-      const response = await instance.get("products");
+      const categoryParam =
+        selectedCategory && selectedCategory !== "allCategory"
+          ? `&category=${selectedCategory}`
+          : "";
+      const response = await instance.get(
+        `products?search=${searchTerm}${categoryParam}`
+      );
       return response.data.data;
     },
   });
 
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`/categories`);
+      return response.data;
+    },
+  });
+  const handleSearch = (value: string) => {
+    setSearchTerm(value); // Cập nhật từ khóa tìm kiếm
+  };
+
+  // Xử lý khi chọn danh mục
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value); // Cập nhật danh mục được chọn
+  };
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
   const mutationSoftDelete = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -158,7 +181,16 @@ const ProductManagerPage: React.FC = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      render: (text: string, product: Product) => (
+        <span
+          onClick={() => showModal(product)}
+          className="text-gray-950 cursor-pointer hover:text-blue-700"
+        >
+          {text}
+        </span>
+      ),
     },
+
     {
       title: "Ảnh sản phẩm",
       dataIndex: "image",
@@ -189,13 +221,13 @@ const ProductManagerPage: React.FC = () => {
       },
     },
     {
-      title: "Trạng thái",
+      title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <span style={{ color: status === "available" ? "green" : "red" }}>
+        <Tag color={status === "available" ? "green" : "red"}>
           {status === "available" ? "Có sẵn" : "Hết hàng"}
-        </span>
+        </Tag>
       ),
     },
     {
@@ -203,14 +235,6 @@ const ProductManagerPage: React.FC = () => {
       key: "action",
       render: (_: string, product: Product) => (
         <Space size="middle">
-          {/* Nút để hiển thị chi tiết sản phẩm */}
-          <Button
-            onClick={() => showModal(product)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
-          >
-            Xem chi tiết
-          </Button>
-
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
             onConfirm={() => mutationSoftDelete.mutate(product._id)}
@@ -269,6 +293,28 @@ const ProductManagerPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Quản lý sản phẩm</Title>
+        <div className="flex space-x-3">
+          <Search
+            placeholder="Tìm kiếm sản phẩm"
+            onSearch={handleSearch}
+            allowClear
+            style={{ width: 200 }}
+          />
+          <Select
+            value={selectedCategory}
+            onChange={(value) => setSelectedCategory(value)}
+            style={{ width: 150 }}
+            placeholder="Chọn danh mục"
+            options={[
+              { label: "Tất cả", value: "allCategory" },
+              ...(categories?.data.map((category: Category) => ({
+                label: category.title,
+                value: category._id,
+              })) || []),
+            ]}
+          />
+        </div>
+
         <Button type="primary" icon={<PlusCircleFilled />}>
           <Link to="/admin/product/add" style={{ color: "white" }}>
             Thêm sản phẩm
@@ -282,7 +328,7 @@ const ProductManagerPage: React.FC = () => {
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
         title="Chi tiết sản phẩm"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
