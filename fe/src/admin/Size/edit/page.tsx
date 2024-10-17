@@ -28,12 +28,15 @@ const SizeUpdatePage = () => {
 
   useEffect(() => {
     if (sizeData) {
-      form.setFieldsValue({ name: sizeData.name }); // Gán giá trị name vào form
+      form.setFieldsValue({
+        name: sizeData.name,
+        priceSize: sizeData.priceSize,
+      }); // Gán giá trị name vào form
     }
   }, [sizeData, form]);
 
   // Mutation để cập nhật size
-  const { mutate, isLoading: isMutating } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (size: FieldType) => {
       return await instance.put(`/sizes/${id}`, size); // Gửi yêu cầu cập nhật size
     },
@@ -45,7 +48,7 @@ const SizeUpdatePage = () => {
         navigate("/admin/size");
       }, 2000);
     },
-    onError(error: any) {
+    onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
@@ -92,9 +95,16 @@ const SizeUpdatePage = () => {
           >
             <Input />
           </Form.Item>
+          <Form.Item
+            label="Giá size"
+            name="priceSize"
+            rules={[{ required: true, message: "Vui lòng nhập giá size!" }]}
+          >
+            <Input />
+          </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" loading={isMutating}>
+            <Button type="primary" htmlType="submit">
               Cập nhật size
             </Button>
           </Form.Item>

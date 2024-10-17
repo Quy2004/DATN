@@ -6,6 +6,7 @@ import instance from "../../../services/api";
 
 type FieldType = {
   name?: string;
+  priceSize: number;
 };
 
 const SizeAddPage = () => {
@@ -13,10 +14,8 @@ const SizeAddPage = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-
-
   // Mutation để thêm size
-  const { mutate} = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (size: FieldType) => {
       return await instance.post(`/sizes`, size);
     },
@@ -29,7 +28,7 @@ const SizeAddPage = () => {
         navigate("/admin/size");
       }, 2000);
     },
-    onError(error: any) {
+    onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
@@ -39,8 +38,6 @@ const SizeAddPage = () => {
     console.log("Success:", values);
     mutate(values);
   };
-
-
 
   return (
     <>
@@ -71,7 +68,13 @@ const SizeAddPage = () => {
             <Input />
           </Form.Item>
 
-          
+          <Form.Item<FieldType>
+            label="Giá"
+            name="priceSize"
+            rules={[{ required: true, message: "Vui lòng nhập giá size!" }]}
+          >
+            <Input />
+          </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
