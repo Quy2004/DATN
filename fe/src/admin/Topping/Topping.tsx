@@ -22,6 +22,7 @@ const ToppingManagerPage = () => {
       return response.data;
     },
   });
+  
   // Xóa mềm topping
   const mutationSoftDeleteTopping = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -125,6 +126,9 @@ const ToppingManagerPage = () => {
               Xóa cứng
             </Button>
           </Popconfirm>
+          <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+            <Link to={`/admin/topping/${topping._id}/update`}>Cập nhật</Link>
+          </Button>
         </div>
       ),
     },

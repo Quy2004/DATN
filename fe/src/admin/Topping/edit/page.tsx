@@ -1,7 +1,8 @@
 import { BackwardFilled } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
-import { Button, Form, FormProps, Input, message, Select } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Form, Input, InputNumber, message, Select, Spin } from "antd";
+import { useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
 
 type FieldType = {
@@ -10,21 +11,40 @@ type FieldType = {
   statusTopping: string;
 };
 
-const ToppingAddPage = () => {
-  const [messageApi, contextHolder] = message.useMessage();
+const ToppingUpdatePage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
+  const queryClient = useQueryClient();
 
-  // Mutation để thêm topping
+  // Truy vấn để lấy dữ liệu Topping hiện tại
+  const { data: toppingData, isLoading: isToppingLoading } = useQuery({
+    queryKey: ["toppings", id],
+    queryFn: async () => {
+      const response = await instance.get(`/toppings/${id}`);
+      return response.data.data;
+    },
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    if (toppingData) {
+      form.setFieldsValue({
+        nameTopping: toppingData.nameTopping,
+        priceTopping: toppingData.priceTopping,
+        statusTopping: toppingData.statusTopping,
+      });
+    }
+  }, [toppingData, form]);
+
   const { mutate } = useMutation({
     mutationFn: async (topping: FieldType) => {
-      return await instance.post(`/toppings`, topping);
+      return await instance.put(`/toppings/${id}`, topping);
     },
     onSuccess: () => {
-      messageApi.success("Thêm Topping thành công");
-      // Reset form sau khi thêm thành công
-      form.resetFields();
-
+      messageApi.success("Cập nhật Topping thành công");
+      queryClient.invalidateQueries({ queryKey: ["toppings", id] });
       setTimeout(() => {
         navigate("/admin/topping");
       }, 2000);
@@ -34,16 +54,22 @@ const ToppingAddPage = () => {
     },
   });
 
-  // Xử lý khi submit form
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
-    console.log("Success:", values);
+  const onFinish = (values: FieldType) => {
     mutate(values);
   };
+
+  if (isToppingLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin size="large" tip="Đang tải dữ liệu..." />
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="flex items-center justify-between mb-5">
-        <h1 className="font-semibold text-2xl">Thêm Topping mới</h1>
+        <h1 className="font-semibold text-2xl">Cập nhật Topping</h1>
         <Button type="primary">
           <Link to="/admin/topping">
             <BackwardFilled /> Quay lại
@@ -60,9 +86,6 @@ const ToppingAddPage = () => {
           style={{ maxWidth: 600 }}
           onFinish={onFinish}
           autoComplete="off"
-          initialValues={{
-            statusTopping: "available",
-          }}
         >
           <Form.Item<FieldType>
             label="Tên Topping"
@@ -75,9 +98,9 @@ const ToppingAddPage = () => {
           <Form.Item<FieldType>
             label="Giá Topping"
             name="priceTopping"
-            rules={[{ required: true, message: "Vui lòng nhập giá Topping!" }]}
+            rules={[{ required: true, message: "Vui lòng giá của Topping!" }]}
           >
-            <Input type="number" min={0} />
+            <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
@@ -93,7 +116,7 @@ const ToppingAddPage = () => {
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
-              Thêm Topping
+              Cập nhật Topping
             </Button>
           </Form.Item>
         </Form>
@@ -102,4 +125,4 @@ const ToppingAddPage = () => {
   );
 };
 
-export default ToppingAddPage;
+export default ToppingUpdatePage;

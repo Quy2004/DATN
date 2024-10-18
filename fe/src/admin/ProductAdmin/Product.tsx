@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   Space,
@@ -10,73 +10,97 @@ import {
   Alert,
   Modal,
   Descriptions,
+  Select,
+  Tag,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
-import { PlusCircleFilled } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
-type Category = {
-  _id: string;
-  title: string;
-  parent_id: string | null;
-};
-
-type Size = {
-  _id: string;
-  name: string;
-  priceSize?: number;
-};
-type ProductSize = {
-  size_id: {
-    name: string;
-  };
-  status: string;
-};
-type Topping = {
-  _id: string;
-  nameTopping: string;
-  priceTopping?: number;
-  statusTopping: string;
-};
-
-
-type Product = {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  thumbnail: Array<string>;
-  category_id: Array<Category>;
-  product_sizes: Array<{
-    size_id: Size;
-    status: string;
-  }>;
-  product_toppings: Array<{
-    topping_id: Topping;
-  }>;
-  stock: number;
-  status: string;
-};
+import Search from "antd/es/input/Search";
+import { Product, ProductSize } from "../../types/product";
+import { Category } from "../../types/category";
 
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isDelete, setIsDelete] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
+    undefined
+  );
+
+  const navigate = useNavigate();
+
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams();
+
+    if (searchTerm) params.set("search", searchTerm);
+    if (selectedCategory && selectedCategory !== "allCategory") {
+      params.set("category", selectedCategory);
+    }
+    if (selectedStatus && selectedStatus !== "allStatus") {
+      params.set("status", selectedStatus);
+    }
+    if (isDelete) {
+      params.set("isDelete", "true");
+    } else {
+      params.delete("isDelete");
+    }
+
+    navigate({ search: params.toString() }, { replace: true });
+  }, [searchTerm, selectedCategory, selectedStatus, isDelete, navigate]);
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [searchTerm, selectedCategory, selectedStatus, isDelete, updateUrlParams]);
 
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: [
+      "products",
+      searchTerm,
+      selectedCategory,
+      selectedStatus,
+      isDelete,
+    ],
     queryFn: async () => {
-      const response = await instance.get("products");
+      const categoryParam =
+        selectedCategory && selectedCategory !== "allCategory"
+          ? `&category=${selectedCategory}`
+          : "";
+      const statusParam =
+        selectedStatus && selectedStatus !== "allStatus"
+          ? `&status=${selectedStatus}`
+          : "";
+      const trashParam = isDelete ? `&isDeleted=true` : "";
+      const response = await instance.get(
+        `products?search=${searchTerm}${categoryParam}${statusParam}${trashParam}`
+      );
       return response.data.data;
     },
   });
+
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`/categories`);
+      return response.data;
+    },
+  });
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+  };
 
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
   const mutationSoftDelete = useMutation<void, Error, string>({
@@ -112,7 +136,23 @@ const ProductManagerPage: React.FC = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-
+  // Khôi phục sản phẩm
+  const mutationRestoreProduct = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/products/${_id}/restore`);
+      } catch (error) {
+        throw new Error("Khôi phục sản phẩm thất bại");
+      }
+    },
+    onSuccess: () => {
+      message.success("Khôi phục sản phẩm thành công");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error) => {
+      message.error(`Lỗi: ${error.message}`);
+    },
+  });
   // Hàm để hiển thị chi tiết sản phẩm trong Modal
   const showModal = (product: Product) => {
     setSelectedProduct(product); // Lưu sản phẩm được chọn
@@ -131,7 +171,16 @@ const ProductManagerPage: React.FC = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      render: (text: string, product: Product) => (
+        <span
+          onClick={() => showModal(product)}
+          className="text-gray-950 cursor-pointer hover:text-blue-700"
+        >
+          {text}
+        </span>
+      ),
     },
+
     {
       title: "Ảnh sản phẩm",
       dataIndex: "image",
@@ -162,13 +211,13 @@ const ProductManagerPage: React.FC = () => {
       },
     },
     {
-      title: "Trạng thái",
+      title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <span style={{ color: status === "available" ? "green" : "red" }}>
+        <Tag color={status === "available" ? "green" : "red"}>
           {status === "available" ? "Có sẵn" : "Hết hàng"}
-        </span>
+        </Tag>
       ),
     },
     {
@@ -176,47 +225,66 @@ const ProductManagerPage: React.FC = () => {
       key: "action",
       render: (_: string, product: Product) => (
         <Space size="middle">
-          {/* Nút để hiển thị chi tiết sản phẩm */}
-          <Button
-            onClick={() => showModal(product)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
-          >
-            Xem chi tiết
-          </Button>
+          {isDelete ? (
+            <>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn khôi phục sản phẩm này?"
+                onConfirm={() => mutationRestoreProduct.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+                  Khôi phục
+                </Button>
+              </Popconfirm>
 
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
-            onConfirm={() => mutationSoftDelete.mutate(product._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
-              Xóa mềm
-            </Button>
-          </Popconfirm>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+                onConfirm={() => mutationHardDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                  Xóa cứng
+                </Button>
+              </Popconfirm>
+            </>
+          ) : (
+            <>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                onConfirm={() => mutationSoftDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
+                  Xóa mềm
+                </Button>
+              </Popconfirm>
 
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
-            onConfirm={() => mutationHardDelete.mutate(product._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
-              Xóa cứng
-            </Button>
-          </Popconfirm>
-
-          <Link to={`/admin/product/${product._id}/update`}>
-            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
-              Cập nhật
-            </Button>
-          </Link>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+                onConfirm={() => mutationHardDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                  Xóa cứng
+                </Button>
+              </Popconfirm>
+              <Link to={`/admin/product/${product._id}/update`}>
+                <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+                  Cập nhật
+                </Button>
+              </Link>
+            </>
+          )}
         </Space>
       ),
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingCategories) {
     return (
       <div style={{ textAlign: "center", padding: "50px 0" }}>
         <Spin tip="Đang tải dữ liệu..." size="large" />
@@ -242,6 +310,46 @@ const ProductManagerPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Quản lý sản phẩm</Title>
+        <div className="flex space-x-3">
+          <Search
+            placeholder="Tìm kiếm sản phẩm"
+            onSearch={handleSearch}
+            allowClear
+            style={{ width: 200 }}
+          />
+          <Select
+            value={selectedCategory}
+            onChange={(value) => setSelectedCategory(value)}
+            style={{ width: 150 }}
+            placeholder="Chọn danh mục"
+            options={[
+              { label: "Tất cả", value: "allCategory" },
+              ...(categories?.data?.map((category: Category) => ({
+                label: category.title,
+                value: category._id,
+              })) || []),
+            ]}
+          />
+          <Select
+            value={selectedStatus}
+            onChange={(value) => setSelectedStatus(value)}
+            style={{ width: 150 }}
+            placeholder="Chọn trạng thái"
+            options={[
+              { label: "Tất cả", value: "allStatus" },
+              { label: "Có sẵn", value: "available" },
+              { label: "Hết hàng", value: "unavailable" },
+            ]}
+          />
+          <Button
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={() => setIsDelete(!isDelete)}
+          >
+            {isDelete ? "" : ""}
+          </Button>
+        </div>
+
         <Button type="primary" icon={<PlusCircleFilled />}>
           <Link to="/admin/product/add" style={{ color: "white" }}>
             Thêm sản phẩm
@@ -255,7 +363,7 @@ const ProductManagerPage: React.FC = () => {
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
         title="Chi tiết sản phẩm"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
@@ -314,7 +422,13 @@ const ProductManagerPage: React.FC = () => {
                     .join(", ")}
                 </span>
               </Descriptions.Item>
-
+              <Descriptions.Item label="Mô tả sản phẩm" span={2}>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: selectedProduct.description,
+                  }}
+                />
+              </Descriptions.Item>
               {/* Kích thước sản phẩm */}
               <Descriptions.Item label="Kích thước và trạng thái" span={2}>
                 <span className="text-gray-700">
