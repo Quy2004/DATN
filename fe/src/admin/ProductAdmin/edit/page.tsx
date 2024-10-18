@@ -106,13 +106,13 @@ const ProductEditPage: React.FC = () => {
         discount: products.discount,
         description: products.description,
         status: products.status,
-        product_sizes: products.product_sizes.map((size: ProductSize) => ({
+        product_sizes: products?.product_sizes.map((size: ProductSize) => ({
           size_id: size.size_id._id,
           status: size.status,
         })),
-        product_toppings: products.product_toppings.map(
+        product_toppings: products?.product_toppings.map(
           (topping: ProductTopping) => ({
-            topping_id: topping.topping_id._id,
+            topping_id: topping.topping_id?._id,
             stock: topping.stock,
           })
         ),
@@ -244,10 +244,10 @@ const ProductEditPage: React.FC = () => {
           >
             <Input placeholder="Nhập giá sản phẩm" />
           </Form.Item>
-          <div className="flex flex-col gap-5 mt-5">
+          <div className="flex flex-col gap-5 mt-5 justify-center items-center">
             {/* Upload ảnh chính */}
-            <div className="flex flex-col items-start gap-2.5">
-              <h4>Ảnh chính</h4>
+            <div className="flex flex-col items-center gap-2.5 w-full">
+              <h4 className="text-center">Ảnh chính</h4>
               <Upload
                 name="file"
                 listType="picture-card"
@@ -267,8 +267,8 @@ const ProductEditPage: React.FC = () => {
             </div>
 
             {/* Upload ảnh phụ */}
-            <div className="flex flex-col items-start gap-2.5">
-              <h4>Ảnh phụ</h4>
+            <div className="flex flex-col items-center gap-2.5 w-full">
+              <h4 className="text-center">Ảnh phụ</h4>
               <Upload
                 name="files"
                 listType="picture-card"

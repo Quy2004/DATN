@@ -20,6 +20,7 @@ export interface Product {
     category_id: Category[];
     image: string;
     thumbnail: string[];
+    description: string;
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
     slug: string;
@@ -52,6 +53,7 @@ export interface ProductSize {
 }
 // Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
 export interface ProductTopping {
+    _id: string;
     topping_id: Topping;
     stock: number;
 }
@@ -74,5 +76,4 @@ export interface UploadFile {
     status?: string;
     url?: string;
     thumbUrl?: string;
-
 }

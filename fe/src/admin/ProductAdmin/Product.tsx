@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   Space,
@@ -15,61 +15,20 @@ import {
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
-import { PlusCircleFilled } from "@ant-design/icons";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
 import Search from "antd/es/input/Search";
-
-type Category = {
-  _id: string;
-  title: string;
-  parent_id: string | null;
-};
-
-type Size = {
-  _id: string;
-  name: string;
-  priceSize?: number;
-};
-type ProductSize = {
-  size_id: {
-    name: string;
-  };
-  status: string;
-};
-type Topping = {
-  _id: string;
-  nameTopping: string;
-  priceTopping?: number;
-  statusTopping: string;
-};
-
-type Product = {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  thumbnail: Array<string>;
-  category_id: Array<Category>;
-  product_sizes: Array<{
-    size_id: Size;
-    status: string;
-  }>;
-  product_toppings: Array<{
-    topping_id: Topping;
-  }>;
-  description: string;
-  stock: number;
-  status: string;
-};
+import { Product, ProductSize } from "../../types/product";
+import { Category } from "../../types/category";
 
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
+  const [isDelete, setIsDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     undefined
@@ -79,48 +38,54 @@ const ProductManagerPage: React.FC = () => {
   );
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const searchValue = params.get("search") || "";
-    const categoryValue = params.get("category") || undefined;
-    const statusValue = params.get("status") || undefined;
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams();
 
-    setSearchTerm(searchValue);
-    setSelectedCategory(categoryValue);
-    setSelectedStatus(statusValue);
-  }, [location.search]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-
-    if (searchTerm) {
-      params.set("search", searchTerm);
-    } else if (selectedCategory && selectedCategory !== "allCategory") {
+    if (searchTerm) params.set("search", searchTerm);
+    if (selectedCategory && selectedCategory !== "allCategory") {
       params.set("category", selectedCategory);
-    } else if (selectedStatus && selectedStatus !== "allStatus") {
+    }
+    if (selectedStatus && selectedStatus !== "allStatus") {
       params.set("status", selectedStatus);
+    }
+    if (isDelete) {
+      params.set("isDelete", "true");
+    } else {
+      params.delete("isDelete");
     }
 
     navigate({ search: params.toString() }, { replace: true });
-  }, [searchTerm, selectedCategory, selectedStatus, location.search, navigate]);
+  }, [searchTerm, selectedCategory, selectedStatus, isDelete, navigate]);
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [searchTerm, selectedCategory, selectedStatus, isDelete, updateUrlParams]);
 
   const {
     data: products,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["products", searchTerm, selectedCategory, selectedStatus],
+    queryKey: [
+      "products",
+      searchTerm,
+      selectedCategory,
+      selectedStatus,
+      isDelete,
+    ],
     queryFn: async () => {
       const categoryParam =
         selectedCategory && selectedCategory !== "allCategory"
           ? `&category=${selectedCategory}`
           : "";
-      const statusParam = selectedStatus ? `&status=${selectedStatus}` : "";
-
+      const statusParam =
+        selectedStatus && selectedStatus !== "allStatus"
+          ? `&status=${selectedStatus}`
+          : "";
+      const trashParam = isDelete ? `&isDeleted=true` : "";
       const response = await instance.get(
-        `products?search=${searchTerm}${categoryParam}${statusParam}`
+        `products?search=${searchTerm}${categoryParam}${statusParam}${trashParam}`
       );
       return response.data.data;
     },
@@ -171,7 +136,23 @@ const ProductManagerPage: React.FC = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-
+  // Khôi phục sản phẩm
+  const mutationRestoreProduct = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/products/${_id}/restore`);
+      } catch (error) {
+        throw new Error("Khôi phục sản phẩm thất bại");
+      }
+    },
+    onSuccess: () => {
+      message.success("Khôi phục sản phẩm thành công");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error) => {
+      message.error(`Lỗi: ${error.message}`);
+    },
+  });
   // Hàm để hiển thị chi tiết sản phẩm trong Modal
   const showModal = (product: Product) => {
     setSelectedProduct(product); // Lưu sản phẩm được chọn
@@ -244,33 +225,60 @@ const ProductManagerPage: React.FC = () => {
       key: "action",
       render: (_: string, product: Product) => (
         <Space size="middle">
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
-            onConfirm={() => mutationSoftDelete.mutate(product._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
-              Xóa mềm
-            </Button>
-          </Popconfirm>
+          {isDelete ? (
+            <>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn khôi phục sản phẩm này?"
+                onConfirm={() => mutationRestoreProduct.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+                  Khôi phục
+                </Button>
+              </Popconfirm>
 
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
-            onConfirm={() => mutationHardDelete.mutate(product._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
-              Xóa cứng
-            </Button>
-          </Popconfirm>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+                onConfirm={() => mutationHardDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                  Xóa cứng
+                </Button>
+              </Popconfirm>
+            </>
+          ) : (
+            <>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                onConfirm={() => mutationSoftDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
+                  Xóa mềm
+                </Button>
+              </Popconfirm>
 
-          <Link to={`/admin/product/${product._id}/update`}>
-            <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
-              Cập nhật
-            </Button>
-          </Link>
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+                onConfirm={() => mutationHardDelete.mutate(product._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
+                  Xóa cứng
+                </Button>
+              </Popconfirm>
+              <Link to={`/admin/product/${product._id}/update`}>
+                <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
+                  Cập nhật
+                </Button>
+              </Link>
+            </>
+          )}
         </Space>
       ),
     },
@@ -316,7 +324,7 @@ const ProductManagerPage: React.FC = () => {
             placeholder="Chọn danh mục"
             options={[
               { label: "Tất cả", value: "allCategory" },
-              ...(categories?.data.map((category: Category) => ({
+              ...(categories?.data?.map((category: Category) => ({
                 label: category.title,
                 value: category._id,
               })) || []),
@@ -328,10 +336,18 @@ const ProductManagerPage: React.FC = () => {
             style={{ width: 150 }}
             placeholder="Chọn trạng thái"
             options={[
+              { label: "Tất cả", value: "allStatus" },
               { label: "Có sẵn", value: "available" },
               { label: "Hết hàng", value: "unavailable" },
             ]}
           />
+          <Button
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={() => setIsDelete(!isDelete)}
+          >
+            {isDelete ? "" : ""}
+          </Button>
         </div>
 
         <Button type="primary" icon={<PlusCircleFilled />}>
