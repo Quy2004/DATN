@@ -212,9 +212,9 @@ const ClientAdmin = () => {
 					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
 					style={{ width: 150 }}
 				>
-					<Option value="admin">Admin</Option>
-					<Option value="user">User</Option>
+					<Option value="admin">Admin</Option>					
 					<Option value="manager">Manager</Option>
+					<Option value="user">User</Option>
 				</Select>
 			),
 		},
