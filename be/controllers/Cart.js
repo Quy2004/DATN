@@ -6,7 +6,14 @@ export const addtoCart = async(req,res)=>{
     try{
         //kiểm tra người dùng có giỏ hàng hay chưa
         let cart = await Cart.findOne({user:userId});
-       
+        if(cart){
+            //kiểm tra sản phẩm đó có sản phẩm trong giỏ hàng hay không
+            const productIndex = cart.products.findIndex(
+                (produc) => produc.product.toString() == product
+            );
+            console.log(productIndex)
+           
+        }
     }catch(error){
         return res.status(400).send(error.message)
     }
