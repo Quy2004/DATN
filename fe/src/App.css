@@ -1,7 +1,6 @@
 #root {
   margin: 0;
   padding: 0;
-  text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 .containerAll {
@@ -71,6 +70,11 @@ body:not(.home) header{
   opacity: 1;
 
 }
+body {
+  opacity: 1 !important;
+  filter: none !important;
+  background-color: transparent !important;
+}
 header .sticky #main-menu p{
   color: #000;
 }
@@ -84,4 +88,12 @@ header .sticky #main-menu p{
 }
 .inner-header{
   width: 1170px;
+}
+.drawer-open body {
+  /* -webkit-backdrop-filter: none !important; Loại bỏ bất kỳ filter nào */
+  opacity: 1 !important;             /* Giữ nguyên độ sáng */
+}
+
+.drawer-open {
+  background-color: transparent !important; /* Loại bỏ màu nền mờ */
 }
