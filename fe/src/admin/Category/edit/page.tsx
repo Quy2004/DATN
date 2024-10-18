@@ -5,6 +5,7 @@ import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { BackwardFilled } from "@ant-design/icons";
+import { Category } from "../../../types/category";
 
 type FieldType = {
   title?: string;
@@ -35,32 +36,22 @@ const CategoryUpdatePage = () => {
     },
   });
 
-  useEffect(() => {
-    if (categoryData?.category) {
-      const { parent_id, ...rest } = categoryData.category;
-      form.setFieldsValue({
-        ...rest,
-        parent_id: parent_id || undefined,
-      });
-    }
-  }, [categoryData, form]);
-
   // Mutation để cập nhật danh mục
-  const { mutate, isLoading: isMutating } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (category: FieldType) => {
       return await instance.put(`/categories/${id}`, category);
     },
     onSuccess: () => {
       messageApi.success("Cập nhật danh mục thành công");
-      queryClient.invalidateQueries({
-        queryKey: ["categories"],
-      });
-      // Chuyển hướng về trang quản lý danh mục
+
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["category", id] });
+
       setTimeout(() => {
         navigate("/admin/category");
       }, 2000);
     },
-    onError(error: any) {
+    onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
@@ -72,7 +63,7 @@ const CategoryUpdatePage = () => {
 
   // Lọc danh mục cha (chỉ những danh mục không có parent_id)
   const parentCategories = Array.isArray(categories)
-    ? categories.filter((category: any) => !category.parent_id)
+    ? categories.filter((category: Category) => !category.parent_id)
     : [];
   // Hiển thị loading khi dữ liệu chưa sẵn sàng
   if (isCategoryLoading) {
@@ -102,7 +93,10 @@ const CategoryUpdatePage = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           onFinish={onFinish}
-          initialValues={categoryData?.category}
+          initialValues={{
+            title: categoryData?.category?.title,
+            parent_id: categoryData?.category?.parent_id?._id,
+          }}
           autoComplete="off"
         >
           <Form.Item
@@ -120,7 +114,7 @@ const CategoryUpdatePage = () => {
               placeholder="Chọn danh mục cha (nếu có)"
               allowClear
             >
-              {parentCategories?.map((category: any) => (
+              {parentCategories?.map((category: Category) => (
                 <Select.Option key={category._id} value={category._id}>
                   {category.title}
                 </Select.Option>
@@ -129,7 +123,7 @@ const CategoryUpdatePage = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" loading={isMutating}>
+            <Button type="primary" htmlType="submit">
               Cập nhật danh mục
             </Button>
           </Form.Item>

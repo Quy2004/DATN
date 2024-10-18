@@ -10,21 +10,23 @@ import {
   Spin,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import instance from "../../../services/api";
+
 import Title from "antd/es/typography/Title";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { DoubleLeftOutlined, UploadOutlined } from "@ant-design/icons";
+import { DoubleLeftOutlined, FileImageOutlined } from "@ant-design/icons";
 
+import Upload, { RcFile, UploadFile } from "antd/es/upload";
+import axios from "axios";
+import instance from "../../../services/api";
 import {
   ProductFormValues,
   ProductSize,
   ProductTopping,
-  Size,
-  Topping,
 } from "../../../types/product";
 import { Category } from "../../../types/category";
-import Upload, { RcFile, UploadFile } from "antd/es/upload";
-import axios from "axios";
+import ReactQuill from "react-quill";
+import { Size } from "../../../types/size";
+import { Topping } from "../../../types/topping";
 
 const { Option } = Select;
 
@@ -39,7 +41,6 @@ const ProductEditPage: React.FC = () => {
   const [mainImageFileList, setMainImageFileList] = useState<UploadFile[]>([]);
   const [thumbnailFileList, setThumbnailFileList] = useState<UploadFile[]>([]);
 
-  // Fetch thông tin các danh mục
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -48,16 +49,14 @@ const ProductEditPage: React.FC = () => {
     },
   });
 
-  // Fetch thông tin các size
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
     queryKey: ["sizes"],
     queryFn: async () => {
-      const response = await instance.get(`/size`);
+      const response = await instance.get(`/sizes`);
       return response.data;
     },
   });
 
-  // Fetch thông tin các topping
   const { data: toppings, isLoading: isLoadingToppings } = useQuery({
     queryKey: ["toppings"],
     queryFn: async () => {
@@ -73,7 +72,7 @@ const ProductEditPage: React.FC = () => {
       const response = await instance.get(`/products/${id}`);
       return response.data.data;
     },
-    enabled: !!id, // Chỉ fetch nếu có id
+    enabled: !!id,
   });
   console.log(products);
   // Upload Ảnh Cloudinary
@@ -101,18 +100,19 @@ const ProductEditPage: React.FC = () => {
     if (products) {
       form.setFieldsValue({
         name: products.name,
+        price: products.price,
         category_id: products.category_id[0]?._id,
         stock: products.stock,
         discount: products.discount,
+        description: products.description,
         status: products.status,
-        product_sizes: products.product_sizes.map((size: ProductSize) => ({
+        product_sizes: products?.product_sizes.map((size: ProductSize) => ({
           size_id: size.size_id._id,
-          price: size.price,
-          stock: size.stock,
+          status: size.status,
         })),
-        product_toppings: products.product_toppings.map(
+        product_toppings: products?.product_toppings.map(
           (topping: ProductTopping) => ({
-            topping_id: topping.topping_id._id,
+            topping_id: topping.topping_id?._id,
             stock: topping.stock,
           })
         ),
@@ -140,7 +140,6 @@ const ProductEditPage: React.FC = () => {
 
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
-      // Đảm bảo `thumbnails` luôn được gửi đầy đủ
       const productData = {
         ...values,
         image: image || mainImageFileList[0]?.url,
@@ -148,15 +147,15 @@ const ProductEditPage: React.FC = () => {
           thumbnails.length > 0
             ? thumbnails
             : thumbnailFileList.map((file) => file.url),
+
         product_sizes: values.product_sizes.map((size: ProductSize) => ({
           size_id: size.size_id,
-          price: size.price,
-          stock: size.stock,
+          status: size.status,
         })),
+
         product_toppings: values.product_toppings.map(
           (topping: ProductTopping) => ({
             topping_id: topping.topping_id,
-            stock: topping.stock,
           })
         ),
       };
@@ -223,7 +222,7 @@ const ProductEditPage: React.FC = () => {
           >
             <Input placeholder="Nhập tên sản phẩm" />
           </Form.Item>
-
+          {/* Danh mục sản phẩm */}
           <Form.Item
             label="Danh mục"
             name="category_id"
@@ -237,31 +236,39 @@ const ProductEditPage: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
-          <div className="flex flex-col gap-5 mt-5">
+          {/* Giá sản phẩm */}
+          <Form.Item
+            label="Giá sản phẩm"
+            name="price"
+            rules={[{ required: true, message: "Vui lòng nhập giá sản phẩm" }]}
+          >
+            <Input placeholder="Nhập giá sản phẩm" />
+          </Form.Item>
+          <div className="flex flex-col gap-5 mt-5 justify-center items-center">
             {/* Upload ảnh chính */}
-            <div className="flex flex-col items-start gap-2.5">
-              <h4>Ảnh chính</h4>
+            <div className="flex flex-col items-center gap-2.5 w-full">
+              <h4 className="text-center">Ảnh chính</h4>
               <Upload
                 name="file"
                 listType="picture-card"
                 fileList={mainImageFileList}
                 beforeUpload={(file) => {
-                  uploadImage(file, true); // Gọi hàm upload ảnh chính
-                  return false; // Ngăn việc upload mặc định
+                  uploadImage(file, true);
+                  return false;
                 }}
-                onChange={({ fileList }) => setMainImageFileList(fileList)} // Cập nhật state khi có sự thay đổi
+                onChange={({ fileList }) => setMainImageFileList(fileList)}
                 maxCount={1}
                 className="upload-main-image"
               >
                 {mainImageFileList.length === 0 && (
-                  <Button icon={<UploadOutlined />}>Chọn ảnh chính</Button>
+                  <Button icon={<FileImageOutlined />}></Button>
                 )}
               </Upload>
             </div>
 
             {/* Upload ảnh phụ */}
-            <div className="flex flex-col items-start gap-2.5">
-              <h4>Ảnh phụ</h4>
+            <div className="flex flex-col items-center gap-2.5 w-full">
+              <h4 className="text-center">Ảnh phụ</h4>
               <Upload
                 name="files"
                 listType="picture-card"
@@ -271,11 +278,11 @@ const ProductEditPage: React.FC = () => {
                   uploadImage(file, false);
                   return false;
                 }}
-                onChange={({ fileList }) => setThumbnailFileList(fileList)} // Cập nhật state khi có sự thay đổi
+                onChange={({ fileList }) => setThumbnailFileList(fileList)}
                 className="upload-thumbnail-images"
               >
                 {thumbnailFileList.length < 4 && (
-                  <Button icon={<UploadOutlined />}>Chọn ảnh phụ</Button>
+                  <Button icon={<FileImageOutlined />}></Button>
                 )}
               </Upload>
             </div>
@@ -288,13 +295,13 @@ const ProductEditPage: React.FC = () => {
                   {fields.map((field) => (
                     <div
                       key={field.key}
-                      className="flex items-center space-x-4 mb-4 w-full max-w-3xl"
+                      className="flex items-center space-x-4 mb-4 w-full"
                     >
                       <Form.Item
                         name={[field.name, "size_id"]}
                         label="Size"
                         rules={[{ required: true, message: "Chọn size" }]}
-                        className="flex-1"
+                        className="flex-1 mb-0"
                       >
                         <Select
                           placeholder="Chọn size"
@@ -311,35 +318,29 @@ const ProductEditPage: React.FC = () => {
                       </Form.Item>
 
                       <Form.Item
-                        name={[field.name, "price"]}
-                        label="Giá"
-                        rules={[{ required: true, message: "Nhập giá" }]}
-                        className="flex-1"
+                        name={[field.name, "status"]}
+                        label="Trạng thái"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Vui lòng chọn trạng thái",
+                          },
+                        ]}
+                        className="flex-1 mb-0"
                       >
-                        <InputNumber
-                          placeholder="Giá"
-                          min={0}
+                        <Select
+                          placeholder="Chọn trạng thái"
                           className="w-full"
-                        />
-                      </Form.Item>
-
-                      <Form.Item
-                        name={[field.name, "stock"]}
-                        label="Tồn kho"
-                        rules={[{ required: true, message: "Nhập tồn kho" }]}
-                        className=""
-                      >
-                        <InputNumber
-                          placeholder="Tồn kho"
-                          min={0}
-                          className="mx-3"
-                        />
+                        >
+                          <Option value="available">Có sẵn</Option>
+                          <Option value="unavailable">Hết hàng</Option>
+                        </Select>
                       </Form.Item>
 
                       <Button
                         onClick={() => remove(field.name)}
                         danger
-                        className="text-red-500"
+                        className="text-red-500 mb-0"
                       >
                         Xóa
                       </Button>
@@ -369,7 +370,7 @@ const ProductEditPage: React.FC = () => {
                         name={[field.name, "topping_id"]}
                         label="Topping"
                         rules={[{ required: true, message: "Chọn topping" }]}
-                        className="flex-1"
+                        className="flex-1 mb-0"
                       >
                         <Select
                           placeholder="Chọn topping"
@@ -385,23 +386,10 @@ const ProductEditPage: React.FC = () => {
                         </Select>
                       </Form.Item>
 
-                      <Form.Item
-                        name={[field.name, "stock"]}
-                        label="Tồn kho"
-                        rules={[{ required: true, message: "Nhập tồn kho" }]}
-                        className="flex-1"
-                      >
-                        <InputNumber
-                          placeholder="Tồn kho"
-                          min={0}
-                          className="w-full"
-                        />
-                      </Form.Item>
-
                       <Button
                         onClick={() => remove(field.name)}
                         danger
-                        className="text-red-500"
+                        className="text-red-500 mb-0"
                       >
                         Xóa
                       </Button>
@@ -418,8 +406,16 @@ const ProductEditPage: React.FC = () => {
               )}
             </Form.List>
           </div>
+          <Form.Item
+            label="Mô tả sản phẩm"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            className="mt-5"
+          >
+            <ReactQuill theme="snow" placeholder="Nhập mô tả sản phẩm" />
+          </Form.Item>
 
-          {/* Tồn kho tổng */}
+          {/* Tồn kho */}
           <Form.Item
             className="mt-5"
             label="Tồn kho"
@@ -454,7 +450,6 @@ const ProductEditPage: React.FC = () => {
             </Select>
           </Form.Item>
 
-          {/* Nút Lưu */}
           <Form.Item>
             <div className="flex justify-center mx-80">
               <Space>

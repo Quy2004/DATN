@@ -5,11 +5,14 @@ import { StatusCodes } from 'http-status-codes';
 
 // Đăng ký người dùng
 export const register = async (req, res) => {
+
   const { userName, email, password, avatars } = req.body;
+
 
   try {
     // Kiểm tra xem email đã tồn tại chưa
     const emailExists = await User.findOne({ email });
+    console.log(emailExists)
     if (emailExists) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã tồn tại!" });
     }
@@ -38,7 +41,9 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi :' + error.message });
+
   }
 };
 
@@ -69,7 +74,7 @@ export const login = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error(error); 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
   }
 };
