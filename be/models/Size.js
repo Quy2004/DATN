@@ -6,22 +6,26 @@ const SizeSchema = new Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     priceSize: {
       type: Number,
     },
+    category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true
+    },
     isDeleted: {
-        type: Boolean,
-        default: false,
-    }
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
     versionKey: false,
   }
 );
-
 
 const Size = mongoose.model("Size", SizeSchema);
 
