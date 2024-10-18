@@ -42,5 +42,34 @@ export const register = async (req, res) => {
   }
 };
 
+// Đăng nhập
+export const login = async (req, res) => {
+  const { email, password } = req.body;
 
-  
+  try {
+    // Kiểm tra xem email có trong cơ sở dữ liệu không
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "Tài khoản không hợp lệ" });
+    }
+
+    // So sánh mật khẩu
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Mật khẩu không đúng" });
+    }
+
+    // Tạo token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "khoa-bi-mat", { expiresIn: "1h" });
+
+    // Trả về thông tin người dùng và token
+    res.status(StatusCodes.OK).json({
+      message: "Đăng nhập thành công!",
+      user: { ...user.toObject(), password: undefined },
+      token,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
+  }
+};
