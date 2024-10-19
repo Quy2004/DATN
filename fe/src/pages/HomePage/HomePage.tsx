@@ -90,7 +90,7 @@ const HomePage: React.FC = () => {
             <Slider {...settings}>
               {products.map((product: Product) => (
                 <div key={product.name} className="item mx-2.5  *:mx-2.5">
-                  <div>
+                  <div className="my-14">
                     <Link to='#' className="overflow-hidden rounded-lg shadow-lg">
                       <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
                     </Link>
