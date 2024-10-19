@@ -14,7 +14,10 @@ export const addtoCart = async (req, res) => {
     // Kiểm tra nếu giỏ hàng tồn tại
     let cart = await Cart.findOne({ userId });
 
-  
+    // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
+    if (!cart) {
+      cart = new Cart({ userId, products });
+    } 
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error", error: error.message });
