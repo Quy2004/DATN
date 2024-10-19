@@ -89,15 +89,17 @@ const HomePage: React.FC = () => {
           <div className="grid grid-cols-1 ">
             <Slider {...settings}>
               {products.map((product: Product) => (
-                <div key={product.name} className="item mx-2.5  *:mx-2.5">
-                  <div className="my-14">
+                <div key={product.name} className="item mx-2.5 ">
+                  <div className="my-12">
                     <Link to='#' className="overflow-hidden rounded-lg shadow-lg">
                       <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
                     </Link>
-                    <Link to="#">
-                      <h3 className="">{product.name}</h3>
-                    </Link>
-                    <p className="md:mx-0">{formatPrice(product.price)} VNĐ </p>
+                    <div>
+                      <Link to="#">
+                        <h3 className="">{product.name}</h3>
+                      </Link>
+                      <p className="md:mx-0">{formatPrice(product.price)} VNĐ </p>
+                    </div>
                   </div>
                 </div>
               ))}
