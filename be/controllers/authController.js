@@ -1,38 +1,34 @@
 import User from '../models/UserModel';
 import bcryptjs from 'bcryptjs';
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 
 // Đăng ký người dùng
 export const register = async (req, res) => {
-  const { username, email, password,phone,name } = req.body;
+
+  const { userName, email, password, avatars } = req.body;
+
 
   try {
     // Kiểm tra xem email đã tồn tại chưa
     const emailExists = await User.findOne({ email });
+    console.log(emailExists)
     if (emailExists) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã được đăng kí!" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã tồn tại!" });
     }
 
-    // Kiểm tra xem userName đã tồn tại chưa
-    const userNameExists = await User.findOne({ username });
-    if (userNameExists) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Tên người dùng đã được đăng kí!" });
-    }
-    // Kiểm tra xem phone đã tồn tại chưa
-    const phoneExists = await User.findOne({ phone });
-    if (phoneExists) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Số điện thoại đã được đăng kí!" });
-    }
     // Mã hóa mật khẩu
     const hashPassword = await bcryptjs.hash(password, 10);
 
+    // Gán avatar mặc định nếu không có
+    const defaultAvatar = [{ url: "be/image/avt.jpg" }];
+    const userAvatars = avatars && avatars.length > 0 ? avatars : defaultAvatar;
+
     // Tạo người dùng mới
     const user = new User({
-      name,
-      phone,
       email,
-      username,
+      userName,
+      avatars: userAvatars,
       password: hashPassword,
     });
 
@@ -45,7 +41,9 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ'+error.message });
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi :' + error.message });
+
   }
 };
 
@@ -76,7 +74,7 @@ export const login = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error(error); 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
   }
 };
