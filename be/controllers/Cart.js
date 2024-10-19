@@ -1,8 +1,8 @@
 import Cart from "../models/Cart"
-import { message } from 'antd';
 
 export const addtoCart = async(req,res)=>{
     const {product, quantity , userId} = req.boby
+    console.log('index')
     try{
         //kiểm tra người dùng có giỏ hàng hay chưa
         let cart = await Cart.findOne({user:userId});
@@ -14,7 +14,7 @@ export const addtoCart = async(req,res)=>{
             console.log(productIndex)
             if(productIndex > -1){
                 //nếu có thì cộng thêm số lượng sản phẩm
-                cart.products[productIndex].quantity +=quantity;
+                cart.products[productIndex].quantity += quantity;
             }else{
                 //nếu không có thì push thêm sản phẩm vào mảng products
                 cart.products.push({product,quantity})
