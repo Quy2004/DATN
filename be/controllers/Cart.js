@@ -36,6 +36,12 @@ export const addtoCart = async (req, res) => {
 
    
 
+    cart.total = totalQuantity;
+    cart.totalprice = totalprice;
+
+    // Lưu lại giỏ hàng sau khi tính toán
+    await cart.save();
+
     return res.status(200).json({
       message: "Products added/updated successfully",
       cart
