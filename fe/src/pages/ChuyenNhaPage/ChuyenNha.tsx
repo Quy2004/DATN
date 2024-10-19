@@ -15,7 +15,7 @@ const ChuyenNhaPage: React.FC = () => {
         <>
             <div className="mb-12">
                 <div className="header_homes w-max mx-auto"  >
-                    <h1 className="pt-16 text-2xl font-semibold  mb-3 mt-10 ">Chuyện Nhà</h1>
+                    <h1 className="pt-16 text-2xl font-semibold  mb-3 mt-10 text-center ">Chuyện Nhà</h1>
                     <p className="border-b-orange-400 mx-auto w-8 border-b-[4px]"></p>
                     <p className="text-sm w-[53%] mx-auto text-center mt-3 leading-loose"> The Coffee House sẽ là nơi mọi người xích lại gần nhau,
                         đề cao giá trị kết nối con người và sẻ chia thân tình bên những tách cà phê,
