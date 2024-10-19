@@ -34,7 +34,11 @@ export const addtoCart = async (req, res) => {
     let totalQuantity = 0;
     let totalprice = 0;
 
-   
+    for (let item of cart.products) {
+     
+      totalQuantity += item.quantity;
+      totalprice += productDetails.price * item.quantity;
+    }
 
     cart.total = totalQuantity;
     cart.totalprice = totalprice;
