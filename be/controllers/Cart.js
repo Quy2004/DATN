@@ -30,7 +30,11 @@ export const addtoCart = async (req, res) => {
       }
     }
 
-   
+    // Tính tổng số lượng và tổng tiền
+    let totalQuantity = 0;
+    let totalprice = 0;
+
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error", error: error.message });
