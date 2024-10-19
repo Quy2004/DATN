@@ -35,7 +35,10 @@ export const addtoCart = async (req, res) => {
     let totalprice = 0;
 
     for (let item of cart.products) {
-     
+      
+      if (!productDetails) {
+        return res.status(404).json({ message: `Product with ID ${item.product} not found` });
+      }
       totalQuantity += item.quantity;
       totalprice += productDetails.price * item.quantity;
     }
