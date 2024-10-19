@@ -4,7 +4,9 @@ import "./HomePage.css"
 import React, { useState, useEffect } from 'react';
 import instance from "../../services/api";
 import { Product } from "../../types/product";
-
+import Slider from "react-slick"
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 const HomePage: React.FC = () => {
   // slideShow
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -14,7 +16,13 @@ const HomePage: React.FC = () => {
     "/src/assets/images/banner/Banner_3.webp"
 
   ]; // Thêm các hình ảnh bạn muốn sử dụng ở đây
-
+  var settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1
+  };
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -60,10 +68,10 @@ const HomePage: React.FC = () => {
             <div className="cow_left col-span-2">
               <img src="/src/assets/images/banner/banner4.jpg" alt="" className="mb-10" />
             </div>
-            <div className="cow_right flex gap-5 col-span-2">
+            <div className="cow_right col-span-2 flex gap-5 ">
               {
                 products.map((product: Product) => (
-                  <div className="item ">
+                  <div className="item">
                     <div className="product_img">
                       <Link to='#'>
                         <img src={`${product.image}`} alt="" />
@@ -77,6 +85,21 @@ const HomePage: React.FC = () => {
                 ))
               }
             </div>
+          </div>
+          <div className="grid grid-cols-1 ">
+            <Slider {...settings}>
+              {products.map((product : Product) => (
+                <div key={product.name} className="item *:mx-2.5">
+                  <Link to='#'>
+                    <img src={`${product.image}`} alt="" />
+                  </Link>
+                  <Link to="#">
+                      <h3 className="">{product.name}</h3>
+                    </Link>
+                    <p>{formatPrice(product.price)} VNĐ </p>
+                </div>
+              ))}
+            </Slider>
           </div>
           {/*  */}
           <div className="banner-mid">
