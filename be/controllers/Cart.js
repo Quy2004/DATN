@@ -34,7 +34,12 @@ export const addtoCart = async (req, res) => {
     let totalQuantity = 0;
     let totalprice = 0;
 
-    
+   
+
+    return res.status(200).json({
+      message: "Products added/updated successfully",
+      cart
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error", error: error.message });
