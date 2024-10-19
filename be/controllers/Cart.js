@@ -17,7 +17,20 @@ export const addtoCart = async (req, res) => {
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
       cart = new Cart({ userId, products });
-    } 
+    } else {
+      // Nếu giỏ hàng đã tồn tại, cập nhật sản phẩm
+      for (let product of products) {
+        const existingProduct = cart.products.find(p => p.product.toString() === product.product);
+
+        if (existingProduct) {
+          existingProduct.quantity += product.quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
+        } else {
+          cart.products.push(product); // Thêm sản phẩm mới vào giỏ hàng
+        }
+      }
+    }
+
+   
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error", error: error.message });
