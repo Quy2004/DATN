@@ -16,20 +16,18 @@ class ProductController {
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
       let query = {
+        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
         name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
       };
-
-      if (isDeleted === "true") {
-        query.isDeleted = true;
-      } else {
-        query.isDeleted = false;
-      }
 
       // Lọc theo danh mục
       if (category) {
         query.category_id = category;
       }
-
+      // Lọc theo trạng thái xóa mềm
+      if (isDeleted !== undefined) {
+        query.isDeleted = isDeleted === "true"; // Kiểm tra nếu isDeleted là chuỗi 'true'
+      }
       // Lọc theo trạng thái sản phẩm
       if (status) {
         query.status = status;

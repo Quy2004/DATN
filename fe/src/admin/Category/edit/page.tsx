@@ -36,16 +36,6 @@ const CategoryUpdatePage = () => {
     },
   });
 
-  useEffect(() => {
-    if (categoryData?.category) {
-      const { parent_id, ...rest } = categoryData.category;
-      form.setFieldsValue({
-        ...rest,
-        parent_id: parent_id || undefined,
-      });
-    }
-  }, [categoryData, form]);
-
   // Mutation để cập nhật danh mục
   const { mutate } = useMutation({
     mutationFn: async (category: FieldType) => {
@@ -53,10 +43,10 @@ const CategoryUpdatePage = () => {
     },
     onSuccess: () => {
       messageApi.success("Cập nhật danh mục thành công");
-      queryClient.invalidateQueries({
-        queryKey: ["categories"],
-      });
-      // Chuyển hướng về trang quản lý danh mục
+
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["category", id] });
+
       setTimeout(() => {
         navigate("/admin/category");
       }, 2000);
@@ -103,7 +93,10 @@ const CategoryUpdatePage = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           onFinish={onFinish}
-          initialValues={categoryData?.category}
+          initialValues={{
+            title: categoryData?.category?.title,
+            parent_id: categoryData?.category?.parent_id?._id,
+          }}
           autoComplete="off"
         >
           <Form.Item

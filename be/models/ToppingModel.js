@@ -20,6 +20,10 @@ const ToppingSchema = new Schema(
       enum: ["available", "unavailable"],
       default: "available",
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
