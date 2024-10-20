@@ -50,3 +50,46 @@ button{
 button:hover {
     color: #ea8025 ;
 }
+.slick-slider .slick-prev,
+.slick-slider .slick-next {
+    font-size: 12px;
+    line-height: 1;
+    position: absolute;
+    top: 45%;
+    display: block;
+    padding: 0;
+    transform: translate(0, -50%);
+    cursor: pointer;
+    outline: none;
+    border : solid 1px #ccc;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.slick-slider .slick-prev { 
+    left: 0.1%; 
+}
+.slick-slider .slick-next { 
+    right: 0.1%; 
+}
+
+.slick-slider .slick-prev, 
+.slick-slider .slick-next {
+    z-index: 1;
+    background-color: #ea8025;
+    border-radius: 50%;
+}
+.slick-slider .slick-prev:hover, 
+.slick-slider .slick-next:hover {
+    z-index: 1;
+    background-color: #ea8025;
+    border-radius: 50%;
+}
+.slick-slider .slick-prev:active, 
+.slick-slider .slick-next:active {
+    background-color: #ea8025;  /* Giữ nguyên màu nền khi nhấn */
+    transform: scale(1);      /* Hiệu ứng nén nhẹ khi nhấn */
+}
+.slick-slider .slick-prev:focus, 
+.slick-slider .slick-next:focus {
+    background-color: #ea8025;  /* Giữ nguyên màu nền khi focus */
+    outline: none;               /* Loại bỏ outline khi focus */
+}
