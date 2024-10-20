@@ -15,31 +15,13 @@ const ChuyenNhaPage: React.FC = () => {
         <>
             <div className="mb-12">
                 <div className="header_homes w-max mx-auto"  >
-                    <h1 className="pt-16 text-2xl font-semibold  mb-3 mt-10 ">Chuyện Nhà</h1>
+                    <h1 className="pt-16 text-2xl font-semibold  mb-3 mt-10 text-center ">Chuyện Nhà</h1>
                     <p className="border-b-orange-400 mx-auto w-8 border-b-[4px]"></p>
-                    <p className="text-sm w-[53%] mx-auto mt-3 leading-loose"> The Coffee House sẽ là nơi mọi người xích lại gần nhau,
+                    <p className="text-sm w-[53%] mx-auto text-center mt-3 leading-loose"> The Coffee House sẽ là nơi mọi người xích lại gần nhau,
                         đề cao giá trị kết nối con người và sẻ chia thân tình bên những tách cà phê,
                         ly trà đượm hương,
                         truyền cảm hứng về lối sống hiện đại.</p>
                 </div>
-                {/* <div className="tabs *:border-box my-6 ">
-                    <ul className="flex justify-center *:px-4 *:text-lg *:font-semibold gap-5">
-                        <li className="bg-amber-100 rounded-3xl py-1.5 *:hover:text-orange-500 ">
-                            <a href="/" className="px-3.5 text-orange-500">
-                                    Tất cả
-                            </a>
-                        </li>
-                        <li className="border-2 rounded-3xl py-1.5 *:hover:text-orange-500 ">
-                            <Link to="">Coffeeholic</Link>
-                        </li>
-                        <li className="border-2 rounded-3xl py-1.5 *:hover:text-orange-500 ">
-                            <Link to="">Teaholic</Link>
-                        </li>
-                        <li className="border-2 rounded-3xl py-1.5 *:hover:text-orange-500 ">
-                            <Link to="">Blog</Link>
-                        </li>
-                    </ul>
-                </div> */}
                 <div className="tabs *:border-box my-6 ">
                     <ul className="flex justify-center *:text-lg *:font-semibold gap-5">
                         {tabs.map(tab => (

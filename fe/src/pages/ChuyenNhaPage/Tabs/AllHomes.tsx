@@ -27,7 +27,7 @@ const AllHomes: React.FC = () => {
                     </Link>
                     <span>
                         <p className="text-left  text-gray-400 mb-4 text-xs">
-                            30/2/2024
+                            04/09/2023
                         </p>
                     </span>
                     <p className="text-sm ">
@@ -50,7 +50,7 @@ const AllHomes: React.FC = () => {
                     </Link>
                     <span>
                         <p className="text-left  text-gray-400 mb-4 text-xs">
-                            30/2/2024
+                            11/01/2023
                         </p>
                     </span>
                     <p className="text-sm font-normal ">
@@ -73,7 +73,7 @@ const AllHomes: React.FC = () => {
                             </li>
                         </ul>
                     </div>
-                    <h1>Left</h1>
+
                 </div>
                 <div className="cow ml-8 col-span-3">
                     <div>
@@ -97,7 +97,7 @@ const AllHomes: React.FC = () => {
                                 </Link>
                                 <span className="text-left">
                                     <p className="my-1 text-gray-500">
-                                        5/25/2024
+                                        07/01/2024
                                     </p>
                                 </span>
                                 <p className="text-[15px]">
@@ -126,7 +126,7 @@ const AllHomes: React.FC = () => {
                                 </Link>
                                 <span className="text-left">
                                     <p className="my-1 text-gray-500">
-                                        5/25/2024
+                                        17/03/2024
                                     </p>
                                 </span>
                                 <p className="text-[15px]">
@@ -154,7 +154,7 @@ const AllHomes: React.FC = () => {
                                 </Link>
                                 <span className="text-left">
                                     <p className="my-1 text-gray-500">
-                                        5/25/2024
+                                        30/08/2024
                                     </p>
                                 </span>
                                 <p className="text-[15px]">
@@ -162,13 +162,18 @@ const AllHomes: React.FC = () => {
                                     đang bàn tán xôn xao về SIGNATURE -...</p>
                             </div>
                         </div>
-                        <div>
-                            <Link to="coffeeholic" onClick={scrollToTop}>
-                                <h3 className="border-2 w-1/3 mx-auto my-8 py-2 rounded-lg bg-white font-semibold text-[17px]">
-                                    Tìm hiểu thêm
-                                </h3>
-                            </Link>
-                        </div>
+                        <section className="wrapper my-8 relative">
+                            <div className="flex items-center justify-center">
+                                <Link
+                                    to=""
+                                    className="relative px-3 bg-white w-[245px] py-2 border border-[#ccc] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                                >
+                                    <span className="relative z-10 transition duration-300 group-hover:text-white">Tìm hiểu thêm</span>
+                                    <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                                    <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                                </Link>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
@@ -199,7 +204,7 @@ const AllHomes: React.FC = () => {
                             </Link>
                             <span className="text-left">
                                 <p className="my-1 text-gray-500">
-                                    5/25/2024
+                                    15/08/2024
                                 </p>
                             </span>
                             <p className="text-[15px]"> Bạn có từng nghe:
@@ -227,7 +232,7 @@ const AllHomes: React.FC = () => {
                             </Link>
                             <span className="text-left">
                                 <p className="my-1 text-gray-500">
-                                    5/25/2024
+                                    10/09/2024
                                 </p>
                             </span>
                             <p className="text-[15px]"> Tết nay vẫn giống Tết xưa,
@@ -256,7 +261,7 @@ const AllHomes: React.FC = () => {
                             </Link>
                             <span className="text-left">
                                 <p className="my-1 text-gray-500">
-                                    5/25/2024
+                                    27/09/2024
                                 </p>
                             </span>
                             <p className="text-[15px]">
@@ -264,13 +269,18 @@ const AllHomes: React.FC = () => {
                                 tinh thần nên giới trẻ muốn tận...</p>
                         </div>
                     </div>
-                    <div>
-                        <Link to="teaholic" onClick={scrollToTop}>
-                            <h3 className="border-2 w-1/3 mx-auto my-8 py-2 rounded-lg bg-white font-semibold text-[17px]">
-                                Tìm hiểu thêm
-                            </h3>
-                        </Link>
-                    </div>
+                    <section className="wrapper my-8 relative">
+                        <div className="flex items-center justify-center">
+                            <Link
+                                to=""
+                                className="relative px-3 bg-white w-[245px] py-2 border border-[#ccc] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                            >
+                                <span className="relative z-10 transition duration-300 group-hover:text-white">Tìm hiểu thêm</span>
+                                <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                                <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                            </Link>
+                        </div>
+                    </section>
                 </div>
                 <div className="cow items flex items-center flex-auto w-40 px-2">
                     <div className="image-container " >
@@ -298,7 +308,6 @@ const AllHomes: React.FC = () => {
                             </li>
                         </ul>
                     </div>
-                    <h1>Left</h1>
                 </div>
                 <div className="cow ml-8 col-span-3">
                     <div>
@@ -306,7 +315,7 @@ const AllHomes: React.FC = () => {
                             Blog
                         </h2>
                         {/*  */}
-                        <div className="grid grid-cols-3 *:rounded-[10px] py-3">
+                        {/* <div className="grid grid-cols-3 *:rounded-[10px] py-3">
                             <div className="col-span-1">
                                 <ul className="">
                                     <li className="">
@@ -333,7 +342,7 @@ const AllHomes: React.FC = () => {
                                     Vào tối ngày 20 tháng 04 năm 2024,
                                     Hà Nội có xuất hiện giông lốc...</p>
                             </div>
-                        </div>
+                        </div> */}
                         {/*  */}
                         <div className="grid grid-cols-3 *:rounded-[10px] py-3">
                             <div className="col-span-1">
@@ -363,7 +372,7 @@ const AllHomes: React.FC = () => {
                             </div>
                         </div>
                         {/*  */}
-                        <div className="grid grid-cols-3 *:rounded-[10px] py-3">
+                        <div className="grid grid-cols-3 *:rounded-[10px] py-4">
                             <div className="col-span-1">
                                 <ul className="">
                                     <li className="">
@@ -390,13 +399,18 @@ const AllHomes: React.FC = () => {
                                     hình ảnh Việt Nam tiếp tục được lên sóng tại...</p>
                             </div>
                         </div>
-                        <div>
-                            <Link to="#">
-                                <h3 className="border-2 w-1/3 mx-auto my-8 py-2 rounded-lg bg-white font-semibold text-[17px]">
-                                    Tìm hiểu thêm
-                                </h3>
-                            </Link>
-                        </div>
+                        <section className="wrapper my-8 relative">
+                            <div className="flex items-center justify-center">
+                                <Link
+                                    to=""
+                                    className="relative px-3 bg-white w-[245px] py-2 border border-[#ccc] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                                >
+                                    <span className="relative z-10 transition duration-300 group-hover:text-white">Tìm hiểu thêm</span>
+                                    <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                                    <span className="absolute inset-0 bg-[#ea8025] opacity-0 blur-[5px] transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                                </Link>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>

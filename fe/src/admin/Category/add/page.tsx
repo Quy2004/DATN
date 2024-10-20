@@ -4,6 +4,7 @@ import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { BackwardFilled } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
+import { Category } from "../../../types/category";
 
 type FieldType = {
   title?: string;
@@ -25,7 +26,7 @@ const CategoryAddPage = () => {
   });
 
   // Mutation để thêm danh mục
-  const { mutate, isLoading: isMutating } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (category: FieldType) => {
       return await instance.post(`/categories`, category);
     },
@@ -38,7 +39,7 @@ const CategoryAddPage = () => {
         navigate("/admin/category");
       }, 2000);
     },
-    onError(error: any) {
+    onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
@@ -51,7 +52,7 @@ const CategoryAddPage = () => {
 
   // Lọc danh mục cha (chỉ những danh mục không có parent_id)
   const parentCategories = Array.isArray(categories)
-    ? categories.filter((category: any) => !category.parent_id)
+    ? categories.filter((category: Category) => !category.parent_id)
     : [];
 
   return (
@@ -90,7 +91,7 @@ const CategoryAddPage = () => {
               placeholder="Chọn danh mục cha (nếu có)"
               allowClear
             >
-              {parentCategories?.map((category: any) => (
+              {parentCategories?.map((category: Category) => (
                 <Select.Option key={category._id} value={category._id}>
                   {category.title}
                 </Select.Option>
@@ -99,7 +100,7 @@ const CategoryAddPage = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" loading={isMutating}>
+            <Button type="primary" htmlType="submit">
               Thêm danh mục
             </Button>
           </Form.Item>

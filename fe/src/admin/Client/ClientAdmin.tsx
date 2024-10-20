@@ -24,6 +24,8 @@ const ClientAdmin = () => {
 	const queryClient = useQueryClient();
 	const [filterStatus, setFilterStatus] = useState("active");
 	const [searchTerm, setSearchTerm] = useState("");
+
+	const [filterRole, setFilterRole] = useState("allUser"); // lọc role
 	const [currentPage, setCurrentPage] = useState(1); // State cho phân trang
 	const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
 
@@ -36,6 +38,7 @@ const ClientAdmin = () => {
 		const searchParams = new URLSearchParams();
 		if (searchTerm) searchParams.set("search", searchTerm);
 		searchParams.set("filterStatus", filterStatus);
+		searchParams.set("filterRole", filterRole); // Thêm điều kiện vai trò
 		searchParams.set("page", currentPage.toString());
 		searchParams.set("limit", pageSize.toString());
 		navigate({ search: searchParams.toString() });
@@ -43,16 +46,23 @@ const ClientAdmin = () => {
 
 	useEffect(() => {
 		updateUrlParams();
-	}, [filterStatus, searchTerm, currentPage, pageSize]);
+	}, [filterStatus, filterRole, searchTerm, currentPage, pageSize]);
 
 	const { data, isLoading, isError, error } = useQuery({
-		queryKey: ["user", filterStatus, searchTerm, currentPage, pageSize],
+		queryKey: [
+			"user",
+			filterStatus,
+			filterRole,
+			searchTerm,
+			currentPage,
+			pageSize,
+		], // Cập nhật key
 		queryFn: async () => {
 			try {
 				const response = await instance.get(
-					`/user?isDeleted=${filterStatus === "deleted" ? true : false}&all=${
-						filterStatus === "all" ? true : false
-					}&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`,
+					`/users?isDeleted=${filterStatus === "deleted"}&all=${
+						filterStatus === "all"
+					}&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}`, // Thêm điều kiện vai trò
 				);
 				return response.data;
 			} catch (error) {
@@ -65,7 +75,7 @@ const ClientAdmin = () => {
 	const mutationSoftDeleteUser = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/user/${_id}/soft-delete`);
+				return await instance.patch(`/users/${_id}/soft-delete`);
 			} catch (error) {
 				throw new Error("Xóa mềm user thất bại");
 			}
@@ -83,7 +93,7 @@ const ClientAdmin = () => {
 	const mutationRestoreUser = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/user/${_id}/restore`);
+				return await instance.patch(`/users/${_id}/restore`);
 			} catch (error) {
 				throw new Error("Khôi phục user thất bại");
 			}
@@ -101,7 +111,7 @@ const ClientAdmin = () => {
 	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/user/${_id}/user`);
+				return await instance.patch(`/users/${_id}/user`);
 			} catch (error) {
 				throw new Error("Cập nhật vai trò user thất bại");
 			}
@@ -119,7 +129,7 @@ const ClientAdmin = () => {
 	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/user/${_id}/manager`);
+				return await instance.patch(`/users/${_id}/manager`);
 			} catch (error) {
 				throw new Error("Cập nhật vai trò manager thất bại");
 			}
@@ -149,6 +159,11 @@ const ClientAdmin = () => {
 		setFilterStatus(value);
 		setCurrentPage(1);
 	};
+	const handleRoleFilterChange = (value: string) => {
+		setFilterRole(value);
+		setCurrentPage(1);
+	};
+
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
 		setCurrentPage(1);
@@ -194,16 +209,16 @@ const ClientAdmin = () => {
 			render: (role: string, user: any) => (
 				<Select
 					value={role}
-					onChange={(newRole) => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
+					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
 					style={{ width: 150 }}
 				>
-					<Option value="admin">Admin</Option>
-					<Option value="user">User</Option>
+					<Option value="admin">Admin</Option>					
 					<Option value="manager">Manager</Option>
+					<Option value="user">User</Option>
 				</Select>
 			),
 		},
-		  
+
 		{
 			title: "Hành động",
 			dataIndex: "action",
@@ -294,6 +309,16 @@ const ClientAdmin = () => {
 						<Option value="all">Tất cả user</Option>
 						<Option value="active">User hoạt động</Option>
 						<Option value="deleted">User đã bị khóa</Option>
+					</Select>
+					<Select
+						value={filterRole}
+						style={{ width: 200 }}
+						onChange={handleRoleFilterChange} // Gọi hàm thay đổi vai trò
+					>
+						<Option value="allUser">Tất cả vai trò</Option>
+						<Option value="admin">Quản lý</Option>
+						<Option value="manager">Nhân viên</Option>
+						<Option value="user">Người dùng</Option>
 					</Select>
 				</div>
 			</div>
