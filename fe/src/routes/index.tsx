@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import WebsiteLayout from "../pages/Layout/WebsiteLayout";
 import HomePage from "../pages/HomePage/HomePage";
@@ -38,9 +38,36 @@ import ToppingManagerPage from "../admin/Topping/Topping";
 import ToppingAddPage from "../admin/Topping/add/page";
 import ToppingUpdatePage from "../admin/Topping/edit/page";
 import ProductManagerPage from "../admin/ProductAdmin/Product";
+import { Product } from "../types/product";
+import instance from "../services/api";
 
 
 const Router = () => {
+  const [products, setProduct] = useState<Product[]>([])
+  const loadPr = async () => {
+    (async () => {
+      try {
+        const response = await instance.get("/products");
+        const { data } = response;
+        // console.log(data);
+        if (Array.isArray(data.data)) {
+          setProduct(data.data);
+        } else {
+          console.error("Dữ liệu trả về không phải là mảng:", data);
+          setProduct([]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+        setProduct([]);
+      }
+    })();
+  }
+  useEffect(() => {
+    const fetch = async () => {
+      loadPr()
+    }
+    fetch()
+  }, []);
   return (
     <div>
       <Routes>
