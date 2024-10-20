@@ -13,7 +13,7 @@ const VoucherSchema = new Schema(
 		description: {
 			type: String,
 		},
-		// phaàn trăm giảm giá
+		// phần trăm giảm giá
 		discountPercentage: {
 			type: Number,
 			required: true,
@@ -52,6 +52,21 @@ const VoucherSchema = new Schema(
 		versionKey: false,
 	},
 );
+
+// Middleware để tự động cập nhật isDeleted trước khi lưu
+VoucherSchema.pre('save', function (next) {
+	if (this.quantity === 0 || this.maxOrderDate <= new Date()) {
+		this.isDeleted = true;
+	}
+	next();
+});
+
+// Phương thức để kiểm tra và cập nhật isDeleted
+VoucherSchema.methods.checkAndUpdateStatus = function () {
+	if (this.quantity === 0 || this.maxOrderDate <= new Date()) {
+		this.isDeleted = true;
+	}
+};
 
 const Voucher = mongoose.model("vouchers", VoucherSchema);
 export default Voucher;

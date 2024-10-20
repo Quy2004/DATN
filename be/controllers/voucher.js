@@ -95,16 +95,27 @@ class VoucherController {
 		try {
 			const { id } = req.params;
 			const updatedData = req.body;
-
+	
+			// Kiểm tra giá trị nhận được
+			console.log("Updated Data:", updatedData);
+	
+			const currentDate = new Date(); // Thời gian hiện tại
+			const maxOrderDate = new Date(updatedData.maxOrderDate); // Ngày kết thúc
+	
+			// Kiểm tra nếu số lượng = 0 hoặc ngày kết thúc đã đến
+			if (updatedData.quantity === 0 || maxOrderDate <= currentDate) {
+				updatedData.isDeleted = true; // Đánh dấu là đã xóa nếu số lượng = 0 hoặc maxOrderDate đã đến
+			}
+	
 			const voucher = await Voucher.findByIdAndUpdate(id, updatedData, {
 				new: true,
 				runValidators: true,
 			});
-
+	
 			if (!voucher) {
 				return res.status(404).json({ message: "Voucher not found!" });
 			}
-
+	
 			res.status(200).json({
 				message: "Update Voucher Successfully!",
 				data: voucher,
@@ -113,6 +124,10 @@ class VoucherController {
 			res.status(400).json({ message: error.message });
 		}
 	}
+	
+	
+	
+	
 
 	// Xóa mềm 1 voucher
 	async deleteSoftVoucher(req, res) {
@@ -140,25 +155,40 @@ class VoucherController {
 	// Khôi phục voucher bị xóa mềm
 	async restoreVoucher(req, res) {
 		try {
-            const voucher= await Voucher.findByIdAndUpdate(
-                req.params.id,
-                { isDeleted: false },
-                { new: true }
-            );
-
-            if(!voucher) {
-                return res.status(404).json({ message: "voucher not found" });
-            }
-            res.status(200).json({
-                message: "Restore voucher Successfully",
-                data: voucher,
-            });
-        } catch (error) {
-            res.status(400).json({
-                message: error.message,
-              });
-        }
+			const voucher = await Voucher.findById(req.params.id);
+	
+			// Kiểm tra nếu voucher không tồn tại
+			if (!voucher) {
+				return res.status(404).json({ message: "Voucher not found" });
+			}
+	
+			// Kiểm tra điều kiện để khôi phục
+			const currentDate = new Date();
+	
+			if (voucher.quantity === 0 || voucher.maxOrderDate < currentDate) {
+				return res.status(400).json({
+					message: "Voucher cannot be restored as it has expired or quantity is zero.",
+				});
+			}
+	
+			// Nếu điều kiện thỏa mãn, khôi phục voucher
+			const restoredVoucher = await Voucher.findByIdAndUpdate(
+				req.params.id,
+				{ isDeleted: false },
+				{ new: true }
+			);
+	
+			res.status(200).json({
+				message: "Restore voucher Successfully",
+				data: restoredVoucher,
+			});
+		} catch (error) {
+			res.status(400).json({
+				message: error.message,
+			});
+		}
 	}
+	
 
 	// delete the voucher
 	async deleteVoucher(req, res) {
