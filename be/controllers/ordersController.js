@@ -38,7 +38,7 @@ export const createOrder = async (req, res) => {
       await order.save();
  // Xóa giỏ hàng sau khi tạo đơn hàng thành công
       await Cart.findOneAndDelete({ userId });
-   
+      return res.status(201).json({ message: "Đơn hàng đã được tạo thành công.", order });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
