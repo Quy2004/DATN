@@ -148,21 +148,6 @@ const VoucherUpdatePage = () => {
 						/>
 					</Form.Item>
 
-					{/* Giảm giá tối đa */}
-					<Form.Item<Voucher>
-						label="Giảm giá tối đa"
-						name="maxDiscount"
-						rules={[
-							{ required: true, message: "Vui lòng nhập giảm giá tối đa!" },
-						]}
-					>
-						<InputNumber
-							min={0}
-							formatter={value => `${value}`}
-							style={{ width: "100%" }}
-						/>
-					</Form.Item>
-
 					{/* Số lượng */}
 					<Form.Item<Voucher>
 						label="Số lượng"
@@ -183,7 +168,8 @@ const VoucherUpdatePage = () => {
 					>
 						<DatePicker
 							style={{ width: "100%" }}
-							format="DD/MM/YYYY"
+							format="DD/MM/YYYY HH:mm"
+							showTime={{ format: "HH:mm" }} // Hiển thị picker cho giờ và phút
 							disabledDate={current =>
 								current && current < dayjs().startOf("day")
 							}
@@ -200,7 +186,8 @@ const VoucherUpdatePage = () => {
 					>
 						<DatePicker
 							style={{ width: "100%" }}
-							format="DD/MM/YYYY"
+							format="DD/MM/YYYY HH:mm"
+							showTime={{ format: "HH:mm" }} // Hiển thị picker cho giờ và phút
 							disabledDate={current =>
 								current && current < dayjs().startOf("day")
 							}
