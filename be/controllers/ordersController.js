@@ -12,24 +12,17 @@ export const createOrder = async (req, res) => {
         return res.status(400).json({ message: "Giỏ hàng rỗng." });
       }
        // Kiểm tra tổng giá đơn hàng (nếu không có, tính lại từ sản phẩm)
-    const totalPrice = cart.totalPrice || cart.products.reduce((acc, item) => {
-        const price = item.price || 12000; // Giá mặc định nếu không có
-        const quantity = item.quantity || 1; // Mặc định số lượng là 1 nếu không có
-        return acc + price * quantity;
-      }, 0);
-  
-      // In ra để kiểm tra dữ liệu
-      console.log("Cart data:", cart);
-      console.log("Total price calculated:", totalPrice);
+     // Lấy tổng giá từ giỏ hàng
+    const totalPrice = cart.totalprice; 
        // Tạo đơn hàng mới
     const order = new Order({
         user_id: userId,
         address_id: addressId,
-        totalPrice: totalPrice, // Tổng giá từ giỏ hàng hoặc tính toán
+        totalPrice: totalPrice, 
         orderDetails: cart.products.map(item => ({
           product_id: item.product,
           quantity: item.quantity,
-          price: item.price || 12000 // Giá mặc định nếu không có
+      
         })),
         paymentMethod, 
         status: 'Đang xử lý', 

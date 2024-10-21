@@ -31,11 +31,11 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "completed", "canceled"],
       default: "pending",
     },
-    orderDetail_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "OrderDetail", 
-      required: true,
-    },
+    // orderDetail_id: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "OrderDetail", 
+    //   required: true,
+    // },
     payment_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
