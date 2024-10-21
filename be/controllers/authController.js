@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 export const register = async (req, res) => {
 
   const { userName, email, password, avatars } = req.body;
+  console.log({ userName, email, password, avatars })
 
 
   try {
@@ -16,7 +17,7 @@ export const register = async (req, res) => {
     if (emailExists) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã tồn tại!" });
     }
-
+    
     // Mã hóa mật khẩu
     const hashPassword = await bcryptjs.hash(password, 10);
 
@@ -44,7 +45,7 @@ export const register = async (req, res) => {
 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi :' + error.message });
 
-  }
+    }
 };
 
 // Đăng nhập
