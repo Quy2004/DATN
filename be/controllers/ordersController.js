@@ -36,6 +36,8 @@ export const createOrder = async (req, res) => {
       });
        
       await order.save();
+
+      await Cart.findOneAndDelete({ userId });
    
     } catch (error) {
       console.error(error);
