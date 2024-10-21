@@ -35,6 +35,7 @@ export const createOrder = async (req, res) => {
         status: 'Đang xử lý', 
       });
        
+      await order.save();
    
     } catch (error) {
       console.error(error);
