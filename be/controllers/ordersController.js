@@ -11,9 +11,10 @@ export const createOrder = async (req, res) => {
       if (!cart || !cart.products.length) {
         return res.status(400).json({ message: "Giỏ hàng rỗng." });
       }
-       // Kiểm tra tổng giá đơn hàng (nếu không có, tính lại từ sản phẩm)
+   
      // Lấy tổng giá từ giỏ hàng
-    const totalPrice = cart.totalprice; 
+ 
+      const totalPrice = cart.totalprice;
        // Tạo đơn hàng mới
     const order = new Order({
         user_id: userId,
