@@ -11,18 +11,23 @@ import {
   Modal,
   Descriptions,
   Select,
-  Tag,
+  Tooltip,
+  Switch,
+  TablePaginationConfig,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleFilled,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
 
 import Search from "antd/es/input/Search";
 import { Product, ProductSize } from "../../types/product";
 import { Category } from "../../types/category";
-
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
@@ -36,6 +41,9 @@ const ProductManagerPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
     undefined
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const navigate = useNavigate();
 
@@ -54,13 +62,30 @@ const ProductManagerPage: React.FC = () => {
     } else {
       params.delete("isDelete");
     }
-
+    params.set("page", currentPage.toString());
+    params.set("limit", pageSize.toString());
     navigate({ search: params.toString() }, { replace: true });
-  }, [searchTerm, selectedCategory, selectedStatus, isDelete, navigate]);
+  }, [
+    searchTerm,
+    selectedCategory,
+    selectedStatus,
+    currentPage,
+    pageSize,
+    isDelete,
+    navigate,
+  ]);
 
   useEffect(() => {
     updateUrlParams();
-  }, [searchTerm, selectedCategory, selectedStatus, isDelete, updateUrlParams]);
+  }, [
+    searchTerm,
+    selectedCategory,
+    selectedStatus,
+    currentPage,
+    pageSize,
+    isDelete,
+    updateUrlParams,
+  ]);
 
   const {
     data: products,
@@ -72,6 +97,8 @@ const ProductManagerPage: React.FC = () => {
       searchTerm,
       selectedCategory,
       selectedStatus,
+      currentPage,
+      pageSize,
       isDelete,
     ],
     queryFn: async () => {
@@ -84,10 +111,12 @@ const ProductManagerPage: React.FC = () => {
           ? `&status=${selectedStatus}`
           : "";
       const trashParam = isDelete ? `&isDeleted=true` : "";
+
       const response = await instance.get(
-        `products?search=${searchTerm}${categoryParam}${statusParam}${trashParam}`
+        `products?search=${searchTerm}${categoryParam}${statusParam}${trashParam}&page=${currentPage}&limit=${pageSize}`
       );
-      return response.data.data;
+
+      return response.data;
     },
   });
 
@@ -98,8 +127,15 @@ const ProductManagerPage: React.FC = () => {
       return response.data;
     },
   });
+
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleTableChange = (pagination: TablePaginationConfig) => {
+    setCurrentPage(pagination.current || 1);
+    setPageSize(pagination.pageSize || 10);
   };
 
   // Xử lý xóa mềm và xóa cứng (giữ nguyên)
@@ -168,6 +204,20 @@ const ProductManagerPage: React.FC = () => {
   // Cột trong bảng
   const columns = [
     {
+      render: (_: string, product: Product) => (
+        <Tooltip title="Xem thêm thông tin">
+          <Button
+            icon={<PlusOutlined />}
+            type="primary"
+            shape="circle"
+            size="small"
+            onClick={() => showModal(product)}
+          />
+        </Tooltip>
+      ),
+    },
+
+    {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
@@ -215,9 +265,12 @@ const ProductManagerPage: React.FC = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => (
-        <Tag color={status === "available" ? "green" : "red"}>
-          {status === "available" ? "Có sẵn" : "Hết hàng"}
-        </Tag>
+        <Switch
+          checked={status === "available"}
+          checkedChildren=""
+          unCheckedChildren=""
+          className={status === "available" ? "bg-green-500" : "bg-red-500"}
+        />
       ),
     },
     {
@@ -258,20 +311,10 @@ const ProductManagerPage: React.FC = () => {
                 cancelText="Không"
               >
                 <Button className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
-                  Xóa mềm
+                  Xóa
                 </Button>
               </Popconfirm>
 
-              <Popconfirm
-                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
-                onConfirm={() => mutationHardDelete.mutate(product._id)}
-                okText="Có"
-                cancelText="Không"
-              >
-                <Button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
-                  Xóa cứng
-                </Button>
-              </Popconfirm>
               <Link to={`/admin/product/${product._id}/update`}>
                 <Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
                   Cập nhật
@@ -358,7 +401,22 @@ const ProductManagerPage: React.FC = () => {
       </div>
 
       {/* Bảng sản phẩm */}
-      <Table columns={columns} dataSource={products} rowKey="_id" />
+      <Table
+        dataSource={products?.data} // Đẩy data lấy từ backend vào table
+        columns={columns}
+        pagination={{
+          current: currentPage, // Cập nhật trang hiện tại
+          pageSize: pageSize, // Cập nhật số lượng mục trên một trang
+          total: products?.pagination?.totalItems || 0, // Tổng số sản phẩm
+          showSizeChanger: true, // Cho phép thay đổi số lượng sản phẩm hiển thị
+          pageSizeOptions: ["10", "20", "50", "100"], // Các lựa chọn về số lượng sản phẩm hiển thị
+          onChange: (page, pageSize) => {
+            setCurrentPage(page); // Cập nhật trang hiện tại khi thay đổi
+            setPageSize(pageSize); // Cập nhật số lượng mục trên một trang khi thay đổi
+          },
+        }}
+        onChange={handleTableChange} // Hàm để cập nhật dữ liệu khi thay đổi trang
+      />
 
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
@@ -382,11 +440,22 @@ const ProductManagerPage: React.FC = () => {
                 </span>
               </Descriptions.Item>
 
-              {/* Giá sản phẩm */}
               <Descriptions.Item label="Giá sản phẩm">
                 <span className="font-medium text-blue-600">
                   {`${selectedProduct.price.toLocaleString("vi-VN")} VND`}
                 </span>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Giá Sale">
+                <span className="font-medium text-blue-600">
+                  {`${selectedProduct.sale_price.toLocaleString("vi-VN")} VND`}
+                </span>
+
+                {selectedProduct.discount > 0 && (
+                  <span className="ml-2 text-red-500 font-bold">
+                    -{selectedProduct.discount}%
+                  </span>
+                )}
               </Descriptions.Item>
 
               {/* Ảnh sản phẩm chính */}
@@ -453,11 +522,6 @@ const ProductManagerPage: React.FC = () => {
                         .join(", ")
                     : "Không có topping"}
                 </span>
-              </Descriptions.Item>
-
-              {/* Tồn kho */}
-              <Descriptions.Item label="Tồn kho">
-                <span className="text-gray-700">{selectedProduct.stock}</span>
               </Descriptions.Item>
 
               {/* Trạng thái sản phẩm */}
