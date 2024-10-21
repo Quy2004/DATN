@@ -1,5 +1,6 @@
 import Cart from '../models/Cart.js';        
 import Product from '../models/ProductModel';
+import { useParams } from 'react-router-dom';
 
 
 // Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
@@ -58,3 +59,23 @@ export const addtoCart = async (req, res) => {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const removeFormCart = async(req, res, next)=>{
+  try{
+    const {userId, idPro} = req.useParams;
+    const cart = await Cart.findOne ({userId :userId});
+    if(!cart) throw new MongoAPIError(404,"Cart Not Found");
+
+    const newProductCart = cart.products.filter(
+      (item)=> item.product != idPro
+    );
+    const updateCart = await Cart.findByIdAndUpdate(
+      cart.id,
+      {products : newProductCart},
+      {new : true}
+    );
+    
+  }catch(error){
+    return res.status(400).send(error.message)
+  }
+}
