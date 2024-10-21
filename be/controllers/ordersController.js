@@ -37,4 +37,16 @@ export const createOrder = async (req, res) => {
       console.error(error);
       return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
     }
-  };
+
+ 
+  }; //lấy ds đơn hàng của ng dùng
+    export const getOrders = async (req, res) => {
+        try {
+          const { userId } = req.params;
+      
+          const orders = await Order.find({ user_id: userId }).populate('orderDetails.product_id'); 
+          return res.status(200).json(orders);
+        } catch (error) {
+          return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
+        }
+      };
