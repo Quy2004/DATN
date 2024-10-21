@@ -21,7 +21,21 @@ export const createOrder = async (req, res) => {
       // In ra để kiểm tra dữ liệu
       console.log("Cart data:", cart);
       console.log("Total price calculated:", totalPrice);
-      
+       // Tạo đơn hàng mới
+    const order = new Order({
+        user_id: userId,
+        address_id: addressId,
+        totalPrice: totalPrice, // Tổng giá từ giỏ hàng hoặc tính toán
+        orderDetails: cart.products.map(item => ({
+          product_id: item.product,
+          quantity: item.quantity,
+          price: item.price || 12000 // Giá mặc định nếu không có
+        })),
+        paymentMethod, 
+        status: 'Đang xử lý', 
+      });
+       
+   
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
