@@ -34,9 +34,9 @@ export const createOrder = async (req, res) => {
         paymentMethod, 
         status: 'Đang xử lý', 
       });
-       
+       // Lưu đơn hàng vào database
       await order.save();
-
+ // Xóa giỏ hàng sau khi tạo đơn hàng thành công
       await Cart.findOneAndDelete({ userId });
    
     } catch (error) {
