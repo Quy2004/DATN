@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Select, InputNumber, Space, message } from "antd";
+import { Form, Input, Button, Select, Space, message } from "antd";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../../services/api";
 import Title from "antd/es/typography/Title";
@@ -24,7 +24,7 @@ const ProductAddPage: React.FC = () => {
   const [, contextHolder] = message.useMessage();
   const [image, setImage] = useState<string>("");
   const [thumbnails, setThumbnails] = useState<string[]>([]);
-  const [description, setDescription] = useState<string>("");
+
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -155,7 +155,10 @@ const ProductAddPage: React.FC = () => {
           <Form.Item
             label="Tên sản phẩm"
             name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên sản phẩm" },
+              { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
+            ]}
           >
             <Input placeholder="Nhập tên sản phẩm" />
           </Form.Item>
@@ -177,15 +180,42 @@ const ProductAddPage: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
+          {/* Giá sản phẩm */}
           <Form.Item
             label="Giá sản phẩm"
             name="price"
-            rules={[{ required: true, message: "Vui lòng nhập giá sản phẩm" }]}
+            rules={[
+              {
+                validator(_, value) {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập giá sản phẩm")
+                    );
+                  }
+                  const numericValue = Number(value);
+                  if (isNaN(numericValue)) {
+                    return Promise.reject(
+                      new Error("Giá sản phẩm phải là một số hợp lệ")
+                    );
+                  } else if (numericValue <= 0) {
+                    return Promise.reject(
+                      new Error("Giá sản phẩm phải lớn hơn 0")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input placeholder="Nhập giá sản phẩm" />
           </Form.Item>
+
           {/* Upload Ảnh Chính */}
-          <Form.Item label="Upload ảnh chính">
+          <Form.Item
+            label="Ảnh chính"
+            rules={[{ required: true, message: "Vui lòng upload ảnh chính" }]}
+          >
             <Upload
               name="file"
               listType="picture-card"
@@ -197,7 +227,21 @@ const ProductAddPage: React.FC = () => {
           </Form.Item>
 
           {/* Upload Ảnh Phụ */}
-          <Form.Item label="Upload ảnh phụ">
+          <Form.Item
+            label="Ảnh phụ"
+            rules={[
+              {
+                validator(_, value) {
+                  if (!value || value.fileList.length > 0) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Vui lòng upload ít nhất một ảnh phụ")
+                  );
+                },
+              },
+            ]}
+          >
             <Upload
               name="files"
               listType="picture-card"
@@ -210,6 +254,7 @@ const ProductAddPage: React.FC = () => {
           </Form.Item>
 
           <div className="flex flex-col items-center">
+            {/* Size sản phẩm */}
             <Form.List name="product_sizes">
               {(fields, { add, remove }) => (
                 <>
@@ -218,10 +263,34 @@ const ProductAddPage: React.FC = () => {
                       key={field.key}
                       className="flex items-center space-x-4 mb-4 w-full"
                     >
+                      {/* Validate không trùng size và kiểm tra nếu không có size nào được chọn */}
                       <Form.Item
                         name={[field.name, "size_id"]}
                         label="Size"
-                        rules={[{ required: true, message: "Chọn size" }]}
+                        rules={[
+                          { required: true, message: "Chọn size" },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              if (!value) {
+                                return Promise.reject(
+                                  new Error("Vui lòng chọn một size")
+                                );
+                              }
+                              const sizeValues = getFieldValue(
+                                "product_sizes"
+                              ).map((item: ProductSize) => item.size_id);
+                              if (
+                                sizeValues.filter((v: string) => v === value)
+                                  .length > 1
+                              ) {
+                                return Promise.reject(
+                                  new Error("Size đã bị trùng lặp")
+                                );
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
+                        ]}
                         className="flex-1 mb-0"
                       >
                         <Select
@@ -268,7 +337,6 @@ const ProductAddPage: React.FC = () => {
                     </div>
                   ))}
 
-                  {/* Add Button */}
                   <Button
                     className="mt-2 bg-blue-500 text-white"
                     onClick={() => add()}
@@ -288,11 +356,34 @@ const ProductAddPage: React.FC = () => {
                       key={field.key}
                       className="flex items-center space-x-4 mb-4 w-full max-w-3xl mt-6"
                     >
-                      {/* Topping Selection */}
+                      {/* Validate không trùng topping và kiểm tra nếu không có topping nào được chọn */}
                       <Form.Item
                         name={[field.name, "topping_id"]}
                         label="Topping"
-                        rules={[{ required: true, message: "Chọn topping" }]}
+                        rules={[
+                          { required: true, message: "Chọn topping" },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              if (!value) {
+                                return Promise.reject(
+                                  new Error("Vui lòng chọn một topping")
+                                );
+                              }
+                              const toppingValues = getFieldValue(
+                                "product_toppings"
+                              ).map((item: ProductTopping) => item.topping_id);
+                              if (
+                                toppingValues.filter((v: string) => v === value)
+                                  .length > 1
+                              ) {
+                                return Promise.reject(
+                                  new Error("Topping đã bị trùng lặp")
+                                );
+                              }
+                              return Promise.resolve();
+                            },
+                          }),
+                        ]}
                         className="flex-1 mb-0"
                       >
                         <Select
@@ -331,37 +422,39 @@ const ProductAddPage: React.FC = () => {
               )}
             </Form.List>
           </div>
+
           <Form.Item
             label="Mô tả sản phẩm"
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
             className="mt-5"
           >
-            <ReactQuill
-              theme="snow"
-              value={description}
-              onChange={setDescription}
-              placeholder="Nhập mô tả sản phẩm"
-            />
-          </Form.Item>
-
-          <Form.Item
-            className="mt-5"
-            label="Tồn kho"
-            name="stock"
-            rules={[{ required: true, message: "Vui lòng nhập tồn kho" }]}
-          >
-            <InputNumber
-              style={{ width: "100%" }}
-              min={0}
-              placeholder="Nhập tồn kho"
-            />
+            <ReactQuill theme="snow" placeholder="Nhập mô tả sản phẩm" />
           </Form.Item>
 
           <Form.Item
             label="Giảm giá (Tính theo %)"
             name="discount"
-            rules={[{ required: true, message: "Vui lòng nhập giảm giá" }]}
+            initialValue={0}
+            rules={[
+              { required: true, message: "Vui lòng nhập giảm giá" },
+              {
+                validator(_, value) {
+                  const numericValue = Number(value);
+                  if (isNaN(numericValue)) {
+                    return Promise.reject(
+                      new Error("Giảm giá phải là một con số hợp lệ")
+                    );
+                  }
+                  if (numericValue < 0 || numericValue > 100) {
+                    return Promise.reject(
+                      new Error("Giảm giá phải nằm trong khoảng từ 0 đến 100")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input placeholder="Nhập giảm giá" />
           </Form.Item>

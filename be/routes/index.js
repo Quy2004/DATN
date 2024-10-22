@@ -8,7 +8,7 @@ import toppingsRouter from "./toppings.js";
 import authRouter from './auth';
 import addressRouter from "./address.js";
 import RouterCart from "./Cart.js";
-
+import ordersRouter from"./ordersRouter.js"
 
 const router = Router();
 
@@ -25,5 +25,6 @@ router.use("/auth", authRouter);
 router.use("/sizes", sizeRouter); 
 router.use("/address", addressRouter); 
 router.use("/cart", RouterCart); 
+router.use("/orders", ordersRouter);
 
 export default router;

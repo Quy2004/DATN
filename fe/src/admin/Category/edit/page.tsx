@@ -1,5 +1,5 @@
 import { Button, Form, Input, message, Select, Spin } from "antd";
-import React, { useEffect } from "react";
+import React from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";

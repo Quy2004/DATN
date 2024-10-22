@@ -64,33 +64,43 @@ const HomePage: React.FC = () => {
         <img src={images[currentIndex]} alt="" className="w-max" />
         <div className='containerAll mx-auto home'>
           <h1 className='font-semibold text-3xl p-3'>Sản Phẩm Hot</h1>
-          <div className='row grid grid-cols-4 gap-7 text-left h-[330px]'>
+          <div className='row grid grid-cols-4 gap-6 text-left h-[330px]'>
             <div className="cow_left col-span-2">
               <img src="/src/assets/images/banner/banner4.jpg" alt="" className="mb-10" />
             </div>
-            <div className="cow_right col-span-2 flex gap-5 ">
-              {
-                products.map((product: Product) => (
-                  <div className="item">
-                    <div className="product_img">
-                      <Link to='#'>
-                        <img src={`${product.image}`} alt="" />
-                      </Link>
-                    </div>
-                    <Link to="#">
-                      <h3 className="">{product.name}</h3>
+            <div className="cow_right col-span-2 flex gap-6 h-[330px]">
+              {products.slice(0, 2).map((product: Product) => (
+                <div className="item" key={product._id}>
+                  <div className="product_img">
+                    <Link to='#'>
+                      <img src={`${product.image}`} alt="" className="" />
                     </Link>
-                    <p>{formatPrice(product.price)} VNĐ </p>
                   </div>
-                ))
-              }
+                  <Link to="#">
+                    <h3 className="">{product.name}</h3>
+                  </Link>
+                  <p>{formatPrice(product.price)} VNĐ </p>
+                  <div className="w-[255px] mt-5">
+                    <button className="relative inline-flex w-full items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-base font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-[#ea8025] to-orange-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800" >
+                      <span className="relative flex items-center justify-center gap-4 w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                        <h2>Thêm giỏ hàng</h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+          {/* 4 sản phầm HOT */}
           <div className="grid grid-cols-1 ">
             <Slider {...settings}>
+              {/* console.log(product.product_sizes) */}
               {products.map((product: Product) => (
-                <div key={product.name} className="item mx-2.5 ">
-                  <div className="my-14">
+                <div key={product.name} className="item mx-2.5" >
+                  <div className="my-4">
                     <Link to='#' className="overflow-hidden rounded-lg shadow-lg">
                       <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
                     </Link>
@@ -99,6 +109,17 @@ const HomePage: React.FC = () => {
                         <h3 className="">{product.name}</h3>
                       </Link>
                       <p className="md:mx-0">{formatPrice(product.price)} VNĐ </p>
+                      {/* ADD TO CART */}
+                      <div className="w-[260px] mt-5">
+                        <button className="relative inline-flex w-full items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-base font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-[#ea8025] to-orange-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800" >
+                          <span className="relative flex items-center justify-center gap-4 w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
+                            <h2>Thêm giỏ hàng</h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                            </svg>
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -106,12 +127,12 @@ const HomePage: React.FC = () => {
             </Slider>
           </div>
           {/*  */}
-          <div className="banner-mid">
+          <div className="banner-mid mt-16">
             <img src="/src/assets/images/banner/Banner_TX.jpg" alt="" />
           </div>
-        </div>
+        </div >
         <Homes />
-      </div>
+      </div >
     </>
   );
 };
