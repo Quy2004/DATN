@@ -1,6 +1,6 @@
 import Order from '../models/OderModel.js';
 import Cart from '../models/Cart.js';
-import { createOrderDetail } from './OrderDetail'; // Import hàm từ file orderDetailController.js
+// import { createOrderDetail } from './OrderDetail'; // Import hàm từ file orderDetailController.js
 
 // Hàm tạo đơn hàng
 
@@ -35,30 +35,7 @@ export const createOrder = async (req, res) => {
        // Lưu đơn hàng vào database
        await order.save();
 
-       // Tạo các chi tiết đơn hàng cho từng sản phẩm trong giỏ hàng
-    //    const orderDetailsPromises = cart.products.map(async (item) => {
-    //        // Kiểm tra xem các thông tin sản phẩm có đầy đủ không
-    //        if (!item.product || !item.product._id || !item.product.price || !item.product.image) {
-    //            throw new Error("Thông tin sản phẩm không đầy đủ.");
-    //        }
-
-    //        // Gọi hàm tạo chi tiết đơn hàng từ OrderDetail
-    //        const orderDetail = await createOrderDetail(
-    //            order._id, // ID đơn hàng
-    //            item.product._id, // ID sản phẩm
-    //            item.quantity, // Số lượng
-    //            item.product.price, // Giá từ sản phẩm
-    //            item.product.image // Hình ảnh từ sản phẩm
-    //        );
-
-    //        return orderDetail._id; // Trả về ID của chi tiết đơn hàng
-    //    });
-
-    //    // Đợi tất cả chi tiết đơn hàng được lưu
-    //    const orderDetailIds = await Promise.all(orderDetailsPromises);
-
-    //    // Cập nhật lại đơn hàng với orderDetail_id đã lưu
-    //    order.orderDetail_id = orderDetailIds; 
+      
        await order.save();
  // Xóa giỏ hàng sau khi tạo đơn hàng thành công
       await Cart.findOneAndDelete({ userId });
