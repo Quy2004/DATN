@@ -15,6 +15,7 @@ import { PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
+import moment from "moment";
 
 const { Title } = Typography;
 
@@ -169,11 +170,13 @@ const Voucher = () => {
 			title: "Ngày bắt đầu",
 			dataIndex: "minOrderDate",
 			key: "minOrderDate",
+			render: (text : any) => moment(text).format('DD/MM/YYYY HH:mm'),
 		},
 		{
 			title: "Ngày kết thúc",
 			dataIndex: "maxOrderDate",
 			key: "maxOrderDate",
+			render: (text : any) => moment(text).format('DD/MM/YYYY HH:mm'),
 		},
 		{
 			title: "Hành động",
