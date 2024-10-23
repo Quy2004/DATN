@@ -15,30 +15,30 @@ class ProductController {
       } = req.query;
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
-      let query = {
-        isDeleted: false, // Chỉ lấy các sản phẩm chưa bị xóa
-        name: { $regex: search, $options: "i" }, // Tìm kiếm theo tên sản phẩm
+      const query = {
+        isDeleted: isDeleted === "true" ? true : false,
       };
 
-      // Lọc theo danh mục
+      if (search) {
+        query.name = { $regex: search, $options: "i" }; // Tìm kiếm theo tên sản phẩm
+      }
+
+      // Lọc theo danh mục nếu có
       if (category) {
         query.category_id = category;
       }
-      // Lọc theo trạng thái xóa mềm
-      if (isDeleted !== undefined) {
-        query.isDeleted = isDeleted === "true"; // Kiểm tra nếu isDeleted là chuỗi 'true'
-      }
-      // Lọc theo trạng thái sản phẩm
+
+      // Lọc theo trạng thái sản phẩm nếu có
       if (status) {
         query.status = status;
       }
 
-      // Lọc theo size
+      // Lọc theo kích thước sản phẩm nếu có
       if (size) {
         query["product_sizes.size_id"] = size;
       }
 
-      // Lọc theo topping
+      // Lọc theo topping nếu có
       if (topping) {
         query["product_toppings.topping_id"] = topping;
       }
@@ -47,19 +47,30 @@ class ProductController {
         page: parseInt(page),
         limit: parseInt(limit),
         populate: [
-          "category_id",
-          "product_sizes.size_id",
-          "product_toppings.topping_id",
+          { path: "category_id", select: "title" },
+          { path: "product_sizes.size_id", select: "name" },
+          { path: "product_toppings.topping_id", select: "nameTopping" },
         ],
+        lean: true,
       };
 
-      const products = await Product.paginate(query, options);
+      // Số lượng mục trên mỗi trang
+      const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
+      const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
 
+
+      // Thực hiện query với phân trang
+      const products = await Product.paginate(query, options);
+      // Tổng số danh mục để tính tổng số trang
+      const totalItems = await Product.countDocuments(query);
       res.status(200).json({
         message: "Lấy sản phẩm thành công",
         data: products.docs,
-        totalPages: products.totalPages,
-        currentPage: products.page,
+        pagination: {
+          totalItems: products.totalDocs, 
+          currentPage: products.page, 
+          totalPages: products.totalPages, 
+        },
       });
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -85,12 +96,21 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
-
+  // Thêm sản phẩm mới
   async createProduct(req, res) {
     try {
-      const product = await Product.create(req.body);
+      const { price, discount = 0 } = req.body;
+
+      // Tính toán giá sale_price
+      const sale_price = price - (price * discount) / 100;
+
+      const product = await Product.create({
+        ...req.body,
+        sale_price: sale_price.toFixed(2), // Làm tròn đến 2 chữ số thập phân
+      });
+
       res.status(201).json({
-        message: "Tạo sản phẩm thành công",
+        message: "Thêm sản phẩm thành công",
         data: product,
       });
     } catch (error) {
@@ -101,9 +121,19 @@ class ProductController {
   // Cập nhật sản phẩm
   async updateProduct(req, res) {
     try {
-      const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-      });
+      const { price, discount = 0 } = req.body;
+
+      // Tính toán giá sale_price
+      const sale_price = price - (price * discount) / 100;
+
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        {
+          ...req.body,
+          sale_price: sale_price.toFixed(2), // Làm tròn đến 2 chữ số thập phân
+        },
+        { new: true }
+      );
 
       if (!product || product.isDeleted) {
         return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
@@ -117,6 +147,7 @@ class ProductController {
       res.status(400).json({ message: error.message });
     }
   }
+
   // Xóa mềm
   async softDeleteProduct(req, res) {
     try {

@@ -16,7 +16,8 @@ export interface ProductTopping {
 export interface Product {
     _id: string;
     name: string;
-    price: number
+    price: number;
+    sale_price: number;
     category_id: Category[];
     image: string;
     thumbnail: string[];
