@@ -31,10 +31,10 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "completed", "canceled"],
       default: "pending",
     },
-  //   orderDetail_id: [{
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "OrderDetail", 
-  // }],
+    orderDetail_id: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "OrderDetail", 
+  }],
     payment_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",

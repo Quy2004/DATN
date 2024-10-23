@@ -1,6 +1,6 @@
 import Order from '../models/OderModel.js';
 import Cart from '../models/Cart.js';
-// import { createOrderDetail } from './OrderDetail'; // Import hàm từ file orderDetailController.js
+import { createOrderDetail } from './OrderDetail'; // Import hàm từ file orderDetailController.js
 
 // Hàm tạo đơn hàng
 
