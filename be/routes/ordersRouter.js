@@ -11,4 +11,7 @@ router.post('/', createOrder);
 // Lấy danh sách đơn hàng của người dùng
 router.get('/:userId', getOrders);
 
+// Cập nhật trạng thái đơn hàng
+router.put('/orders/status/:orderId', updateOrderStatus);
+
 export default router;

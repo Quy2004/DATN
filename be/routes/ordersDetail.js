@@ -1,7 +1,7 @@
 import express from "express";
 import {
   createOrderDetail,
-  // getOrderDetails,
+  getOrderDetails,
   // getOrderDetailById,
   // updateOrderDetail,
 
@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/", createOrderDetail);
 
 // Lấy danh sách tất cả chi tiết đơn hàng
-// router.get("/", getOrderDetails);
+router.get("/", getOrderDetails);
 
 // Lấy chi tiết đơn hàng theo orderId và productId
 // router.get("/:orderId/:productId", getOrderDetailById);

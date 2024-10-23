@@ -88,3 +88,20 @@ export const createOrder = async (req, res) => {
       return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
     }
   };
+
+  // Cập nhật trạng thái đơn hàng
+export const updateOrderStatus = async (req, res) => {
+    try {
+   
+      const { status } = req.body;
+  
+      // Kiểm tra trạng thái hợp lệ
+      const validStatuses = ['Đang xử lý', 'Đã giao', 'Đã hủy'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Trạng thái không hợp lệ." });
+      }
+      return res.status(200).json({ message: "Cập nhật trạng thái đơn hàng thành công.", order });
+    } catch (error) {
+      return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
+    }
+  };
