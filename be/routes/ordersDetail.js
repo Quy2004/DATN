@@ -1,9 +1,9 @@
 import express from "express";
 import {
   createOrderDetail,
-  getOrderDetails,
-  getOrderDetailById,
-  updateOrderDetail,
+  // getOrderDetails,
+  // getOrderDetailById,
+  // updateOrderDetail,
 
 } from "../controllers/OrderDetail";
 
