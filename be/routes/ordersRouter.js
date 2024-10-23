@@ -1,7 +1,8 @@
 import express from "express";
 import {
     createOrder,
-    getOrders
+    getOrders,
+    updateOrderStatus
   } from "../controllers/ordersController";
 
 const router = express.Router();
@@ -12,6 +13,6 @@ router.post('/', createOrder);
 router.get('/:userId', getOrders);
 
 // Cập nhật trạng thái đơn hàng
-router.put('/orders/status/:orderId', updateOrderStatus);
+router.put('/status/:orderId', updateOrderStatus);
 
 export default router;
