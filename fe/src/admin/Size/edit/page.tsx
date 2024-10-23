@@ -5,14 +5,11 @@ import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
+import { Size } from "../../../types/product";
 
 const { Option } = Select;
 
-type FieldType = {
-	name?: string;
-	priceSize: number; // Đảm bảo trường này là bắt buộc
-	category_id?: string;
-};
+
 
 const SizeUpdatePage = () => {
 	const { id } = useParams();
@@ -52,7 +49,7 @@ const SizeUpdatePage = () => {
 
 	// Mutation để cập nhật size
 	const { mutate } = useMutation({
-		mutationFn: async (size: FieldType) => {
+		mutationFn: async (size: Size) => {
 			return await instance.put(`/sizes/${id}`, size);
 		},
 		onSuccess: () => {
@@ -68,7 +65,7 @@ const SizeUpdatePage = () => {
 	});
 
 	// Xử lý khi submit form
-	const onFinish = (values: FieldType) => {
+	const onFinish = (values: Size) => {
 		mutate(values);
 	};
 
@@ -105,7 +102,7 @@ const SizeUpdatePage = () => {
 					onFinish={onFinish}
 					autoComplete="off"
 				>
-					<Form.Item<FieldType>
+					<Form.Item<Size>
 						label="Tên size"
 						name="name"
 						rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
@@ -134,7 +131,7 @@ const SizeUpdatePage = () => {
 						</Select>
 					</Form.Item>
 
-					<Form.Item<FieldType>
+					<Form.Item<Size>
 						label="Giá tiền"
 						name="priceSize"
 						rules={[{ required: true, message: "Vui lòng giá của size!" }]}

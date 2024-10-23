@@ -1,7 +1,9 @@
 .cow_left img {
-    width: 620px;
+    width: 542px;
     height: 360px;
     border-radius: 10px;
+    margin-left: auto;
+
 }
 
 .product_img img {
