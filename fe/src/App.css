@@ -97,3 +97,9 @@ header .sticky #main-menu p{
 .drawer-open {
   background-color: transparent !important; /* Loại bỏ màu nền mờ */
 }
+/* Input-antd */
+.Input-antd {
+  @apply h-30px !important; /* Đảm bảo chiều cao 30px */
+  @apply rounded-lg !important; /* Đảm bảo bo góc */
+  @apply border-custom !important; /* Đảm bảo màu viền */
+}
