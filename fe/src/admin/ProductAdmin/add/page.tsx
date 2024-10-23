@@ -33,6 +33,7 @@ const ProductAddPage: React.FC = () => {
     queryKey: ["categories"],
     queryFn: async () => {
       const response = await instance.get(`/categories`);
+      console.log(response.data);
       return response.data;
     },
   });
@@ -131,7 +132,11 @@ const ProductAddPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Thêm mới sản phẩm</Title>
-        <Button type="primary" icon={<DoubleLeftOutlined />}>
+        <Button
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+          type="primary"
+          icon={<DoubleLeftOutlined />}
+        >
           <Link to="/admin/product" style={{ color: "white" }}>
             Quay lại
           </Link>
@@ -392,11 +397,17 @@ const ProductAddPage: React.FC = () => {
                           disabled={isLoadingToppings}
                           className="w-full"
                         >
-                          {toppings?.data.map((topping: Topping) => (
-                            <Option key={topping._id} value={topping._id}>
-                              {topping.nameTopping}
-                            </Option>
-                          ))}
+                          {toppings?.data
+                            .filter(
+                              (topping: Topping) =>
+                                topping.statusTopping === "available" &&
+                                topping.isDeleted === false
+                            )
+                            .map((topping: Topping) => (
+                              <Option key={topping._id} value={topping._id}>
+                                {topping.nameTopping}
+                              </Option>
+                            ))}
                         </Select>
                       </Form.Item>
 

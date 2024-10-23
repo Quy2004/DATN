@@ -211,7 +211,7 @@ export const CategoryManagerPage = () => {
 
               <Popconfirm
                 title="Xóa cứng danh mục"
-                description="Bạn có chắc muốn xóa cứng danh mục này không?"
+                description="Bạn có chắc muốn xóa danh mục này vĩnh viễn?"
                 onConfirm={() =>
                   mutationHardDeleteCategory.mutate(category._id)
                 }
@@ -235,7 +235,7 @@ export const CategoryManagerPage = () => {
                 cancelText="No"
               >
                 <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-                  Xóa mềm
+                  Xóa
                 </Button>
               </Popconfirm>
 
@@ -284,7 +284,6 @@ export const CategoryManagerPage = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
-
         <div className="flex space-x-3">
           <Search
             placeholder="Tìm kiếm danh mục"
@@ -305,19 +304,27 @@ export const CategoryManagerPage = () => {
             <Button
               type="primary"
               icon={<DeleteOutlined />}
+              className={`transform transition-transform duration-300 ${
+                isDelete ? "scale-110" : ""
+              }`}
               onClick={() => setIsDelete(!isDelete)}
-            >
-              {isDelete ? "" : ""}
-            </Button>
+            ></Button>
           </Tooltip>
-
-          <Button type="primary" icon={<PlusCircleFilled />}>
-            <Link to="/admin/category/add" style={{ color: "white" }}>
-              Thêm danh mục
-            </Link>
-          </Button>
         </div>
+        <Button
+          type="primary"
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+        >
+          <Link
+            to="/admin/category/add"
+            className="flex items-center space-x-2"
+          >
+            <PlusCircleFilled />
+            <span>Thêm danh mục</span>
+          </Link>
+        </Button>
       </div>
+
       <Table
         dataSource={dataSource}
         columns={columns}
