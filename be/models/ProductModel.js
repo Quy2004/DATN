@@ -60,11 +60,6 @@ const ProductSchema = new Schema(
         topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
       },
     ],
-    stock: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
     status: {
       type: String,
       enum: ["available", "unavailable"],

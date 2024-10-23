@@ -2,7 +2,7 @@
 export interface Topping {
     _id: string;
     nameTopping: string;
-    priceTopping?: number;
+    priceTopping: number;
     statusTopping: string;
     isDeleted: boolean;
 }

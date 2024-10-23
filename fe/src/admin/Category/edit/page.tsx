@@ -1,5 +1,5 @@
-import { Button, Form, Input, message, Select, Spin } from "antd";
-import React from "react";
+import { Button, Form, Input, message, Select, Space, Spin } from "antd";
+import React, { useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import { Category } from "../../../types/category";
 
 type FieldType = {
   title?: string;
-  parent_id?: string;
+  parent_id?: string | null;
 };
 
 const CategoryUpdatePage = () => {
@@ -56,12 +56,24 @@ const CategoryUpdatePage = () => {
     },
   });
 
-  // Xử lý khi submit form
   const onFinish = (values: FieldType) => {
-    mutate(values);
+    const updatedValues = {
+      ...values,
+      parent_id: values.parent_id || null,
+    };
+
+    mutate(updatedValues);
   };
 
-  // Lọc danh mục cha (chỉ những danh mục không có parent_id)
+  useEffect(() => {
+    if (categoryData) {
+      form.setFieldsValue({
+        title: categoryData?.category?.title,
+        parent_id: categoryData?.category?.parent_id?._id || null,
+      });
+    }
+  }, [categoryData, form]);
+
   const parentCategories = Array.isArray(categories)
     ? categories.filter((category: Category) => !category.parent_id)
     : [];
@@ -78,7 +90,10 @@ const CategoryUpdatePage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Cập nhật danh mục</h1>
-        <Button type="primary">
+        <Button
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+          type="primary"
+        >
           <Link to="/admin/category">
             <BackwardFilled /> Quay lại
           </Link>
@@ -93,16 +108,15 @@ const CategoryUpdatePage = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           onFinish={onFinish}
-          initialValues={{
-            title: categoryData?.category?.title,
-            parent_id: categoryData?.category?.parent_id?._id,
-          }}
           autoComplete="off"
         >
           <Form.Item
             label="Tên danh mục"
             name="title"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên danh mục!" },
+              { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự!" },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -123,9 +137,17 @@ const CategoryUpdatePage = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Cập nhật danh mục
-            </Button>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                Cập nhật danh mục
+              </Button>{" "}
+              <Button
+                htmlType="reset"
+                className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition"
+              >
+                Làm mới
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       </div>
