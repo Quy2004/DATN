@@ -1,6 +1,5 @@
 import Cart from "../models/Cart.js";
 import Product from "../models/ProductModel";
-import { useParams } from "react-router-dom";
 
 // Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
 export const addtoCart = async (req, res) => {
