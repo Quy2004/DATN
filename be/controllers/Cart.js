@@ -66,26 +66,4 @@ export const addtoCart = async (req, res) => {
   }
 };
 
-export const removeFormCart = async (req, res, next) => {
-  try {
-    const { userId, idPro } = req.useParams;
-    const cart = await Cart.findOne({ userId: userId });
-    if (!cart) throw new MongoAPIError(404, "Cart Not Found");
 
-    const newProductCart = cart.products.filter(
-      (item) => item.product != idPro
-    );
-    const updateCart = await Cart.findByIdAndUpdate(
-      cart.id,
-      { products: newProductCart },
-      { new: true }
-    );
-    if (!updateCart) throw new MongoAPIError(404, "Cart Not Found");
-    return res.status(201).json({
-      message: "Delete Product Cart Successfull",
-      data : updateCart,
-    });
-  } catch (error) {
-    return res.status(400).send(error.message);
-  }
-};
