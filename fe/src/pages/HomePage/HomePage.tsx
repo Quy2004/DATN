@@ -66,7 +66,7 @@ const HomePage: React.FC = () => {
           <h1 className='font-semibold text-3xl p-3'>Sản Phẩm Hot</h1>
           <div className='row grid grid-cols-4 gap-6 text-left h-[330px]'>
             <div className="cow_left col-span-2">
-              <img src="/src/assets/images/banner/banner4.jpg" alt="" className="mb-10" />
+              <img src="/src/assets/images/banner/banner4.jpg" alt="" className="mb-10 " />
             </div>
             <div className="cow_right col-span-2 flex gap-6 h-[330px]">
               {products.slice(0, 2).map((product: Product) => (
@@ -95,11 +95,11 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           {/* 4 sản phầm HOT */}
-          <div className="grid grid-cols-1 ">
+          <div className="grid grid-cols-1">
             <Slider {...settings}>
               {/* console.log(product.product_sizes) */}
               {products.map((product: Product) => (
-                <div key={product.name} className="item mx-2.5" >
+                <div key={product.name} className="item mx-2" >
                   <div className="my-4">
                     <Link to='#' className="overflow-hidden rounded-lg shadow-lg">
                       <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />

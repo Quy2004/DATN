@@ -15,10 +15,7 @@ const orderDetailSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  price: {
-    type: mongoose.Schema.Types.Decimal128,
-    required: true,
-  },
+  price: { type: Number, required: true },
   image: { // Thêm trường image
     type: String, // Có thể sử dụng kiểu String cho URL hình ảnh
   },

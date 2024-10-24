@@ -11,4 +11,8 @@ productsRouter.put("/:id", productsController.updateProduct);
 productsRouter.patch("/:id/soft-delete", productsController.softDeleteProduct);
 productsRouter.delete("/:id/hard-delete", productsController.hardDeleteProduct);
 productsRouter.patch("/:id/restore", productsController.restoreProduct);
+productsRouter.patch(
+  "/:id/update-status",
+  productsController.updateStatusProduct
+);
 export default productsRouter;
