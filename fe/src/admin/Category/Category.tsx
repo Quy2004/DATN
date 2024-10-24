@@ -8,11 +8,12 @@ import {
   message,
   Select,
   TablePaginationConfig,
+  Tooltip,
 } from "antd";
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusCircleFilled } from "@ant-design/icons";
+import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
@@ -27,6 +28,7 @@ export const CategoryManagerPage = () => {
   const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("active");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDelete, setIsDelete] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -37,6 +39,9 @@ export const CategoryManagerPage = () => {
   const updateUrlParams = useCallback(() => {
     const params = new URLSearchParams(location.search);
     if (searchTerm) params.set("search", searchTerm);
+    if (isDelete) {
+      params.set("isDelete", "true");
+    }
     params.set("filterStatus", filterStatus);
     params.set("page", currentPage.toString());
     params.set("limit", pageSize.toString());
@@ -47,21 +52,35 @@ export const CategoryManagerPage = () => {
     currentPage,
     pageSize,
     location.search,
+    isDelete,
     navigate,
-  ]); // Đảm bảo tất cả dependencies ở đây
+  ]);
 
   useEffect(() => {
     updateUrlParams();
-  }, [filterStatus, searchTerm, currentPage, pageSize, updateUrlParams]);
+  }, [
+    filterStatus,
+    searchTerm,
+    currentPage,
+    pageSize,
+    isDelete,
+    updateUrlParams,
+  ]);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["categories", filterStatus, searchTerm, currentPage, pageSize],
+    queryKey: [
+      "categories",
+      filterStatus,
+      searchTerm,
+      currentPage,
+      pageSize,
+      isDelete,
+    ],
     queryFn: async () => {
       try {
+        const trashParam = isDelete ? `&isDeleted=true` : "";
         const response = await instance.get(
-          `/categories?isDeleted=${
-            filterStatus === "deleted" ? true : false
-          }&all=${
+          `/categories?&${trashParam}&all=${
             filterStatus === "all" ? true : false
           }&search=${searchTerm}&page=${currentPage}&limit=${pageSize}`
         );
@@ -150,6 +169,20 @@ export const CategoryManagerPage = () => {
       title: "Tên danh mục",
       dataIndex: "title",
       key: "title",
+      render: (text: string, category: Category) => (
+        <div>
+          {category.isDeleted ? (
+            <>
+              <DeleteOutlined style={{ color: "red", marginRight: 8 }} />
+              <span style={{ textDecoration: "line-through", color: "gray" }}>
+                {text}
+              </span>
+            </>
+          ) : (
+            text
+          )}
+        </div>
+      ),
     },
     {
       title: "Danh mục cha",
@@ -162,48 +195,57 @@ export const CategoryManagerPage = () => {
       render: (_: string, category: Category) => (
         <div className="flex flex-wrap gap-4">
           {category.isDeleted ? (
-            // Hiển thị nút khôi phục nếu danh mục đã bị xóa mềm
-            <Popconfirm
-              title="Khôi phục danh mục"
-              description="Bạn có chắc muốn khôi phục danh mục này không?"
-              onConfirm={() => mutationRestoreCategory.mutate(category._id)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-                Khôi phục
-              </Button>
-            </Popconfirm>
+            // Nếu danh mục bị xóa mềm, hiển thị nút khôi phục và xóa cứng
+            <>
+              <Popconfirm
+                title="Khôi phục danh mục"
+                description="Bạn có chắc muốn khôi phục danh mục này không?"
+                onConfirm={() => mutationRestoreCategory.mutate(category._id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                  Khôi phục
+                </Button>
+              </Popconfirm>
+
+              <Popconfirm
+                title="Xóa cứng danh mục"
+                description="Bạn có chắc muốn xóa danh mục này vĩnh viễn?"
+                onConfirm={() =>
+                  mutationHardDeleteCategory.mutate(category._id)
+                }
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
+                  Xóa cứng
+                </Button>
+              </Popconfirm>
+            </>
           ) : (
-            // Hiển thị nút xóa mềm nếu danh mục chưa bị xóa mềm
-            <Popconfirm
-              title="Xóa mềm danh mục"
-              description="Bạn có chắc muốn xóa mềm danh mục này không?"
-              onConfirm={() => mutationSoftDeleteCategory.mutate(category._id)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-                Xóa mềm
+            <>
+              <Popconfirm
+                title="Xóa mềm danh mục"
+                description="Bạn có chắc muốn xóa mềm danh mục này không?"
+                onConfirm={() =>
+                  mutationSoftDeleteCategory.mutate(category._id)
+                }
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
+                  Xóa
+                </Button>
+              </Popconfirm>
+
+              <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+                <Link to={`/admin/category/${category._id}/update`}>
+                  Cập nhật
+                </Link>
               </Button>
-            </Popconfirm>
+            </>
           )}
-
-          <Popconfirm
-            title="Xóa cứng danh mục"
-            description="Bạn có chắc muốn xóa cứng danh mục này không?"
-            onConfirm={() => mutationHardDeleteCategory.mutate(category._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
-              Xóa cứng
-            </Button>
-          </Popconfirm>
-
-          <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-            <Link to={`/admin/category/${category._id}/update`}>Cập nhật</Link>
-          </Button>
         </div>
       ),
     },
@@ -242,7 +284,6 @@ export const CategoryManagerPage = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách danh mục</Title>
-
         <div className="flex space-x-3">
           <Search
             placeholder="Tìm kiếm danh mục"
@@ -257,15 +298,33 @@ export const CategoryManagerPage = () => {
           >
             <Option value="all">Tất cả danh mục</Option>
             <Option value="active">Danh mục hoạt động</Option>
-            <Option value="deleted">Danh mục đã xóa mềm</Option>
           </Select>
-          <Button type="primary" icon={<PlusCircleFilled />}>
-            <Link to="/admin/category/add" style={{ color: "white" }}>
-              Thêm danh mục
-            </Link>
-          </Button>
+
+          <Tooltip title="Sản phẩm đã xóa mềm">
+            <Button
+              type="primary"
+              icon={<DeleteOutlined />}
+              className={`transform transition-transform duration-300 ${
+                isDelete ? "scale-110" : ""
+              }`}
+              onClick={() => setIsDelete(!isDelete)}
+            ></Button>
+          </Tooltip>
         </div>
+        <Button
+          type="primary"
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+        >
+          <Link
+            to="/admin/category/add"
+            className="flex items-center space-x-2"
+          >
+            <PlusCircleFilled />
+            <span>Thêm danh mục</span>
+          </Link>
+        </Button>
       </div>
+
       <Table
         dataSource={dataSource}
         columns={columns}

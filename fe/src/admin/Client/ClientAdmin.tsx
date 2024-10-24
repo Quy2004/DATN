@@ -1,20 +1,23 @@
 import {
+	Alert,
+	Button,
+	Descriptions,
+	Image,
+	message,
+	Modal,
+	Popconfirm,
+	Select,
+	Spin,
 	Table,
 	Typography,
-	Spin,
-	Alert,
-	Popconfirm,
-	Button,
-	message,
-	Select,
 } from "antd";
 
-import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusCircleFilled } from "@ant-design/icons";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import instance from "../../services/api";
+import { User } from "../../types/user";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -24,6 +27,8 @@ const ClientAdmin = () => {
 	const queryClient = useQueryClient();
 	const [filterStatus, setFilterStatus] = useState("active");
 	const [searchTerm, setSearchTerm] = useState("");
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
 	const [filterRole, setFilterRole] = useState("allUser"); // lọc role
 	const [currentPage, setCurrentPage] = useState(1); // State cho phân trang
@@ -173,6 +178,19 @@ const ClientAdmin = () => {
 		setCurrentPage(pagination.current); // Cập nhật trang hiện tại
 		setPageSize(pagination.pageSize); // Cập nhật số lượng mỗi trang
 	};
+
+	// Hàm để hiển thị chi tiết user trong Modal
+	const showModal = (product: User) => {
+		setSelectedUser(product); // Lưu user được chọn
+		setIsModalVisible(true); // Mở Modal
+	};
+
+	// Hàm để đóng Modal
+	const handleCloseModal = () => {
+		setIsModalVisible(false);
+		setSelectedUser(null); // Reset user khi đóng Modal
+	};
+
 	const columns = [
 		{
 			title: "STT",
@@ -180,9 +198,17 @@ const ClientAdmin = () => {
 			key: "key",
 		},
 		{
-			title: "Tên",
+			title: "Tên user",
 			dataIndex: "userName",
 			key: "userName",
+			render: (text: string, user: User) => (
+				<span
+					onClick={() => showModal(user)}
+					className="text-gray-950 cursor-pointer hover:text-blue-700"
+				>
+					{text}
+				</span>
+			),
 		},
 		{
 			title: "Email",
@@ -212,7 +238,7 @@ const ClientAdmin = () => {
 					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
 					style={{ width: 150 }}
 				>
-					<Option value="admin">Admin</Option>					
+					<Option value="admin">Admin</Option>
 					<Option value="manager">Manager</Option>
 					<Option value="user">User</Option>
 				</Select>
@@ -334,6 +360,79 @@ const ClientAdmin = () => {
 				}}
 				onChange={handleTableChange}
 			/>
+
+			<Modal
+				title="Chi tiết user"
+				open={isModalVisible}
+				onCancel={handleCloseModal}
+				footer={null}
+				width={800}
+			>
+				{selectedUser && (
+					<div className="p-5">
+						<Descriptions
+							bordered
+							column={2}
+							className="bg-gray-50 rounded-lg shadow-sm border border-gray-200"
+						>
+							{/* Tên user */}
+							<Descriptions.Item
+								label="Tên user"
+								span={2}
+							>
+								<span className="font-semibold text-lg text-gray-900">
+									{selectedUser.userName}
+								</span>
+							</Descriptions.Item>
+
+							{/* email user */}
+							<Descriptions.Item
+								label="Email user"
+								span={2}
+							>
+								<span className="font-medium text-blue-600">
+									{`${selectedUser.email} `}
+								</span>
+							</Descriptions.Item>
+
+							{/* Ảnh user  */}
+							<Descriptions.Item
+								label="Avatar user"
+								span={2}
+							>
+								<Image
+									src={selectedUser.avatars}
+									alt="Ảnh user"
+									width={100}
+									className="rounded-md border border-gray-200 shadow-sm"
+								/>
+							</Descriptions.Item>
+
+							{/* trạng thái user */}
+							<Descriptions.Item
+								label="Trạng thái user"
+								span={2}
+							>
+								<span className="font-semibold">
+									{selectedUser.isDeleted ? "Đã bị khóa" : "Hoạt động"}
+								</span>
+							</Descriptions.Item>
+
+							<Descriptions.Item label="Vai trò">
+								<span className="font-semibold">
+									{selectedUser.role === "admin"
+										? "Admin"
+										: selectedUser.role === "user"
+										? "Người dùng"
+										: selectedUser.role === "manager"
+										? "Nhân viên"
+										: "Không xác định"}
+								</span>
+							</Descriptions.Item>
+						</Descriptions>
+					</div>
+				)}
+			</Modal>
 		</>
 	);
 };

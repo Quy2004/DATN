@@ -22,6 +22,11 @@ const ProductSchema = new Schema(
       type: Number,
       required: true,
     },
+    sale_price: {
+      type: Number,
+      required: true,
+    },
+
     discount: {
       type: Number,
       default: 0,
@@ -55,11 +60,6 @@ const ProductSchema = new Schema(
         topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
       },
     ],
-    stock: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
     status: {
       type: String,
       enum: ["available", "unavailable"],

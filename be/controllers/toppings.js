@@ -6,7 +6,7 @@ class ToppingController {
     try {
       const {
         page = 1,
-        limit = 10,
+        limit,
         search,
         statusTopping,
         isDeleted,
@@ -168,7 +168,59 @@ class ToppingController {
       res.status(400).json({ message: error.message });
     }
   }
-}
+  // Cập nhật trạng thái topping
+  async updateStatusTopping(req, res) {
+    try {
+      const { statusTopping } = req.body; // Lấy trạng thái mới từ request body
 
+      // Kiểm tra nếu trạng thái được truyền vào không hợp lệ
+      if (
+        !statusTopping ||
+        !["available", "unavailable"].includes(statusTopping)
+      ) {
+        return res.status(400).json({ message: "Trạng thái không hợp lệ!" });
+      }
+
+      // Cập nhật trạng thái của topping
+      const topping = await Topping.findByIdAndUpdate(
+        req.params.id,
+        { statusTopping },
+        { new: true }
+      );
+
+      if (!topping || topping.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy topping" });
+      }
+
+      res.status(200).json({
+        message: "Cập nhật trạng thái topping thành công!",
+        data: topping,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  // Khôi phục topping
+  async restoreTopping(req, res) {
+    try {
+      const topping = await Topping.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: false },
+        { new: true }
+      );
+
+      if (!topping) {
+        return res.status(404).json({ message: "Không tìm thấy topping" });
+      }
+
+      res.status(200).json({
+        message: "Khôi phục topping thành công!",
+        data: topping,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+}
 
 export default ToppingController;

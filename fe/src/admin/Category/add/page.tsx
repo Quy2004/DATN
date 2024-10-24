@@ -1,4 +1,4 @@
-import { Button, Form, FormProps, Input, message, Select } from "antd";
+import { Button, Form, FormProps, Input, message, Select, Space } from "antd";
 import React from "react";
 import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ const CategoryAddPage = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  // Fetch danh mục cha (nếu có)
+  // Call API
   const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -59,7 +59,10 @@ const CategoryAddPage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Thêm danh mục mới</h1>
-        <Button type="primary">
+        <Button
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+          type="primary"
+        >
           <Link to="/admin/category">
             <BackwardFilled /> Quay lại
           </Link>
@@ -79,7 +82,10 @@ const CategoryAddPage = () => {
           <Form.Item<FieldType>
             label="Tên danh mục"
             name="title"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên danh mục!" },
+              { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự" },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -100,9 +106,17 @@ const CategoryAddPage = () => {
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-              Thêm danh mục
-            </Button>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                Thêm danh mục
+              </Button>
+              <Button
+                htmlType="reset"
+                className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition"
+              >
+                Làm mới
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       </div>

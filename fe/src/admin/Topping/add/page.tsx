@@ -67,7 +67,12 @@ const ToppingAddPage = () => {
           <Form.Item<FieldType>
             label="Tên Topping"
             name="nameTopping"
-            rules={[{ required: true, message: "Vui lòng nhập tên Topping!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên Topping!" },
+              { whitespace: true, message: "Tên Topping không được để trống!" },
+              { min: 2, message: "Tên Topping phải có ít nhất 2 ký tự!" },
+              { max: 50, message: "Tên Topping không được quá 50 ký tự!" },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -75,9 +80,23 @@ const ToppingAddPage = () => {
           <Form.Item<FieldType>
             label="Giá Topping"
             name="priceTopping"
-            rules={[{ required: true, message: "Vui lòng nhập giá Topping!" }]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập giá Topping!")
+                    );
+                  }
+                  if (value <= 0) {
+                    return Promise.reject(new Error("Giá phải lớn hơn 0!"));
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
-            <Input type="number" min={0} />
+            <Input type="number" />
           </Form.Item>
 
           <Form.Item
