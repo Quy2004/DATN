@@ -87,7 +87,10 @@ const CategoryAddPage = () => {
               { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự" },
             ]}
           >
-            <Input />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên danh mục"
+            />
           </Form.Item>
 
           {/* Select để chọn danh mục cha */}

@@ -218,7 +218,10 @@ const ProductEditPage: React.FC = () => {
               { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
             ]}
           >
-            <Input placeholder="Nhập tên sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên sản phẩm"
+            />
           </Form.Item>
 
           {/* Danh mục sản phẩm */}
@@ -263,7 +266,10 @@ const ProductEditPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giá sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giá sản phẩm"
+            />
           </Form.Item>
 
           <div className="flex flex-col gap-5 mt-5 justify-center items-center">
@@ -533,7 +539,10 @@ const ProductEditPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giảm giá" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giảm giá"
+            />
           </Form.Item>
 
           {/* Trạng thái */}
