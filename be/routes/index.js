@@ -10,6 +10,7 @@ import addressRouter from "./address.js";
 import RouterCart from "./Cart.js";
 import ordersRouter from"./ordersRouter.js"
 import ordersDetailRouter from"./ordersDetail.js"
+import bannerRouter from "./banners.js";
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -27,5 +28,6 @@ router.use("/address", addressRouter);
 router.use("/cart", RouterCart); 
 router.use("/orders", ordersRouter);
 router.use("/orders-detail", ordersDetailRouter);
+router.use("/banners", bannerRouter);
 
 export default router;

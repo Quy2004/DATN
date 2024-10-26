@@ -40,6 +40,10 @@ import ToppingUpdatePage from "../admin/Topping/edit/page";
 import ProductManagerPage from "../admin/ProductAdmin/Product";
 import { Product } from "../types/product";
 import instance from "../services/api";
+import BannerManagerPage from "../admin/Banner/Banner";
+import BannerAddPage from '../admin/Banner/add/page';
+import BannerUpdatePage from "../admin/Banner/edit/page";
+
 
 
 const Router = () => {
@@ -112,6 +116,10 @@ const Router = () => {
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
           <Route path="client" element={<ClientAdmin />} />
+
+          <Route path="banner" element={<BannerManagerPage />} />
+          <Route path="banner/add" element={<BannerAddPage />} />
+          <Route path="banner/:id/update" element={<BannerUpdatePage />} />
         </Route>
       </Routes>
     </div>
