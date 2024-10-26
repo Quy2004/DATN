@@ -45,6 +45,7 @@ import instance from "../services/api";
 import BannerManagerPage from "../admin/Banner/Banner";
 import BannerAddPage from '../admin/Banner/add/page';
 import BannerUpdatePage from "../admin/Banner/edit/page";
+import CategoryPostManagerPage from "../admin/CategoryPost/page";
 
 
 
@@ -100,6 +101,8 @@ const Router = () => {
           <Route path="banner" element={<BannerManagerPage />} />
           <Route path="banner/add" element={<BannerAddPage />} />
           <Route path="banner/:id/update" element={<BannerUpdatePage />} />
+          
+          <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
         </Route>
       </Routes>
     </div>

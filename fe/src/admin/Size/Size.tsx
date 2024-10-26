@@ -10,7 +10,7 @@ import {
 	Space,
 	Spin,
 	Table,
-  Select 
+	Select,
 } from "antd";
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
@@ -29,18 +29,18 @@ const SizeManagerPage: React.FC = () => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
+	const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+		undefined,
+	);
 
 	const navigate = useNavigate();
 
 	const updateUrlParams = useCallback(() => {
 		const params = new URLSearchParams();
 		if (searchTerm) params.set("search", searchTerm);
-    if (selectedCategory && selectedCategory !== "allCategory") {
-      params.set("category", selectedCategory);
-    }
+		if (selectedCategory && selectedCategory !== "allCategory") {
+			params.set("category", selectedCategory);
+		}
 		if (isDelete) {
 			params.set("isDelete", "true");
 		} else {
@@ -53,20 +53,34 @@ const SizeManagerPage: React.FC = () => {
 
 	useEffect(() => {
 		updateUrlParams();
-	}, [searchTerm, selectedCategory, currentPage, pageSize, isDelete, updateUrlParams]);
+	}, [
+		searchTerm,
+		selectedCategory,
+		currentPage,
+		pageSize,
+		isDelete,
+		updateUrlParams,
+	]);
 
 	const {
 		data: sizes,
 		isLoading,
 		isError,
 	} = useQuery({
-		queryKey: ["sizes", searchTerm, selectedCategory, currentPage, pageSize, isDelete],
+		queryKey: [
+			"sizes",
+			searchTerm,
+			selectedCategory,
+			currentPage,
+			pageSize,
+			isDelete,
+		],
 		queryFn: async () => {
-      const categoryParam =
-        selectedCategory && selectedCategory !== "allCategory"
-          ? `&category=${selectedCategory}`
-          : "";
-          const trashParam = isDelete ? `&isDeleted=true` : "";
+			const categoryParam =
+				selectedCategory && selectedCategory !== "allCategory"
+					? `&category=${selectedCategory}`
+					: "";
+			const trashParam = isDelete ? `&isDeleted=true` : "";
 			const response = await instance.get(
 				`sizes?search=${searchTerm}${categoryParam}&page=${currentPage}&limit=${pageSize}${trashParam}`,
 			);
@@ -295,19 +309,19 @@ const SizeManagerPage: React.FC = () => {
 						allowClear
 						style={{ width: 300 }}
 					/>
-          <Select
-            value={selectedCategory}
-            onChange={(value) => setSelectedCategory(value)}
-            style={{ width: 150 }}
-            placeholder="Chọn danh mục"
-            options={[
-              { label: "Tất cả", value: "allCategory" },
-              ...(categoriesData?.data?.map((category: Category) => ({
-                label: category.title,
-                value: category._id,
-              })) || []),
-            ]}
-          />
+					<Select
+						value={selectedCategory}
+						onChange={value => setSelectedCategory(value)}
+						style={{ width: 150 }}
+						placeholder="Chọn danh mục"
+						options={[
+							{ label: "Tất cả", value: "allCategory" },
+							...(categoriesData?.data?.map((category: Category) => ({
+								label: category.title,
+								value: category._id,
+							})) || []),
+						]}
+					/>
 					<Button
 						type="primary"
 						icon={<DeleteOutlined />}
