@@ -18,6 +18,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import {
+  CheckOutlined,
+  CloseOutlined,
   DeleteOutlined,
   PlusCircleFilled,
   PlusOutlined,
@@ -189,6 +191,21 @@ const ProductManagerPage: React.FC = () => {
       message.error(`Lỗi: ${error.message}`);
     },
   });
+
+  const handleStatusChange = async (checked: boolean, id: string) => {
+    try {
+      const newStatus = checked ? "available" : "unavailable";
+      await instance.patch(`/products/${id}/update-status`, {
+        status: newStatus,
+      }); // Gọi API cập nhật trạng thái
+      message.success("Cập nhật trạng thái sản phẩm thành công!");
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    } catch (error) {
+      message.error("Lỗi khi cập nhật trạng thái!");
+    }
+  };
   // Hàm để hiển thị chi tiết sản phẩm trong Modal
   const showModal = (product: Product) => {
     setSelectedProduct(product); // Lưu sản phẩm được chọn
@@ -260,17 +277,30 @@ const ProductManagerPage: React.FC = () => {
         return <span>{categoryNames}</span>;
       },
     },
+
     {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Switch
-          checked={status === "available"}
-          checkedChildren=""
-          unCheckedChildren=""
-          className={status === "available" ? "bg-green-500" : "bg-red-500"}
-        />
+      render: (status: string, record: Product) => (
+        <div className="flex items-center space-x-2">
+          {/* Tooltip giải thích trạng thái */}
+          <Tooltip
+            title={
+              status === "available" ? "Sản phẩm có sẵn" : "Sản phẩm hết hàng"
+            }
+          >
+            <Switch
+              checked={status === "available"}
+              onChange={(checked) => handleStatusChange(checked, record._id)}
+              checkedChildren={<CheckOutlined />}
+              unCheckedChildren={<CloseOutlined />}
+              style={{
+                backgroundColor: status === "available" ? "#52c41a" : "#f5222d",
+              }}
+            />
+          </Tooltip>
+        </div>
       ),
     },
     {
@@ -281,7 +311,8 @@ const ProductManagerPage: React.FC = () => {
           {isDelete ? (
             <>
               <Popconfirm
-                title="Bạn có chắc chắn muốn khôi phục sản phẩm này?"
+                title="Khôi phục sản phẩm"
+                description="Bạn có chắc chắn muốn khôi phục sản phẩm này?"
                 onConfirm={() => mutationRestoreProduct.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"
@@ -292,7 +323,8 @@ const ProductManagerPage: React.FC = () => {
               </Popconfirm>
 
               <Popconfirm
-                title="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
+                title="Xóa cứng sản phẩm"
+                description="Bạn có chắc chắn muốn xóa sản phẩm này vĩnh viễn?"
                 onConfirm={() => mutationHardDelete.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"
@@ -305,7 +337,8 @@ const ProductManagerPage: React.FC = () => {
           ) : (
             <>
               <Popconfirm
-                title="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                title="Xóa mềm sản phẩm"
+                description="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
                 onConfirm={() => mutationSoftDelete.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"
@@ -393,29 +426,33 @@ const ProductManagerPage: React.FC = () => {
           </Button>
         </div>
 
-        <Button type="primary" icon={<PlusCircleFilled />}>
-          <Link to="/admin/product/add" style={{ color: "white" }}>
-            Thêm sản phẩm
+        <Button
+          type="primary"
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+        >
+          <Link to="/admin/product/add" className="flex items-center space-x-2">
+            <PlusCircleFilled />
+            <span>Thêm sản phẩm</span>
           </Link>
         </Button>
       </div>
 
       {/* Bảng sản phẩm */}
       <Table
-        dataSource={products?.data} // Đẩy data lấy từ backend vào table
+        dataSource={products?.data}
         columns={columns}
         pagination={{
-          current: currentPage, // Cập nhật trang hiện tại
-          pageSize: pageSize, // Cập nhật số lượng mục trên một trang
-          total: products?.pagination?.totalItems || 0, // Tổng số sản phẩm
-          showSizeChanger: true, // Cho phép thay đổi số lượng sản phẩm hiển thị
-          pageSizeOptions: ["10", "20", "50", "100"], // Các lựa chọn về số lượng sản phẩm hiển thị
+          current: currentPage,
+          pageSize: pageSize,
+          total: products?.pagination?.totalItems || 0,
+          showSizeChanger: true,
+          pageSizeOptions: ["10", "20", "50", "100"],
           onChange: (page, pageSize) => {
-            setCurrentPage(page); // Cập nhật trang hiện tại khi thay đổi
-            setPageSize(pageSize); // Cập nhật số lượng mục trên một trang khi thay đổi
+            setCurrentPage(page);
+            setPageSize(pageSize);
           },
         }}
-        onChange={handleTableChange} // Hàm để cập nhật dữ liệu khi thay đổi trang
+        onChange={handleTableChange}
       />
 
       {/* Modal hiển thị chi tiết sản phẩm */}

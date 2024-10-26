@@ -92,7 +92,10 @@ const ToppingUpdatePage = () => {
             name="nameTopping"
             rules={[{ required: true, message: "Vui lòng nhập tên Topping!" }]}
           >
-            <Input />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên topping"
+            />
           </Form.Item>
 
           <Form.Item<FieldType>
@@ -100,7 +103,12 @@ const ToppingUpdatePage = () => {
             name="priceTopping"
             rules={[{ required: true, message: "Vui lòng giá của Topping!" }]}
           >
-            <InputNumber min={0} style={{ width: "100%" }} />
+            <InputNumber
+              min={0}
+              style={{ width: "100%" }}
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giá topping"
+            />
           </Form.Item>
 
           <Form.Item

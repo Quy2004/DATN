@@ -58,7 +58,6 @@ class ProductController {
       const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
       const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
 
-
       // Thực hiện query với phân trang
       const products = await Product.paginate(query, options);
       // Tổng số danh mục để tính tổng số trang
@@ -67,9 +66,9 @@ class ProductController {
         message: "Lấy sản phẩm thành công",
         data: products.docs,
         pagination: {
-          totalItems: products.totalDocs, 
-          currentPage: products.page, 
-          totalPages: products.totalPages, 
+          totalItems: products.totalDocs,
+          currentPage: products.page,
+          totalPages: products.totalPages,
         },
       });
     } catch (error) {
@@ -198,6 +197,35 @@ class ProductController {
 
       res.status(200).json({
         message: "Khôi phục sản phẩm thành công",
+        data: product,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  // Cập nhật trạng thái sản phẩm
+  async updateStatusProduct(req, res) {
+    try {
+      const { status } = req.body;
+
+      // Kiểm tra xem trạng thái có hợp lệ không
+      if (!status) {
+        return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+      }
+
+      // Tìm sản phẩm và cập nhật trạng thái
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true }
+      );
+
+      if (!product || product.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+      }
+
+      res.status(200).json({
+        message: "Cập nhật trạng thái sản phẩm thành công",
         data: product,
       });
     } catch (error) {

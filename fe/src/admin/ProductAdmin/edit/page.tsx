@@ -190,7 +190,11 @@ const ProductEditPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Cập nhật sản phẩm</Title>
-        <Button type="primary" icon={<DoubleLeftOutlined />}>
+        <Button
+          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+          type="primary"
+          icon={<DoubleLeftOutlined />}
+        >
           <Link to="/admin/product/" style={{ color: "white" }}>
             Quay lại
           </Link>
@@ -214,7 +218,10 @@ const ProductEditPage: React.FC = () => {
               { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
             ]}
           >
-            <Input placeholder="Nhập tên sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên sản phẩm"
+            />
           </Form.Item>
 
           {/* Danh mục sản phẩm */}
@@ -259,7 +266,10 @@ const ProductEditPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giá sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giá sản phẩm"
+            />
           </Form.Item>
 
           <div className="flex flex-col gap-5 mt-5 justify-center items-center">
@@ -529,7 +539,10 @@ const ProductEditPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giảm giá" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giảm giá"
+            />
           </Form.Item>
 
           {/* Trạng thái */}
