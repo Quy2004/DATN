@@ -38,36 +38,19 @@ import ToppingManagerPage from "../admin/Topping/Topping";
 import ToppingAddPage from "../admin/Topping/add/page";
 import ToppingUpdatePage from "../admin/Topping/edit/page";
 import ProductManagerPage from "../admin/ProductAdmin/Product";
+import NotFoundPage from "../pages/NotFound/NotFound";
+
 import { Product } from "../types/product";
 import instance from "../services/api";
+import BannerManagerPage from "../admin/Banner/Banner";
+import BannerAddPage from '../admin/Banner/add/page';
+import BannerUpdatePage from "../admin/Banner/edit/page";
+
+
 
 
 const Router = () => {
-  const [products, setProduct] = useState<Product[]>([])
-  const loadPr = async () => {
-    (async () => {
-      try {
-        const response = await instance.get("/products");
-        const { data } = response;
-        // console.log(data);
-        if (Array.isArray(data.data)) {
-          setProduct(data.data);
-        } else {
-          console.error("Dữ liệu trả về không phải là mảng:", data);
-          setProduct([]);
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-        setProduct([]);
-      }
-    })();
-  }
-  useEffect(() => {
-    const fetch = async () => {
-      loadPr()
-    }
-    fetch()
-  }, []);
+
   return (
     <div>
       <Routes>
@@ -89,6 +72,7 @@ const Router = () => {
           <Route path="register" element={<Signup />} />
           <Route path="forgot" element={<Forgot />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
           <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
@@ -112,6 +96,10 @@ const Router = () => {
           <Route path="order" element={<OrderAdmin />} />
           <Route path="comment" element={<CommentAdmin />} />
           <Route path="client" element={<ClientAdmin />} />
+
+          <Route path="banner" element={<BannerManagerPage />} />
+          <Route path="banner/add" element={<BannerAddPage />} />
+          <Route path="banner/:id/update" element={<BannerUpdatePage />} />
         </Route>
       </Routes>
     </div>
