@@ -101,9 +101,24 @@ class CategoryPostController {
 				data: categoryPost,
 			});
 		} catch (error) {
-			res.status(error.message).json({ message: error.message });
+			res.status(400).json({ message: error.message });
 		}
 	}
+
+    // Xóa cứng
+    async deleteCategoryPost(req, res){
+        try {
+            const {id}= req.params;
+            const categoryPost= await CategoryPost.findByIdAndDelete({_id: id});
+            res.status(201).json({
+                message: "Delete category post Successfully",
+              });
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+		
+        }
+    }
+
 
     // xóa mềm
     async softDeleteCategoryPost(req, res){
@@ -123,7 +138,7 @@ class CategoryPostController {
 				data: categoryPost,
 			});
         } catch (error) {
-            res.status(error.message).json({ message: error.message });
+            res.status(400).json({ message: error.message });
 		
         }
     }
@@ -146,7 +161,7 @@ class CategoryPostController {
 				data: categoryPost,
 			});
         } catch (error) {
-            res.status(error.message).json({ message: error.message });
+            res.status(400).json({ message: error.message });
 		
         }
     }
