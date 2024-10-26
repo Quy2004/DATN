@@ -20,7 +20,7 @@ class CategoryPostController {
 			const currentPage = parseInt(page, 10) || 1;
 
 			// thực hiện query để lấy danh sách với limit và skip
-			const categoryPosts = await CategoryPost.findOne(query)
+			const categoryPosts = await CategoryPost.find(query)
 				.limit(pageLimit)
 				.skip((currentPage - 1) * pageLimit)
 				.lean();
@@ -47,7 +47,9 @@ class CategoryPostController {
 			const { id } = req.params;
 			const categoryPost = await CategoryPost.findById(id);
 			if (!categoryPost) {
-				return res.status(404).json({ message: "category post không tìm thấy" });
+				return res
+					.status(404)
+					.json({ message: "category post không tìm thấy" });
 			}
 			res.status(200).json({
 				message: "Get category post Details Done",
@@ -79,21 +81,73 @@ class CategoryPostController {
 		}
 	}
 
-    // sửa 1 danh mục
-    async updateCategoryPost(req, res) {
+	// sửa 1 danh mục
+	async updateCategoryPost(req, res) {
+		try {
+			const categoryPost = await CategoryPost.findByIdAndUpdate(
+				req.params.id,
+				req.body,
+				{
+					new: true,
+				},
+			);
+			if (!categoryPost) {
+				return res
+					.status(404)
+					.json({ message: "Category post không tìm thấy" });
+			}
+			res.status(200).json({
+				message: "Update category post Successfully",
+				data: categoryPost,
+			});
+		} catch (error) {
+			res.status(error.message).json({ message: error.message });
+		}
+	}
+
+    // xóa mềm
+    async softDeleteCategoryPost(req, res){
         try {
-          const categoryPost = await CategoryPost.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-          });
-          if (!categoryPost) {
-            return res.status(404).json({ message: "Category post không tìm thấy" });
-          }
-          res.status(200).json({
-            message: "Update category post Successfully",
-            data: categoryPost,
-          });
+            const categoryPost = await CategoryPost.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: true },
+                { new: true }
+            )
+            if (!categoryPost) {
+				return res
+					.status(404)
+					.json({ message: "Category post không tìm thấy" });
+			}
+			res.status(200).json({
+				message: "Soft delete category post Successfully",
+				data: categoryPost,
+			});
         } catch (error) {
-          res.status(error.message).json({ message: error.message });
+            res.status(error.message).json({ message: error.message });
+		
+        }
+    }
+
+    // khôi phục
+    async restoreCategoryPost(req, res){
+        try {
+            const categoryPost = await CategoryPost.findByIdAndUpdate(
+                req.params.id,
+                { isDeleted: false },
+                { new: true }
+            )
+            if (!categoryPost) {
+				return res
+					.status(404)
+					.json({ message: "Category post không tìm thấy" });
+			}
+			res.status(200).json({
+				message: "Restore category post Successfully",
+				data: categoryPost,
+			});
+        } catch (error) {
+            res.status(error.message).json({ message: error.message });
+		
         }
     }
 }
