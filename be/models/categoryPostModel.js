@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const Schema = mongoose.Schema;
 
-const CategorySchema = new Schema(
+const CategoryPostSchema = new Schema(
   {
     title: {
       type: String,
@@ -25,6 +25,6 @@ const CategorySchema = new Schema(
   }
 );
 
-const CategoryPost = mongoose.model("Category_post", CategorySchema);
+const CategoryPost = mongoose.model("CategoryPost", CategoryPostSchema);
 
 export default CategoryPost;
