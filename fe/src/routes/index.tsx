@@ -12,8 +12,6 @@ import AllHomes from "../pages/ChuyenNhaPage/Tabs/AllHomes";
 import CoffeHolicTab from "../pages/ChuyenNhaPage/Tabs/CoffeeHome";
 import TeaHolicTab from "../pages/ChuyenNhaPage/Tabs/TeaHomes";
 import BlogTab from "../pages/ChuyenNhaPage/Tabs/BlogHomes";
-import Signin from "../account/signin/signin";
-import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 
@@ -42,9 +40,14 @@ import NotFoundPage from "../pages/NotFound/NotFound";
 
 import { Product } from "../types/product";
 import instance from "../services/api";
+
+import AuthPage from "../account/AuthPage/AuthPage";
+
 import BannerManagerPage from "../admin/Banner/Banner";
 import BannerAddPage from '../admin/Banner/add/page';
 import BannerUpdatePage from "../admin/Banner/edit/page";
+import CategoryPostManagerPage from "../admin/CategoryPost/page";
+
 
 
 
@@ -68,8 +71,8 @@ const Router = () => {
             <Route path="teaholic" element={<TeaHolicTab />} />
             <Route path="blog" element={<BlogTab />} />
           </Route>
-          <Route path="signin" element={<Signin />} />
-          <Route path="register" element={<Signup />} />
+          <Route path="login" element={<AuthPage />} />
+          <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
@@ -100,6 +103,8 @@ const Router = () => {
           <Route path="banner" element={<BannerManagerPage />} />
           <Route path="banner/add" element={<BannerAddPage />} />
           <Route path="banner/:id/update" element={<BannerUpdatePage />} />
+          
+          <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
         </Route>
       </Routes>
     </div>
