@@ -10,9 +10,9 @@ const AuthPage: React.FC = () => {
                 <Components.RegisterContainer $signinIn={signIn}>
                     <Components.Form>
                         <Components.Title>Tạo Tài Khoản</Components.Title>
-                        <Components.Input type='text' placeholder='Name' />
+                        <Components.Input type='text' placeholder='Tên người dùng' />
                         <Components.Input type='email' placeholder='Email' />
-                        <Components.Input type='password' placeholder='Password' />
+                        <Components.Input type='password' placeholder='Mật khẩu' />
                         <Components.Button>Đăng Ký</Components.Button>
                     </Components.Form>
                 </Components.RegisterContainer>
@@ -22,8 +22,8 @@ const AuthPage: React.FC = () => {
                     <Components.Form>
                         <Components.Title>Đăng Nhập</Components.Title>
                         <Components.Input type='text' placeholder='Email / SDT' />
-                        <Components.Input type='password' placeholder='Password' />
-                        <Components.Anchor href='#'>Forgot your password?</Components.Anchor>
+                        <Components.Input type='password' placeholder='Mật khẩu' />
+                        <Components.Anchor href='#'>Quên mật khẩu?</Components.Anchor>
                         <Components.Button>Đăng Nhập</Components.Button>
                     </Components.Form>
                 </Components.LoginContainer>
