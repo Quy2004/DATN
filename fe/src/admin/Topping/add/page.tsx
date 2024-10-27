@@ -74,7 +74,10 @@ const ToppingAddPage = () => {
               { max: 50, message: "Tên Topping không được quá 50 ký tự!" },
             ]}
           >
-            <Input />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên topping"
+            />
           </Form.Item>
 
           <Form.Item<FieldType>
@@ -96,7 +99,11 @@ const ToppingAddPage = () => {
               },
             ]}
           >
-            <Input type="number" />
+            <Input
+              type="number"
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giá topping"
+            />
           </Form.Item>
 
           <Form.Item
