@@ -9,11 +9,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        customBlack: '#000000D9'
+        customBlack: '#000000D9',
       },
       backgroundImage: {
         'hero': "url('./src/account/signin/img/Untitled.png')",
         'footer-texture': "url('/img/footer-texture.png')",
+      },
+      // Input-antd
+      height: {
+        '30px': '30px',
+      },
+      borderColor : {
+        custom: '#ccc',
+      },
+      borderRadius: {
+        lg: '0.4rem',  // Giữ nguyên giá trị rounded-lg hoặc tùy chỉnh nếu cần
       },
     },
   },

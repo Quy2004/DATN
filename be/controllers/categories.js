@@ -4,15 +4,12 @@ class CategoryController {
   // Lấy tất cả danh mục và các danh mục con (nếu có)
   async getAllCategories(req, res) {
     try {
-      const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
+      const { isDeleted, all, search, page = 1, limit } = req.query;
 
-      // Tạo điều kiện lọc 
+      // Tạo điều kiện lọc
       let query = {};
 
-      if (all === "true") {
-        // Nếu `all=true`, lấy tất cả danh mục
-        query = {};
-      } else if (isDeleted === "true") {
+      if (isDeleted === "true") {
         // Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
         query.isDeleted = true;
       } else {
@@ -25,17 +22,25 @@ class CategoryController {
         query.title = { $regex: search, $options: "i" }; // Tìm kiếm không phân biệt hoa thường
       }
 
-      // Số lượng mục trên mỗi trang
-      const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
-      const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
+      // Xử lý logic phân trang
+      let pageLimit = parseInt(limit, 10);
+      const currentPage = parseInt(page, 10) || 1;
+
+      // Nếu `all=true` hoặc `limit` không được đặt, bỏ qua phân trang
+      if (all === "true" || isNaN(pageLimit)) {
+        pageLimit = null; // Không giới hạn số lượng
+      }
+
       const skip = (currentPage - 1) * pageLimit;
 
-      // Thực hiện query với phân trang
-      const categories = await Category.find(query)
-        .populate("parent_id", "title")
-        .skip(skip) // Bỏ qua các mục trước đó theo số trang
-        .limit(pageLimit) // Giới hạn số mục mỗi trang
-        .exec();
+      // Thực hiện query với phân trang (nếu có `limit`)
+      const queryExec = Category.find(query).populate("parent_id", "title");
+
+      if (pageLimit) {
+        queryExec.skip(skip).limit(pageLimit);
+      }
+
+      const categories = await queryExec.exec();
 
       // Tổng số danh mục để tính tổng số trang
       const totalItems = await Category.countDocuments(query);
@@ -43,11 +48,13 @@ class CategoryController {
       res.status(200).json({
         message: "Lấy danh mục thành công!",
         data: categories,
-        pagination: {
-          totalItems,
-          currentPage,
-          totalPages: Math.ceil(totalItems / pageLimit),
-        },
+        pagination: pageLimit
+          ? {
+              totalItems,
+              currentPage,
+              totalPages: Math.ceil(totalItems / pageLimit),
+            }
+          : null, // Không trả pagination nếu lấy toàn bộ
       });
     } catch (error) {
       res.status(400).json({

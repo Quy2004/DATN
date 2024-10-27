@@ -7,8 +7,11 @@ import sizeRouter from './size';
 import toppingsRouter from "./toppings.js";
 import authRouter from './auth';
 import addressRouter from "./address.js";
-
-
+import RouterCart from "./Cart.js";
+import ordersRouter from"./ordersRouter.js"
+import ordersDetailRouter from"./ordersDetail.js"
+import bannerRouter from "./banners.js";
+import categoryPostRouter from "./categoryPost.js";
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -23,4 +26,10 @@ router.use("/vouchers", voucherRouter);
 router.use("/auth", authRouter); 
 router.use("/sizes", sizeRouter); 
 router.use("/address", addressRouter); 
+router.use("/cart", RouterCart); 
+router.use("/orders", ordersRouter);
+router.use("/orders-detail", ordersDetailRouter);
+router.use("/banners", bannerRouter);
+router.use("/categoryPost", categoryPostRouter);
+
 export default router;

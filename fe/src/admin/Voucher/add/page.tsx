@@ -14,7 +14,6 @@ import instance from "../../../services/api";
 import dayjs from "dayjs";
 import { Voucher } from "../../../types/voucher";
 
-
 const VoucherAddPage = () => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const navigate = useNavigate();
@@ -142,7 +141,8 @@ const VoucherAddPage = () => {
 					>
 						<DatePicker
 							style={{ width: "100%" }}
-							format="DD/MM/YYYY"
+							format="DD/MM/YYYY HH:mm"
+							showTime={{ format: "HH:mm" }} // Hiển thị picker cho giờ và phút
 							disabledDate={current =>
 								current && current < dayjs().startOf("day")
 							}
@@ -159,7 +159,8 @@ const VoucherAddPage = () => {
 					>
 						<DatePicker
 							style={{ width: "100%" }}
-							format="DD/MM/YYYY"
+							format="DD/MM/YYYY HH:mm"
+							showTime={{ format: "HH:mm" }} // Hiển thị picker cho giờ và phút
 							disabledDate={current =>
 								current && current < dayjs().startOf("day")
 							}

@@ -1,23 +1,44 @@
+// Định nghĩa Category (Danh mục)
 import { Category } from "./category";
 
+// Định nghĩa Size (Kích thước sản phẩm)
+export interface Size {
+    _id: string;
+    name: string;
+    priceSize?: number;
+    isDeleted: boolean;
+    category_id: string;
+}
 
-// Định nghĩa ProductSize (kích thước của sản phẩm cụ thể)
+// Định nghĩa Topping (Topping sản phẩm)
+export interface Topping {
+    _id: string;
+    nameTopping: string;
+    priceTopping?: number;
+    statusTopping: "available" | "unavailable";
+}
+
+// Định nghĩa ProductSize (Kích thước của sản phẩm cụ thể)
 export interface ProductSize {
     size_id: Size;
     status: "available" | "unavailable";
+    priceSize?: number;  // Giá riêng cho size nếu có
 }
 
-// Định nghĩa ProductTopping (topping của sản phẩm cụ thể)
+// Định nghĩa ProductTopping (Topping của sản phẩm cụ thể)
 export interface ProductTopping {
     topping_id: Topping;
     stock: number;
+    priceTopping?: number; // Giá riêng cho topping nếu có
 }
-// Định nghĩa Product (sản phẩm)
+
+// Định nghĩa Product (Sản phẩm)
 export interface Product {
     _id: string;
     name: string;
-    price: number
-    category_id: Category[];
+    price: number;
+    sale_price: number;
+    category_id: Category[];  // Một sản phẩm có thể thuộc nhiều danh mục
     image: string;
     thumbnail: string[];
     description: string;
@@ -30,35 +51,7 @@ export interface Product {
     isDeleted: boolean;
 }
 
-
-// Định nghĩa ProductFormValues (cho form sản phẩm)
-
-export interface Size {
-    _id: string;
-    name: string;
-    priceSize?: number;
-    isDeleted: boolean;
-    category_id: string;
-}
-// Interface cho topping sản phẩm
-export interface Topping {
-    _id: string;
-    nameTopping: string;
-    priceTopping?: number;
-}
-// Interface cho kích thước của sản phẩm cụ thể (bao gồm size_id, price và stock)
-export interface ProductSize {
-    size_id: Size;
-    status: "available" | "unavailable";
-}
-// Interface cho topping của sản phẩm cụ thể (bao gồm topping_id và stock)
-export interface ProductTopping {
-    _id: string;
-    topping_id: Topping;
-    stock: number;
-}
-// Interface tổng hợp cho Product
-
+// Định nghĩa ProductFormValues (Giá trị của form sản phẩm khi thêm/sửa sản phẩm)
 export interface ProductFormValues {
     name: string;
     price: number;
@@ -70,6 +63,8 @@ export interface ProductFormValues {
     discount: number;
     status: "available" | "unavailable";
 }
+
+// Định nghĩa cho file upload
 export interface UploadFile {
     uid: string;
     name: string;
