@@ -101,11 +101,11 @@ const HomePage: React.FC = () => {
               {products.map((product: Product) => (
                 <div key={product.name} className="item mx-2" >
                   <div className="my-4">
-                    <Link to='#' className="overflow-hidden rounded-lg shadow-lg">
+                    <Link to={`detail/${product._id}`} className="overflow-hidden rounded-lg shadow-lg">
                       <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
                     </Link>
                     <div>
-                      <Link to="#">
+                      <Link to={`detail/${product._id}`}>
                         <h3 className="">{product.name}</h3>
                       </Link>
                       <p className="md:mx-0">{formatPrice(product.price)} VNĐ </p>
