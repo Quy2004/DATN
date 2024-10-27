@@ -12,8 +12,6 @@ import AllHomes from "../pages/ChuyenNhaPage/Tabs/AllHomes";
 import CoffeHolicTab from "../pages/ChuyenNhaPage/Tabs/CoffeeHome";
 import TeaHolicTab from "../pages/ChuyenNhaPage/Tabs/TeaHomes";
 import BlogTab from "../pages/ChuyenNhaPage/Tabs/BlogHomes";
-import Signin from "../account/signin/signin";
-import Signup from "../account/signup/signup";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 
@@ -38,8 +36,13 @@ import ToppingManagerPage from "../admin/Topping/Topping";
 import ToppingAddPage from "../admin/Topping/add/page";
 import ToppingUpdatePage from "../admin/Topping/edit/page";
 import ProductManagerPage from "../admin/ProductAdmin/Product";
+import NotFoundPage from "../pages/NotFound/NotFound";
+
 import { Product } from "../types/product";
 import instance from "../services/api";
+
+import AuthPage from "../account/AuthPage/AuthPage";
+
 import BannerManagerPage from "../admin/Banner/Banner";
 import BannerAddPage from '../admin/Banner/add/page';
 import BannerUpdatePage from "../admin/Banner/edit/page";
@@ -47,32 +50,10 @@ import CategoryPostManagerPage from "../admin/CategoryPost/page";
 
 
 
+
+
 const Router = () => {
-  const [products, setProduct] = useState<Product[]>([])
-  const loadPr = async () => {
-    (async () => {
-      try {
-        const response = await instance.get("/products");
-        const { data } = response;
-        // console.log(data);
-        if (Array.isArray(data.data)) {
-          setProduct(data.data);
-        } else {
-          console.error("Dữ liệu trả về không phải là mảng:", data);
-          setProduct([]);
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-        setProduct([]);
-      }
-    })();
-  }
-  useEffect(() => {
-    const fetch = async () => {
-      loadPr()
-    }
-    fetch()
-  }, []);
+
   return (
     <div>
       <Routes>
@@ -90,10 +71,11 @@ const Router = () => {
             <Route path="teaholic" element={<TeaHolicTab />} />
             <Route path="blog" element={<BlogTab />} />
           </Route>
-          <Route path="signin" element={<Signin />} />
-          <Route path="register" element={<Signup />} />
+          <Route path="login" element={<AuthPage />} />
+          <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
           <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
