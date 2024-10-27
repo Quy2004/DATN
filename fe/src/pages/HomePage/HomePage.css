@@ -49,9 +49,7 @@ button{
     -webkit-transition: .5s;
     transition: .5s;
 }
-button:hover {
-    color: #ea8025 ;
-}
+
 .slick-slider {
     /* height: 330px; */
     margin-top: 40px;
