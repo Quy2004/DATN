@@ -126,6 +126,16 @@ const ProductAddPage: React.FC = () => {
     uploadImage(file, false);
     return false;
   };
+  const handleRemoveImage = () => {
+    setImage("");
+    message.info("Ảnh chính đã được xóa. Vui lòng upload ảnh mới.");
+  };
+  const handleRemoveThumbnail = (url: string): void => {
+    setThumbnails((prevThumbnails) =>
+      prevThumbnails.filter((thumbnail) => thumbnail !== url)
+    );
+    message.info("Ảnh phụ đã được xóa.");
+  };
 
   return (
     <div>
@@ -165,7 +175,10 @@ const ProductAddPage: React.FC = () => {
               { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
             ]}
           >
-            <Input placeholder="Nhập tên sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên sản phẩm"
+            />
           </Form.Item>
 
           <Form.Item
@@ -213,12 +226,16 @@ const ProductAddPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giá sản phẩm" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giá sản phẩm"
+            />
           </Form.Item>
 
           {/* Upload Ảnh Chính */}
           <Form.Item
             label="Ảnh chính"
+            name="image"
             rules={[{ required: true, message: "Vui lòng upload ảnh chính" }]}
           >
             <Upload
@@ -226,6 +243,7 @@ const ProductAddPage: React.FC = () => {
               listType="picture-card"
               beforeUpload={uploadMainImage}
               maxCount={1}
+              onRemove={handleRemoveImage}
             >
               <Button icon={<FileImageOutlined />}></Button>
             </Upload>
@@ -234,30 +252,27 @@ const ProductAddPage: React.FC = () => {
           {/* Upload Ảnh Phụ */}
           <Form.Item
             label="Ảnh phụ"
-            rules={[
-              {
-                validator(_, value) {
-                  if (!value || value.fileList.length > 0) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error("Vui lòng upload ít nhất một ảnh phụ")
-                  );
-                },
-              },
-            ]}
+            name="thumbnail"
+            rules={[{ required: true, message: "Vui lòng upload ảnh phụ" }]}
           >
             <Upload
               name="files"
               listType="picture-card"
               multiple
+              fileList={thumbnails.map((url) => ({
+                url,
+                uid: url,
+                name: "thumbnail",
+              }))}
               beforeUpload={uploadThumbnails}
+              onRemove={(file) => handleRemoveThumbnail(file.url as string)}
               maxCount={4}
             >
-              <Button icon={<FileImageOutlined />}></Button>
+              {thumbnails.length < 4 && (
+                <Button icon={<FileImageOutlined />}></Button>
+              )}
             </Upload>
           </Form.Item>
-
           <div className="flex flex-col items-center">
             {/* Size sản phẩm */}
             <Form.List name="product_sizes">
@@ -467,7 +482,10 @@ const ProductAddPage: React.FC = () => {
               },
             ]}
           >
-            <Input placeholder="Nhập giảm giá" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập giảm giá"
+            />
           </Form.Item>
 
           <Form.Item

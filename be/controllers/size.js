@@ -5,49 +5,47 @@ class SizeController {
 
   async getAllSize(req, res) {
     try {
-      const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
-
-      // Tạo điều kiện lọc
-      let query = {};
-
-      if (all === "true") {
-        // Nếu `all=true`, lấy tất cả danh mục
-        query = {};
-      } else if (isDeleted === "true") {
-        // Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
-        query.isDeleted = true;
-      } else {
-        // Mặc định lấy các danh mục chưa bị xóa mềm
-        query.isDeleted = false;
-      }
-
-      // search - điều kiện search theo name
+      const {
+        page = 1,
+        limit = 10,
+        search = "",
+        category,
+        isDeleted,
+      } = req.query;
+  
+      // Tạo query để tìm kiếm, lọc theo các tiêu chí
+      const query = {
+        isDeleted: isDeleted === "true" ? true : false,
+      };
+  
       if (search) {
-        query.name = { $regex: search, $options: "i" };
-        // không phân biệt viết hoa hay viết thường
+        query.name = { $regex: search, $options: "i" }; // Tìm kiếm theo tên sản phẩm
       }
-
-      // số lượng trên mỗi trang
-      const pageLimit = parseInt(limit, 10) || 10;
-      const currentPage = parseInt(page, 10) || 1;
-      const skip = (currentPage - 1) * pageLimit;
-
-      // thực hiện phân trang
-      const size = await Size.find(query)
-        .sort({ createdAt: -1 }) // sắp xếp theo ngày tạo giảm dần
-        .skip(skip)
+  
+      // Lọc theo danh mục nếu có
+      if (category) {
+        query.category_id = category;
+      }
+  
+      // Chuyển đổi các tham số phân trang
+      const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
+      const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
+  
+      // Thực hiện query để lấy danh sách sizes với limit và skip
+      const sizes = await Size.find(query)
+        .populate([{ path: "category_id", select: "title" }])
         .limit(pageLimit)
-        .exec();
-
+        .skip((currentPage - 1) * pageLimit)
+        .lean();
+  
       // Tổng số danh mục để tính tổng số trang
       const totalItems = await Size.countDocuments(query);
-
       res.status(200).json({
-        message: "Get Size Done",
-        data: size,
+        message: "Lấy sản phẩm thành công",
+        data: sizes,
         pagination: {
-          totalItems,
-          currentPage,
+          totalItems: totalItems,
+          currentPage: currentPage,
           totalPages: Math.ceil(totalItems / pageLimit),
         },
       });
@@ -55,6 +53,8 @@ class SizeController {
       res.status(400).json({ message: error.message });
     }
   }
+  
+  
 
   // hiển thị chi tiết 1 danh mục
   async getSizeById(req, res) {
