@@ -34,6 +34,7 @@ export interface ProductTopping {
 
 // Định nghĩa Product (Sản phẩm)
 export interface Product {
+    [x: string]: any;
     _id: string;
     name: string;
     price: number;
