@@ -1,6 +1,6 @@
 import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Form, FormProps, Input, message, Select } from "antd";
+import { Button, Form, FormProps, Input, InputNumber, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
@@ -70,11 +70,13 @@ const SizeAddPage = () => {
           autoComplete="off"
         >
           <Form.Item<Size>
+            
             label="Tên size"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
           >
-            <Input />
+            <Input className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên size"/>
           </Form.Item>
 
           <Form.Item
@@ -96,12 +98,27 @@ const SizeAddPage = () => {
           </Form.Item>
 
           <Form.Item<Size>
-            label="Giá"
-            name="priceSize"
-            rules={[{ required: true, message: "Vui lòng nhập giá size!" }]}
-          >
-            <Input />
-          </Form.Item>
+						label="Giá tiền"
+						name="priceSize"
+						rules={[
+							{ required: true, message: "Vui lòng nhập giá của size!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Giá ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
+							},
+						  ]}
+						  
+					>
+						<InputNumber
+							style={{ width: "100%" }}
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập giá size"
+						/>
+					</Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">

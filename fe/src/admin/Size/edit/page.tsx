@@ -9,8 +9,6 @@ import { Size } from "../../../types/product";
 
 const { Option } = Select;
 
-
-
 const SizeUpdatePage = () => {
 	const { id } = useParams();
 	const navigate = useNavigate();
@@ -107,7 +105,10 @@ const SizeUpdatePage = () => {
 						name="name"
 						rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
 					>
-						<Input />
+						<Input
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập tên size"
+						/>
 					</Form.Item>
 
 					<Form.Item
@@ -134,11 +135,23 @@ const SizeUpdatePage = () => {
 					<Form.Item<Size>
 						label="Giá tiền"
 						name="priceSize"
-						rules={[{ required: true, message: "Vui lòng giá của size!" }]}
+						rules={[
+							{ required: true, message: "Vui lòng nhập giá của size!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Giá ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
+							},
+						  ]}
+						  
 					>
 						<InputNumber
-							min={0}
 							style={{ width: "100%" }}
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập giá size"
 						/>
 					</Form.Item>
 
