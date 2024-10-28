@@ -72,7 +72,7 @@ const HomePage: React.FC = () => {
               {products.slice(0, 2).map((product: Product) => (
                 <div className="item" key={product._id}>
                   <div className="product_img">
-                    <Link to='#'>
+                    <Link to={`detail/${product._id}`}>
                       <img src={`${product.image}`} alt="" className="" />
                     </Link>
                   </div>
