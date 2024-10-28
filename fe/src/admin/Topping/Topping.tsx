@@ -212,7 +212,6 @@ const ToppingManagerPage = () => {
         <div className="flex flex-wrap gap-4">
           {showDeleted ? (
             <>
-              {" "}
               <Popconfirm
                 title="Khôi phục topping"
                 description="Bạn có chắc muốn khôi phục topping này không?"
@@ -223,24 +222,24 @@ const ToppingManagerPage = () => {
                 <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
                   Khôi phục
                 </Button>
-              </Popconfirm>{" "}
+              </Popconfirm>
               <Popconfirm
-                title="Xóa cứng topping"
+                title="Xóa vĩnh viễn"
                 description="Bạn có chắc muốn xóa topping này vĩnh viễn?"
                 onConfirm={() => mutationHardDeleteTopping.mutate(topping._id)}
                 okText="Yes"
                 cancelText="No"
               >
                 <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
-                  Xóa cứng
+                  <DeleteOutlined /> Xóa vĩnh viễn
                 </Button>
               </Popconfirm>
             </>
           ) : (
             <>
               <Popconfirm
-                title="Xóa mềm topping"
-                description="Bạn có chắc muốn xóa mềm topping này không?"
+                title="Xóa topping"
+                description="Bạn có chắc muốn xóa topping này không?"
                 onConfirm={() => mutationSoftDeleteTopping.mutate(topping._id)}
                 okText="Yes"
                 cancelText="No"
@@ -250,11 +249,11 @@ const ToppingManagerPage = () => {
                 </Button>
               </Popconfirm>
 
-              <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-                <Link to={`/admin/topping/${topping._id}/update`}>
+              <Link to={`/admin/topping/${topping._id}/update`}>
+                <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
                   Cập nhật
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </>
           )}
         </div>
