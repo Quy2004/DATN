@@ -16,6 +16,11 @@ const SizeSchema = new Schema(
       ref: "Category",
       required: true
     },
+    status: {
+      type: String,
+      enum: ["available", "unavailable"],
+      default: "available",
+    },
     isDeleted: {
       type: Boolean,
       default: false,

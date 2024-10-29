@@ -1,4 +1,9 @@
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+	CheckOutlined,
+	CloseOutlined,
+	DeleteOutlined,
+	PlusCircleFilled,
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	Alert,
@@ -11,6 +16,7 @@ import {
 	Spin,
 	Table,
 	Select,
+	Switch,
 } from "antd";
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
@@ -19,6 +25,7 @@ import { Link, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Size } from "../../types/size";
 import { Category } from "../../types/category";
+import { Tooltip } from "flowbite-react";
 
 const SizeManagerPage: React.FC = () => {
 	const queryClient = useQueryClient();
@@ -175,6 +182,21 @@ const SizeManagerPage: React.FC = () => {
 		},
 	});
 
+	const handleStatusChange = async (checked: boolean, id: string) => {
+		try {
+			const newStatus = checked ? "available" : "unavailable";
+			await instance.patch(`/sizes/${id}/update-status`, {
+				status: newStatus,
+			}); // Gọi API cập nhật trạng thái
+			message.success("Cập nhật trạng thái size thành công!");
+			queryClient.invalidateQueries({
+				queryKey: ["sizes"],
+			});
+		} catch (error) {
+			message.error("Lỗi khi cập nhật trạng thái!");
+		}
+	};
+
 	const showModal = (size: Size) => {
 		setSelectedSize(size);
 		setIsModalVisible(true);
@@ -211,6 +233,28 @@ const SizeManagerPage: React.FC = () => {
 			key: "category_id",
 			render: (category_id: { _id: string; title: string }) =>
 				getCategoryName(category_id),
+		},
+		{
+			title: "Trạng Thái",
+			dataIndex: "status",
+			key: "status",
+			render: (status: string, record: Size) => (
+				<div className="flex items-center space-x-2">
+					{/* Tooltip giải thích trạng thái */}
+					<Tooltip content={status === "available" ? "Size có sẵn" : "Size hết hàng"}>
+						<Switch
+							checked={status === "available"}
+							onChange={checked => handleStatusChange(checked, record._id)}
+							checkedChildren={<CheckOutlined />}
+							unCheckedChildren={<CloseOutlined />}
+							style={{
+								backgroundColor: status === "available" ? "#52c41a" : "#f5222d",
+							}}
+						/>
+					</Tooltip>
+				</div>
+			),
+			
 		},
 		{
 			title: "Hành động",
