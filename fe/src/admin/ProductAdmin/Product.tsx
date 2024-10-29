@@ -22,7 +22,6 @@ import {
   CloseOutlined,
   DeleteOutlined,
   PlusCircleFilled,
-  PlusOutlined,
   UndoOutlined,
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
@@ -226,30 +225,18 @@ const ProductManagerPage: React.FC = () => {
   // Cột trong bảng
   const columns = [
     {
-      render: (_: string, product: Product) => (
-        <Tooltip title="Xem thêm thông tin">
-          <Button
-            icon={<PlusOutlined />}
-            type="primary"
-            shape="circle"
-            size="small"
-            onClick={() => showModal(product)}
-          />
-        </Tooltip>
-      ),
-    },
-
-    {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       render: (text: string, product: Product) => (
-        <span
-          onClick={() => showModal(product)}
-          className="text-gray-950 cursor-pointer hover:text-blue-700"
-        >
-          {text}
-        </span>
+        <Tooltip title="Xem thêm thông tin">
+          <span
+            onClick={() => showModal(product)}
+            className="text-gray-950 cursor-pointer hover:text-blue-700"
+          >
+            {text}
+          </span>
+        </Tooltip>
       ),
     },
 
@@ -261,7 +248,9 @@ const ProductManagerPage: React.FC = () => {
         <Image
           src={image}
           alt="Product"
-          style={{ width: "100px", height: "auto" }}
+          width={100}
+          height={100}
+          className="object-cover"
         />
       ),
     },
@@ -461,6 +450,7 @@ const ProductManagerPage: React.FC = () => {
           },
         }}
         onChange={handleTableChange}
+        scroll={{ x: "max-content", y: 400 }}
       />
 
       {/* Modal hiển thị chi tiết sản phẩm */}
@@ -472,7 +462,7 @@ const ProductManagerPage: React.FC = () => {
         width={800}
       >
         {selectedProduct && (
-          <div className="p-5">
+          <div className="p-5 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
             <Descriptions
               bordered
               column={2}
@@ -509,23 +499,27 @@ const ProductManagerPage: React.FC = () => {
                   src={selectedProduct.image}
                   alt="Ảnh sản phẩm"
                   width={100}
-                  className="rounded-md border border-gray-200 shadow-sm "
+                  height={100}
+                  className="rounded-md border border-gray-200 shadow-sm object-cover "
                 />
               </Descriptions.Item>
 
               {/* Hiển thị ảnh phụ */}
               <Descriptions.Item label="Ảnh phụ" span={2}>
-                <Image.PreviewGroup>
-                  {selectedProduct.thumbnail.map((thumbnail, index) => (
-                    <Image
-                      key={index}
-                      src={thumbnail}
-                      alt={`Ảnh phụ ${index + 1}`}
-                      width={100}
-                      style={{ marginRight: 8 }}
-                    />
-                  ))}
-                </Image.PreviewGroup>
+                <div className="overflow-hidden flex flex-wrap gap-2">
+                  <Image.PreviewGroup>
+                    {selectedProduct.thumbnail.map((thumbnail, index) => (
+                      <Image
+                        key={index}
+                        src={thumbnail}
+                        alt={`Ảnh phụ ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="object-cover"
+                      />
+                    ))}
+                  </Image.PreviewGroup>
+                </div>
               </Descriptions.Item>
 
               {/* Danh mục sản phẩm */}
