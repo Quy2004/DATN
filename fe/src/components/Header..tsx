@@ -97,7 +97,7 @@ const Header: React.FC = () => {
 							</ul>
 						</nav>
 						<div className="mb:hidden lg:block ml-[150px]">
-							<div className="relative flex items-center h-[38px] mt-56">
+							<div className="relative flex items-center h-[38px] ">
 								<input
 									type="text"
 									className="border rounded-full w-[250px] px-6 pr-12 py-1"
@@ -107,8 +107,7 @@ const Header: React.FC = () => {
 								/>
 							</div>
 
-							{searchTerm && (
-								<div className="h-[200px] mt-4 bg-gray-200 overflow-y-auto p-4 rounded-lg">
+							{searchTerm && (<div className="h-[200px] mt-4 bg-gray-200 overflow-y-auto p-4 rounded-lg">
 									{products?.length ? (
 										products.map((product: Product) => (
 											<Link to={`detail/${product._id}`} onClick={clearSearch}>
@@ -202,7 +201,7 @@ const Header: React.FC = () => {
 				position="right"
 				className=""
 			>
-				<Drawer.Header title="Cart" />
+        <Drawer.Header title="Cart" />
 				<Drawer.Items>
 					<div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
