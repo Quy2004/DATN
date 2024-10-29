@@ -48,6 +48,7 @@ import BannerAddPage from '../admin/Banner/add/page';
 import BannerUpdatePage from "../admin/Banner/edit/page";
 import CategoryPostManagerPage from "../admin/CategoryPost/page";
 import DetailPage from "../pages/DetailPage/DetailPage";
+import CategoryPostAddPage from "../admin/CategoryPost/add/page";
 
 
 
@@ -107,6 +108,7 @@ const Router = () => {
           <Route path="banner/:id/update" element={<BannerUpdatePage />} />
 
           <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
+          <Route path="CategoryPost/add" element={<CategoryPostAddPage />} />
         </Route>
       </Routes>
     </div>
