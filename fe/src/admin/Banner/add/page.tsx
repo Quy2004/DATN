@@ -49,7 +49,7 @@ const BannerAddPage: React.FC = () => {
         formData
       );
       const imageUrl = res.data.secure_url;
-      message.success("Ảnh đã được upload thành công!");
+
       return imageUrl;
     } catch (error) {
       message.error("Upload ảnh thất bại!");
@@ -95,14 +95,14 @@ const BannerAddPage: React.FC = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Thêm banner mới</h1>
-        <Button
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-          type="primary"
-        >
-          <Link to="/admin/banner">
+        <Link to="/admin/banner">
+          <Button
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            type="primary"
+          >
             <BackwardFilled /> Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         <Form
