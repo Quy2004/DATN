@@ -1,15 +1,13 @@
 import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Form, FormProps, Input, message, Select } from "antd";
+import { Button, Form, FormProps, Input, InputNumber, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
+import { Size } from "../../../types/product";
+const { Option } = Select;
 
-type FieldType = {
-  name?: string;
-  priceSize: number;
-  category_id?: string;
-};
+
 
 const SizeAddPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -18,7 +16,7 @@ const SizeAddPage = () => {
 
   // Mutation để thêm size
   const { mutate } = useMutation({
-    mutationFn: async (size: FieldType) => {
+    mutationFn: async (size: Size) => {
       return await instance.post(`/sizes`, size);
     },
     onSuccess: () => {
@@ -45,7 +43,7 @@ const SizeAddPage = () => {
   });
 
   // Xử lý khi submit form
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
+  const onFinish: FormProps<Size>["onFinish"] = (values) => {
     console.log("Success:", values);
     mutate(values);
   };
@@ -71,12 +69,14 @@ const SizeAddPage = () => {
           onFinish={onFinish}
           autoComplete="off"
         >
-          <Form.Item<FieldType>
+          <Form.Item<Size>
+            
             label="Tên size"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập tên size!" }]}
           >
-            <Input />
+            <Input className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên size"/>
           </Form.Item>
 
           <Form.Item
@@ -97,13 +97,28 @@ const SizeAddPage = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item<FieldType>
-            label="Giá"
-            name="priceSize"
-            rules={[{ required: true, message: "Vui lòng nhập giá size!" }]}
-          >
-            <Input />
-          </Form.Item>
+          <Form.Item<Size>
+						label="Giá tiền"
+						name="priceSize"
+						rules={[
+							{ required: true, message: "Vui lòng nhập giá của size!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Giá ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
+							},
+						  ]}
+						  
+					>
+						<InputNumber
+							style={{ width: "100%" }}
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập giá size"
+						/>
+					</Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">

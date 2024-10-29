@@ -1,12 +1,14 @@
 .cow_left img {
-    width: 620px;
+    width: 542px;
     height: 360px;
     border-radius: 10px;
+    margin-left: auto;
+
 }
 
 .product_img img {
-    width: 280px;
-    height: 280px;
+    width: 255px;
+    height: 240px;
     border-radius: 10px;
     box-shadow: 3px 3px 10px #ccc;
 }
@@ -47,8 +49,10 @@ button{
     -webkit-transition: .5s;
     transition: .5s;
 }
-button:hover {
-    color: #ea8025 ;
+
+.slick-slider {
+    /* height: 330px; */
+    margin-top: 40px;
 }
 .slick-slider .slick-prev,
 .slick-slider .slick-next {
