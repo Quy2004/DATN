@@ -53,7 +53,7 @@ const DetailPage = () => {
             {product && (
                 <div className="">
                     <div className="containerAll mx-auto px-4 py-8">
-                        <div className="flex flex-wrap-mx-4 mt-20">
+                        <div className="flex flex-wrap-mx-4 mt-8">
                             {/* Product Images */}
                             <div className="w-45% px-4 mb-4">
                                 <img

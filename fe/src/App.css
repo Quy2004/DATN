@@ -3,6 +3,7 @@
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 .containerAll {
   margin-top: 60px;
   max-width: 1124px;
@@ -15,9 +16,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -26,6 +29,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -53,53 +57,67 @@ header {
   left: 0;
   background-color: #ffffff;
   opacity: 0.9;
-  border-bottom:  1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   transition: all 0.5s ease-in-out;
   z-index: 1000;
 }
-header.sticky{
+
+header.sticky {
   /* background-color: rgba(255, 255, 255, 0.94); */
   opacity: 0.9;
 }
-/* body:not(.home) header{ */
-  /* background-color: #fff; Màu trắng cho header trên các trang khác */
-  /* opacity: 1;  */
 
-body:not(.home) header{
-  background-color: #fff; 
+/* body:not(.home) header{ */
+/* background-color: #fff; Màu trắng cho header trên các trang khác */
+/* opacity: 1;  */
+
+body:not(.home) header {
+  background-color: #fff;
   opacity: 1;
 
 }
+
 body {
   opacity: 1 !important;
   filter: none !important;
   background-color: transparent !important;
 }
-header .sticky #main-menu p{
+
+header .sticky #main-menu p {
   color: #000;
 }
-#main-menu a{
+
+#main-menu a {
   font-weight: bold;
 }
+
 /*  */
-.img_homes img{
+.img_homes img {
   height: 200px;
   width: 100%;
 }
-.inner-header{
+
+.inner-header {
   width: 1170px;
 }
+
 .drawer-open body {
   /* -webkit-backdrop-filter: none !important; Loại bỏ bất kỳ filter nào */
-  opacity: 1 !important;             /* Giữ nguyên độ sáng */
+  opacity: 1 !important;
+  /* Giữ nguyên độ sáng */
 }
 
 .drawer-open {
-  background-color: transparent !important; /* Loại bỏ màu nền mờ */
+  background-color: transparent !important;
+  /* Loại bỏ màu nền mờ */
 }
+
 /* Input-antd */
 .Input-antd {
-  @apply h-30px !important; /* Đảm bảo chiều cao 30px */
-  @apply rounded-lg !important; /* Đảm bảo bo góc */
-  @apply border-custom !important; /* Đảm bảo màu viền */
+  @apply h-30px !important;
+  /* Đảm bảo chiều cao 30px */
+  @apply rounded-lg !important;
+  /* Đảm bảo bo góc */
+  @apply border-custom !important;
+  /* Đảm bảo màu viền */
 }
