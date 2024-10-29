@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import * as Components from './AuthComponents';
+import * as Components from './AuthComponents'; 
 import instance from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 
 const AuthPage: React.FC = () => {
@@ -11,7 +10,7 @@ const AuthPage: React.FC = () => {
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const [error, setError] = useState<string | null>(null);
 
-
+    
     const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setRegisterData({ ...registerData, [name]: value });
@@ -23,13 +22,13 @@ const AuthPage: React.FC = () => {
         setLoginData({ ...loginData, [name]: value });
     };
 
-
+   
     const handleRegisterSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await instance.post('/auth/register', registerData);
+            const response = await instance.post('/auth/register', registerData); 
             console.log('Đăng ký thành công:', response.data);
-            setSignIn(true);
+            setSignIn(true); 
         } catch (error) {
             console.error('Lỗi đăng ký:', error);
             setError('Có lỗi xảy ra khi đăng ký.');
@@ -41,12 +40,10 @@ const AuthPage: React.FC = () => {
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await instance.post('/auth/login', loginData);
-            toast.success('Đăng nhập thành công');
-            setTimeout(() => {
-                navigate('/');
-            }, 2000)
-
+            const response = await instance.post('/auth/login', loginData); 
+            console.log('Đăng nhập thành công:', response.data);
+               navigate('/');
+           
         } catch (error) {
             console.error('Lỗi đăng nhập:', error);
             setError('Có lỗi xảy ra khi đăng nhập.');
@@ -60,25 +57,25 @@ const AuthPage: React.FC = () => {
                 <Components.RegisterContainer $signinIn={signIn}>
                     <Components.Form onSubmit={handleRegisterSubmit}>
                         <Components.Title>Tạo Tài Khoản</Components.Title>
-                        <Components.Input
-                            type='text'
-                            name='userName'
-                            placeholder='Tên người dùng'
-                            value={registerData.userName}
+                        <Components.Input 
+                            type='text' 
+                            name='userName' 
+                            placeholder='Tên người dùng' 
+                            value={registerData.userName} 
                             onChange={handleRegisterChange}
                         />
-                        <Components.Input
-                            type='email'
-                            name='email'
-                            placeholder='Email'
-                            value={registerData.email}
+                        <Components.Input 
+                            type='email' 
+                            name='email' 
+                            placeholder='Email' 
+                            value={registerData.email} 
                             onChange={handleRegisterChange}
                         />
-                        <Components.Input
-                            type='password'
-                            name='password'
-                            placeholder='Mật khẩu'
-                            value={registerData.password}
+                        <Components.Input 
+                            type='password' 
+                            name='password' 
+                            placeholder='Mật khẩu' 
+                            value={registerData.password} 
                             onChange={handleRegisterChange}
                         />
                         <Components.Button type="submit">Đăng Ký</Components.Button>
@@ -89,18 +86,18 @@ const AuthPage: React.FC = () => {
                 <Components.LoginContainer $signinIn={signIn}>
                     <Components.Form onSubmit={handleLoginSubmit}>
                         <Components.Title>Đăng Nhập</Components.Title>
-                        <Components.Input
-                            type='email'
-                            name='email'
-                            placeholder='Email / Số điện thoại'
-                            value={loginData.email}
+                        <Components.Input 
+                            type='email' 
+                            name='email' 
+                            placeholder='Email / Số điện thoại' 
+                            value={loginData.email} 
                             onChange={handleLoginChange}
                         />
-                        <Components.Input
-                            type='password'
-                            name='password'
-                            placeholder='Mật khẩu'
-                            value={loginData.password}
+                        <Components.Input 
+                            type='password' 
+                            name='password' 
+                            placeholder='Mật khẩu' 
+                            value={loginData.password} 
                             onChange={handleLoginChange}
                         />
                         <Components.Anchor href='#'>Quên mật khẩu?</Components.Anchor>
