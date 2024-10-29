@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import instance from "../../services/api";
 import { Product } from "../../types/product";
 
@@ -48,12 +48,16 @@ const DetailPage = () => {
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>An error occurred: {(error as Error).message}</div>;
 
+    //Định nghĩa giá
+    const formatPrice = (price: number) => {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    };
     return (
         <>
             {product && (
                 <div className="">
                     <div className="containerAll mx-auto px-4 py-8">
-                        <div className="flex flex-wrap-mx-4 mt-8">
+                        <div className="flex flex-wrap-mx-4 my-8 ">
                             {/* Product Images */}
                             <div className="w-45% px-4 mb-4">
                                 <img
@@ -128,18 +132,20 @@ const DetailPage = () => {
                         </div>
                         <hr className="mb-4 mx-4" />
                         <div className="mx-4">
-                            <h1 className="font-medium">Mô tả sản phẩm:</h1>
+                            <h1 className="font-medium text-xl">Mô tả sản phẩm:</h1>
                             <p className="text-gray-700 mb-4 mt-1" dangerouslySetInnerHTML={{ __html: product.description }}></p>
                         </div>
-                        <hr className='my-2' />
-                        <div>
-                            <h1>Sản phẩm khác</h1>
-                            <div className='flex border-2'>
+                        <hr className="my-2 mx-4" />
+                        <div className="mx-4">
+                            <h1 className="my-2 font-medium text-xl">Sản phẩm khác</h1>
+                            <div className='flex'>
                                 {products.slice(0, 6).map((item: Product) => (
-                                    <div key={item._id}>
-                                        <h1>{item.name}</h1>
-                                        <img src={item.image} alt="image" className='w-1/5' />
-                                        <p>{item.price}</p>
+                                    <div key={item._id} className="w-full">
+                                        <img src={item.image} alt="image" className='w-[160px] h-[160px] mx-auto rounded-lg border-2 my-2' />
+                                        <Link to={`detail/${item._id}`}>
+                                            <h3 className="mx-2">{item.name}</h3>
+                                        </Link>
+                                        <p className="mx-2 text-xs text-[#838080]">{formatPrice(item.price)} VNĐ</p>
                                     </div>
                                 ))}
                             </div>
