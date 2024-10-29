@@ -44,6 +44,10 @@ const Header: React.FC = () => {
 	const clearSearch = () => {
 		setSearchTerm("");
 	};
+	// Định dạng price 
+	const formatPrice = (price: number) => {
+		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+	  };
 	return (
 		<>
 			<header className="absolute z-10">
@@ -107,24 +111,24 @@ const Header: React.FC = () => {
 								/>
 							</div>
 
-							{searchTerm && (<div className="h-[200px] mt-4 bg-gray-200 overflow-y-auto p-4 rounded-lg">
+							{searchTerm && (<div className="max-h-[191px] w-[250px] absolute bg-gray-100 overflow-y-auto px-2 rounded-lg">
 									{products?.length ? (
 										products.map((product: Product) => (
 											<Link to={`detail/${product._id}`} onClick={clearSearch}>
                                                 <div
 												key={product.id}
-												className="flex items-center mb-4"
+												className="flex items-center border-b-2 hover:bg-gray-200 h-[63px]"
 											>
 												<img
 													src={product.image}
 													alt={product.name}
-													className="w-16 h-16 rounded-full mr-4 object-cover"
+													className="w-14 h-14 rounded-full mr-4 object-cover"
 												/>
 												<div>
-													<h3 className="text-lg font-semibold">
+													<h3 className="text-sm font-semibold">
 														{product.name}
 													</h3>
-													<p className="text-gray-700">{product.price} VNĐ</p>
+													<p className="text-gray-700 text-[10px]">{formatPrice(product.price)} VNĐ</p>
 												</div>
 											</div>
                                             </Link>
