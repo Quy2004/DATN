@@ -99,22 +99,28 @@ export const createOrder = async (req, res) => {
   
   
   
-  ; //lấy ds đơn hàng của ng dùng
-  export const getOrders = async (req, res) => {
+  ; // Lấy danh sách đơn hàng của người dùng
+export const getOrders = async (req, res) => {
     try {
       const { userId } = req.params;
-  
-      const orders = await Order.find({ user_id: userId }).populate('orderDetails.product_id');
-  
+
+      const orders = await Order.find({ user_id: userId }).populate({
+        path: 'orderDetail_id', // populate orderDetail_id
+        populate: {
+          path: 'product_id', // populate thêm product_id trong OrderDetail
+          model: 'Product'
+        }
+      });
+
       if (!orders.length) {
         return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
       }
-  
+
       return res.status(200).json(orders);
     } catch (error) {
       return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
     }
-  };
+};
 
   // Cập nhật trạng thái đơn hàng
   export const updateOrderStatus = async (req, res) => {
