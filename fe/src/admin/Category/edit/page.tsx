@@ -90,14 +90,14 @@ const CategoryUpdatePage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Cập nhật danh mục</h1>
-        <Button
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-          type="primary"
-        >
-          <Link to="/admin/category">
+        <Link to="/admin/category">
+          <Button
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            type="primary"
+          >
             <BackwardFilled /> Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         {contextHolder}
@@ -118,7 +118,10 @@ const CategoryUpdatePage = () => {
               { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự!" },
             ]}
           >
-            <Input className="Input-antd text-sm placeholder-gray-400" placeholder="Nhập tên danh mục" />
+            <Input
+              className="Input-antd text-sm placeholder-gray-400"
+              placeholder="Nhập tên danh mục"
+            />
           </Form.Item>
 
           {/* Select để chọn danh mục cha */}
@@ -140,7 +143,7 @@ const CategoryUpdatePage = () => {
             <Space>
               <Button type="primary" htmlType="submit">
                 Cập nhật danh mục
-              </Button>{" "}
+              </Button>
               <Button
                 htmlType="reset"
                 className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition"

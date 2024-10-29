@@ -82,7 +82,6 @@ const ProductEditPage: React.FC = () => {
       } else {
         setThumbnails((prev) => [...prev, res.data.secure_url]);
       }
-      message.success("Ảnh đã được upload thành công!");
     } catch (error) {
       message.error("Upload ảnh thất bại!");
     }
@@ -190,15 +189,16 @@ const ProductEditPage: React.FC = () => {
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Cập nhật sản phẩm</Title>
-        <Button
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-          type="primary"
-          icon={<DoubleLeftOutlined />}
-        >
-          <Link to="/admin/product/" style={{ color: "white" }}>
+
+        <Link to="/admin/product/" style={{ color: "white" }}>
+          <Button
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            type="primary"
+            icon={<DoubleLeftOutlined />}
+          >
             Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         <Form
@@ -369,33 +369,15 @@ const ProductEditPage: React.FC = () => {
                         </Select>
                       </Form.Item>
 
-                      <Form.Item
-                        name={[field.name, "status"]}
-                        label="Trạng thái"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Vui lòng chọn trạng thái",
-                          },
-                        ]}
-                        className="flex-1 mb-0"
-                      >
-                        <Select
-                          placeholder="Chọn trạng thái"
-                          className="w-full"
+                      {fields.length > 1 && (
+                        <Button
+                          onClick={() => remove(field.name)}
+                          danger
+                          className="text-red-500 mb-0"
                         >
-                          <Option value="available">Có sẵn</Option>
-                          <Option value="unavailable">Hết hàng</Option>
-                        </Select>
-                      </Form.Item>
-
-                      <Button
-                        onClick={() => remove(field.name)}
-                        danger
-                        className="text-red-500 mb-0"
-                      >
-                        Xóa
-                      </Button>
+                          Xóa
+                        </Button>
+                      )}
                     </div>
                   ))}
 
@@ -490,27 +472,12 @@ const ProductEditPage: React.FC = () => {
             label="Mô tả sản phẩm"
             name="description"
             valuePropName="value"
-            rules={[
-              {
-                validator(_, value) {
-                  if (
-                    value &&
-                    value.replace(/<\/?[^>]+(>|$)/g, "").trim() !== ""
-                  ) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error("Mô tả sản phẩm không được để trống")
-                  );
-                },
-              },
-            ]}
             className="mt-5"
           >
             <ReactQuill
               theme="snow"
               placeholder="Nhập mô tả sản phẩm"
-              onChange={(value) => form.setFieldsValue({ description: value })} // Cập nhật giá trị vào form
+              onChange={(value) => form.setFieldsValue({ description: value })}
             />
           </Form.Item>
 
