@@ -37,7 +37,7 @@ class SizeController {
       const totalItems = await Size.countDocuments(query);
 
       res.status(200).json({
-        message: "Lấy sản phẩm thành công",
+        message: "Lấy size thành công",
         data: sizes,
         pagination: {
           totalItems: totalItems,
@@ -161,6 +161,39 @@ class SizeController {
       });
     }
   }
+
+  async updateStatusSize(req, res) {
+    try {
+        const { status } = req.body;
+
+        // Kiểm tra xem trạng thái có hợp lệ không
+        if (!status || !["available", "unavailable"].includes(status)) {
+            return res.status(400).json({
+                message: "Trạng thái không hợp lệ. Nó phải là 'available' hoặc 'unavailable'."
+            });
+        }
+
+        // Tìm size và cập nhật trạng thái
+        const size = await Size.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        );
+
+        if (!size || size.isDeleted) {
+            return res.status(404).json({ message: "Không tìm thấy size" });
+        }
+
+        res.status(200).json({
+            message: "Cập nhật trạng thái size thành công",
+            data: size,
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+
 }
 
 export default SizeController;

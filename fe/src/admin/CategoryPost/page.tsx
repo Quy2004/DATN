@@ -1,4 +1,4 @@
-import { Button, Table, message, Spin, Alert, Space, Popconfirm } from "antd";
+import { Button, Table, message, Spin, Alert, Space, Popconfirm, Image } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CategoryPost } from "../../types/categoryPost";
 import instance from "../../services/api";
@@ -109,7 +109,7 @@ const CategoryPostManagerPage = () => {
         key: index + 1,
         title: item.title,
         description: item.description, // Make sure this is included in the response
-        imageBanner: item.thumbnail, // Changed to use the correct key
+        thumbnail: item.thumbnail, // Changed to use the correct key
         isDeleted: item.isDeleted,
     }));
 
@@ -126,17 +126,29 @@ const CategoryPostManagerPage = () => {
         },
         {
             title: "Mô tả",
-            dataIndex: "description", // Make sure this is mapped correctly
+            dataIndex: "description", // Đảm bảo rằng điều này được ánh xạ chính xác
             key: "description",
-        },
-        {
-            title: "Ảnh danh mục post",
-            dataIndex: "imageBanner", // Use the correct key here
-            key: "imageBanner",
-            render: (text: string) => (
-                <img src={text} alt="banner" style={{ width: "100px" }} />
+            render: (text: any) => (
+                <div
+                    dangerouslySetInnerHTML={{
+                        __html: text,
+                    }}
+                />
             ),
         },
+        
+        {
+            title: "Ảnh sản phẩm",
+            dataIndex: "thumbnail",
+            key: "thumbnail",
+            render: (thumbnail: string) => (
+              <Image
+                src={thumbnail}
+                alt="Category"
+                style={{ width: "100px", height: "auto" }}
+              />
+            ),
+          },
         {
 			title: "Hành động",
 			key: "action",
