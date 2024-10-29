@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import dayjs from "dayjs";
 import { Voucher } from "../../../types/voucher";
+import ReactQuill from "react-quill";
 
 const VoucherAddPage = () => {
 	const [messageApi, contextHolder] = message.useMessage();
@@ -71,7 +72,10 @@ const VoucherAddPage = () => {
 						name="name"
 						rules={[{ required: true, message: "Vui lòng nhập tên voucher!" }]}
 					>
-						<Input />
+						<Input
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập tên voucher"
+						/>
 					</Form.Item>
 
 					{/* Mã voucher */}
@@ -79,15 +83,22 @@ const VoucherAddPage = () => {
 						label="Mã voucher"
 						name="code"
 					>
-						<Input />
+						<Input
+							className="Input-antd text-sm placeholder-gray-400"
+							placeholder="Nhập tên voucher"
+						/>
 					</Form.Item>
 
 					{/* Mô tả */}
-					<Form.Item<Voucher>
-						label="Mô tả"
+					<Form.Item
+						label="Mô tả voucher"
 						name="description"
+						className="mt-5"
 					>
-						<Input.TextArea />
+						<ReactQuill
+							theme="snow"
+							placeholder="Nhập mô tả voucher"
+						/>
 					</Form.Item>
 
 					{/* Phần trăm giảm giá */}
@@ -96,11 +107,22 @@ const VoucherAddPage = () => {
 						name="discountPercentage"
 						rules={[
 							{ required: true, message: "Vui lòng nhập phần trăm giảm giá!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Phần trăm giảm giá ít nhất là 0!");
+									}
+									if (value > 100) {
+										return Promise.reject(
+											"Phần trăm giảm giá nhiều nhất là 100!",
+										);
+									}
+									return Promise.resolve();
+								},
+							},
 						]}
 					>
 						<InputNumber
-							min={0}
-							max={100}
 							formatter={value => `${value}`}
 							style={{ width: "100%" }}
 						/>
@@ -112,10 +134,17 @@ const VoucherAddPage = () => {
 						name="maxDiscount"
 						rules={[
 							{ required: true, message: "Vui lòng nhập giảm giá tối đa!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Giảm giá ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
+							},
 						]}
 					>
 						<InputNumber
-							min={0}
 							formatter={value => `${value}`}
 							style={{ width: "100%" }}
 						/>
@@ -125,10 +154,20 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Số lượng"
 						name="quantity"
-						rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
+						rules={[
+							{ required: true, message: "Vui lòng nhập số lượng!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Số lượng ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
+							},
+
+						]}
 					>
 						<InputNumber
-							min={0}
 							style={{ width: "100%" }}
 						/>
 					</Form.Item>

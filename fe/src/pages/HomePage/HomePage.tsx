@@ -79,7 +79,7 @@ const HomePage: React.FC = () => {
               {products.slice(0, 2).map((product: Product) => (
                 <div className="item" key={product._id}>
                   <div className="product_img">
-                    <Link to='#'>
+                    <Link to={`detail/${product._id}`}>
                       <img src={`${product.image}`} alt="" className="" />
                     </Link>
                   </div>
@@ -160,7 +160,7 @@ const HomePage: React.FC = () => {
             </Slider>
           ) : (
             // Render sản phẩm không dùng slider khi có dưới 4 sản phẩm
-            <div className="flex md:mx-0 mt-10">
+           <div className="flex md:mx-0 mt-10">
               {products.map((product: Product, index) => (
                 <div key={`${product._id}-${index}`} className="item mx-2" >
                   <div className="my-4">
