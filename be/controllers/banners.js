@@ -4,8 +4,34 @@ class BannerController {
   // Lấy danh sách banner
   async getBanners(req, res) {
     try {
-      const banners = await Banner.find({ isDeleted: false });
-      res.status(200).json(banners);
+      const { page = 1, limit = 10, search, isDeleted } = req.query;
+
+      const query = {};
+
+      // Tìm kiếm theo tiêu đề banner, không phân biệt chữ hoa thường
+      if (search) {
+        query.title = { $regex: search, $options: "i" };
+      }
+
+      // Lọc theo trạng thái xóa mềm
+      if (isDeleted !== undefined) {
+        query.isDeleted = isDeleted === "true";
+      }
+
+      // Truy vấn tìm banner và áp dụng phân trang
+      const banners = await Banner.find(query)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+      const total = await Banner.countDocuments(query);
+
+      res.status(200).json({
+        message: "Lấy danh sách banner thành công!!!",
+        data: banners,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
     } catch (error) {
       res.status(500).json({ error: "Lỗi khi lấy danh sách banner" });
     }
@@ -85,12 +111,9 @@ class BannerController {
   // Xóa mềm banner
   async softDeleteBanner(req, res) {
     try {
-      const { id } = req.params;
-      const banner = await Banner.findOneAndUpdate(
-        { _id: id, isDeleted: false },
-        { isDeleted: true },
-        { new: true }
-      );
+      const banner = await Banner.findByIdAndUpdate(req.params.id, {
+        isDeleted: true,
+      });
 
       if (!banner) {
         return res

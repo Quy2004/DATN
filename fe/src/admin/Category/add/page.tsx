@@ -59,14 +59,14 @@ const CategoryAddPage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Thêm danh mục mới</h1>
-        <Button
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-          type="primary"
-        >
-          <Link to="/admin/category">
+        <Link to="/admin/category">
+          <Button
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            type="primary"
+          >
             <BackwardFilled /> Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         {contextHolder}

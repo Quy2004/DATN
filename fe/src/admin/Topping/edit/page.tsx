@@ -70,11 +70,11 @@ const ToppingUpdatePage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Cập nhật Topping</h1>
-        <Button type="primary">
-          <Link to="/admin/topping">
+        <Link to="/admin/topping">
+          <Button type="primary">
             <BackwardFilled /> Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         {contextHolder}
