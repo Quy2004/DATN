@@ -2,7 +2,21 @@ import Order from '../models/OderModel.js';
 import Cart from '../models/Cart.js';
 import { createOrderDetail } from './OrderDetail'; // Import hàm từ file orderDetailController.js
 
-// Hàm tạo đơn hàng
+// Lấy tất cả đơn hàng
+export const getAllOrders = async (req, res) => {
+    try {
+      // Tìm tất cả đơn hàng và populate thông tin chi tiết sản phẩm nếu cần
+      const orders = await Order.find().populate('orderDetails.product_id');
+  
+      if (!orders.length) {
+        return res.status(404).json({ message: "Không có đơn hàng nào." });
+      }
+  
+      return res.status(200).json(orders);
+    } catch (error) {
+      return res.status(500).json({ message: "Có lỗi xảy ra, vui lòng thử lại.", error: error.message });
+    }
+  };
 
 // Hàm tạo đơn hàng
 export const createOrder = async (req, res) => {
@@ -72,7 +86,14 @@ export const createOrder = async (req, res) => {
     }
 
  
-  }; //lấy ds đơn hàng của ng dùng
+
+
+    
+  }
+  
+  
+  
+  ; //lấy ds đơn hàng của ng dùng
   export const getOrders = async (req, res) => {
     try {
       const { userId } = req.params;
