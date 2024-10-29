@@ -47,6 +47,7 @@ const Header: React.FC = () => {
                                 </li>
                             </ul>
                         </nav>
+                        {/* SEARCH */}
                         <div className="mb:hidden lg:block *:h-[48px] ml-[150px]">
                             <div className="relative flex items-center">
                                 <input
@@ -58,6 +59,7 @@ const Header: React.FC = () => {
                         </div>
                         <nav aria-label="Global" className="hidden md:block">
                             <div className="flex  text-sm font-semibold" id="main-menu">
+                                {/* ICON_USER */}
                                 <div className="px-4">
                                     <Link to={"/login"} type="button" className="*:hover:text-[#ea8025] px-6 ">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -65,6 +67,7 @@ const Header: React.FC = () => {
                                         </svg>
                                     </Link>
                                 </div>
+                                {/* ICON_CART */}
                                 <div className="px-4">
                                     <button className="relative top-[30%] h-[24px] *:hover:text-[#ea8025] *:hover:opacity-80" onClick={() => setIsOpen(true)}>
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
@@ -77,7 +80,6 @@ const Header: React.FC = () => {
                                 </div>
                             </div>
                         </nav>
-
                     </div>
                 </div>
             </header>
