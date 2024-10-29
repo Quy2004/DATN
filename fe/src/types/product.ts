@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Định nghĩa Category (Danh mục)
 import { Category } from "./category";
 
@@ -34,7 +35,6 @@ export interface ProductTopping {
 
 // Định nghĩa Product (Sản phẩm)
 export interface Product {
-    [x: string]: any;
     _id: string;
     name: string;
     price: number;
