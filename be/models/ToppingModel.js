@@ -10,6 +10,11 @@ const ToppingSchema = new Schema(
       trim: true,
       maxlength: [50, "Tên topping không được vượt quá 50 ký tự"],
     },
+    category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
     priceTopping: {
       type: Number,
       required: [true, "Giá của topping là bắt buộc"],

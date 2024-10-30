@@ -21,9 +21,11 @@ import {
   DeleteOutlined,
   PlusCircleFilled,
   SearchOutlined,
+  UndoOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { ColumnsType } from "antd/es/table";
+import { Category } from "../../types/category";
 
 const ToppingManagerPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -31,6 +33,7 @@ const ToppingManagerPage = () => {
   const [searchText, setSearchText] = useState("");
   const [filteredStatus] = useState<string | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const {
     data: toppings,
@@ -40,6 +43,13 @@ const ToppingManagerPage = () => {
     queryKey: ["toppings"],
     queryFn: async () => {
       const response = await instance.get(`toppings`);
+      return response.data;
+    },
+  });
+  const { data: categories, isLoading: isLoadingCategory } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`categories`);
       return response.data;
     },
   });
@@ -122,7 +132,8 @@ const ToppingManagerPage = () => {
       return (
         !item.isDeleted &&
         (!filteredStatus || item.statusTopping === filteredStatus) &&
-        item.nameTopping.toLowerCase().includes(searchText.toLowerCase())
+        item.nameTopping.toLowerCase().includes(searchText.toLowerCase()) &&
+        (!selectedCategory || item.category_id.title === selectedCategory) // Lọc theo danh mục
       );
     })
     .map((item: Topping, index: number) => ({
@@ -132,6 +143,7 @@ const ToppingManagerPage = () => {
       statusTopping: item.statusTopping,
       priceTopping: item.priceTopping,
       isDeleted: item.isDeleted,
+      categoryTitle: item.category_id.title,
     }));
 
   const columns: ColumnsType<Topping> = [
@@ -154,6 +166,7 @@ const ToppingManagerPage = () => {
       ),
       filterIcon: <SearchOutlined />,
     },
+
     {
       title: "Giá Topping",
       dataIndex: "priceTopping",
@@ -172,6 +185,19 @@ const ToppingManagerPage = () => {
         return true;
       },
     },
+    {
+      title: "Danh Mục",
+      dataIndex: "categoryTitle",
+      key: "categoryTitle",
+      filters:
+        categories?.data.map((category: Category) => ({
+          text: category.title,
+          value: category.title,
+        })) || [],
+      onFilter: (value, record) => record.categoryTitle === value,
+      render: (categoryTitle) => <span>{categoryTitle}</span>,
+    },
+
     {
       title: "Trạng Thái",
       dataIndex: "statusTopping",
@@ -220,7 +246,7 @@ const ToppingManagerPage = () => {
                 cancelText="No"
               >
                 <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-                  Khôi phục
+                  <UndoOutlined className="h-4 w-4" /> Khôi phục
                 </Button>
               </Popconfirm>
               <Popconfirm
@@ -261,7 +287,7 @@ const ToppingManagerPage = () => {
     },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingCategory) {
     return (
       <div style={{ textAlign: "center", padding: "20px" }}>
         <Spin tip="Đang tải dữ liệu..." size="large" />
@@ -341,6 +367,7 @@ const ToppingManagerPage = () => {
           showSizeChanger: true,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
+        scroll={{ x: "max-content", y: 400 }}
       />
     </>
   );
