@@ -39,13 +39,6 @@ const Checkout: React.FC = () => {
         const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
         return subtotal + shippingCost;
     };
-    // phương thức thanh toán
-    const [paymentMethod, setPaymentMethod] = useState<string>(''); // Trạng thái để theo dõi phương thức thanh toán
-
-    // Hàm xử lý sự kiện khi chọn phương thức thanh toán
-    const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setPaymentMethod(event.target.value);
-    };
 
     return (
         <div className="flex flex-col items-center w-full min-h-screen p-8 bg-gray-100 md:p-12 mt-10">
