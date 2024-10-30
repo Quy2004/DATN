@@ -1,33 +1,32 @@
-import Cart from "../models/Cart.js";
-import Product from "../models/ProductModel.js";
+import Cart from '../models/Cart.js';        
+import Product from '../models/ProductModel';
 
+
+// Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
 export const addtoCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, products } = req.body;
 
-    if (!userId || !productId || !quantity) {
-      return res
-        .status(400)
-        .json({ message: "User ID, product ID, and quantity are required." });
+    if (!userId || !products || !products.length) {
+      return res.status(400).json({ message: "User ID and products are required." });
     }
 
-    // Tìm hoặc tạo giỏ hàng mới cho người dùng
+    // Kiểm tra nếu giỏ hàng tồn tại
     let cart = await Cart.findOne({ userId });
 
+    // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
-      cart = new Cart({ userId, products: [{ product: productId, quantity }] });
+      cart = new Cart({ userId, products });
     } else {
-      // Tìm sản phẩm trong giỏ hàng nếu đã tồn tại
-      const existingProductIndex = cart.products.findIndex(
-        (item) => item.product.toString() === productId
-      );
+      // Nếu giỏ hàng đã tồn tại, cập nhật sản phẩm
+      for (let product of products) {
+        const existingProduct = cart.products.find(p => p.product.toString() === product.product);
 
-      if (existingProductIndex > -1) {
-        // Nếu sản phẩm đã tồn tại, tăng số lượng
-        cart.products[existingProductIndex].quantity += quantity;
-      } else {
-        // Nếu sản phẩm chưa tồn tại, thêm vào giỏ hàng
-        cart.products.push({ product: productId, quantity });
+        if (existingProduct) {
+          existingProduct.quantity += product.quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
+        } else {
+          cart.products.push(product); // Thêm sản phẩm mới vào giỏ hàng
+        }
       }
     }
 
@@ -38,9 +37,7 @@ export const addtoCart = async (req, res) => {
     for (let item of cart.products) {
       const productDetails = await Product.findById(item.product);
       if (!productDetails) {
-        return res
-          .status(404)
-          .json({ message: `Product with ID ${item.product} not found` });
+        return res.status(404).json({ message: `Product with ID ${item.product} not found` });
       }
       totalQuantity += item.quantity;
       totalprice += productDetails.price * item.quantity;
@@ -54,12 +51,10 @@ export const addtoCart = async (req, res) => {
 
     return res.status(200).json({
       message: "Products added/updated successfully",
-      cart,
+      cart
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };

@@ -51,7 +51,10 @@ const orderSchema = new mongoose.Schema(
       required: false, 
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
 // Tạo pre-save hook
