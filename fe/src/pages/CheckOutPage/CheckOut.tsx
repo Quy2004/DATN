@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const CheckOut: React.FC = () => {
+const Checkout: React.FC = () => {
     const initialItems = [
         {
             img: 'https://rvs-checkout-page.onrender.com/photo1.png',
@@ -39,6 +39,13 @@ const CheckOut: React.FC = () => {
         const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
         return subtotal + shippingCost;
     };
+    // phương thức thanh toán
+    const [paymentMethod, setPaymentMethod] = useState<string>(''); // Trạng thái để theo dõi phương thức thanh toán
+
+    // Hàm xử lý sự kiện khi chọn phương thức thanh toán
+    const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setPaymentMethod(event.target.value);
+    };
 
     return (
         <div className="flex flex-col items-center w-full min-h-screen p-8 bg-gray-100 md:p-12 mt-10">
@@ -47,7 +54,7 @@ const CheckOut: React.FC = () => {
                 <section className="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
                     <form action="#!" method="get">
                         <h6 className="text-lg font-semibold mb-2">Thông tin liên hệ</h6>
-                        {['E-mail', 'Điện thoại', 'Họ và tên', 'Địa chỉ', 'Thành phố'].map((field, index) => (
+                        {['E-mail', 'Điện thoại', 'Họ và tên', 'Địa chỉ'].map((field, index) => (
                             <div className="mb-4" key={index}>
                                 <label className="block text-sm font-medium mb-1">{field}</label>
                                 <div className="relative">
@@ -63,34 +70,11 @@ const CheckOut: React.FC = () => {
                             </div>
                         ))}
                         <div className="flex flex-col md:flex-row md:justify-between mb-4">
-                            <div className="w-full mr-2 mb-4 md:mb-0">
-                                <label className="block text-sm font-medium mb-1">Quốc gia</label>
-                                <input
-                                    type="text"
-                                    placeholder="Quốc gia của bạn..."
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    list="country-list"
-                                />
-                                <datalist id="country-list">
-                                    {['Ấn Độ', 'Mỹ', 'Nga', 'Nhật Bản', 'Ai Cập'].map(country => (
-                                        <option value={country} key={country}></option>
-                                    ))}
-                                </datalist>
-                            </div>
-                            <div className="w-full">
-                                <label className="block text-sm font-medium mb-1">Mã bưu điện</label>
-                                <input
-                                    type="text"
-                                    placeholder="Nhập mã bưu điện của bạn..."
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                />
-                            </div>
                         </div>
                         <div className="flex items-center mb-4">
                             <input type="checkbox" id="checkout-checkbox" className="mr-2" />
                             <label htmlFor="checkout-checkbox" className="text-sm">Lưu thông tin này cho lần sau</label>
                         </div>
-                        <button className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600">Tiếp tục</button>
                     </form>
                 </section>
 
@@ -123,8 +107,10 @@ const CheckOut: React.FC = () => {
                         <h6 className="font-medium">Tổng cộng</h6>
                         <p className="text-gray-700">${getTotalPrice().toFixed(2)}</p>
                     </div>
+                    <button className="w-full px-4 py-2 text-white bg-orange-500 rounded-md hover:bg-orange-600">Thanh toán</button>
                 </section>
             </main>
+
 
             <footer className="mt-8 text-gray-400 text-sm">
                 <p>
@@ -136,4 +122,4 @@ const CheckOut: React.FC = () => {
     );
 };
 
-export default CheckOut;
+export default Checkout;
