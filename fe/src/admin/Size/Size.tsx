@@ -1,4 +1,9 @@
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+	CheckOutlined,
+	CloseOutlined,
+	DeleteOutlined,
+	PlusCircleFilled,
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	Alert,
@@ -10,7 +15,8 @@ import {
 	Space,
 	Spin,
 	Table,
-  Select 
+	Select,
+	Switch,
 } from "antd";
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
@@ -19,6 +25,7 @@ import { Link, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Size } from "../../types/size";
 import { Category } from "../../types/category";
+import { Tooltip } from "flowbite-react";
 
 const SizeManagerPage: React.FC = () => {
 	const queryClient = useQueryClient();
@@ -29,18 +36,18 @@ const SizeManagerPage: React.FC = () => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined
-  );
+	const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+		undefined,
+	);
 
 	const navigate = useNavigate();
 
 	const updateUrlParams = useCallback(() => {
 		const params = new URLSearchParams();
 		if (searchTerm) params.set("search", searchTerm);
-    if (selectedCategory && selectedCategory !== "allCategory") {
-      params.set("category", selectedCategory);
-    }
+		if (selectedCategory && selectedCategory !== "allCategory") {
+			params.set("category", selectedCategory);
+		}
 		if (isDelete) {
 			params.set("isDelete", "true");
 		} else {
@@ -53,20 +60,34 @@ const SizeManagerPage: React.FC = () => {
 
 	useEffect(() => {
 		updateUrlParams();
-	}, [searchTerm, selectedCategory, currentPage, pageSize, isDelete, updateUrlParams]);
+	}, [
+		searchTerm,
+		selectedCategory,
+		currentPage,
+		pageSize,
+		isDelete,
+		updateUrlParams,
+	]);
 
 	const {
 		data: sizes,
 		isLoading,
 		isError,
 	} = useQuery({
-		queryKey: ["sizes", searchTerm, selectedCategory, currentPage, pageSize, isDelete],
+		queryKey: [
+			"sizes",
+			searchTerm,
+			selectedCategory,
+			currentPage,
+			pageSize,
+			isDelete,
+		],
 		queryFn: async () => {
-      const categoryParam =
-        selectedCategory && selectedCategory !== "allCategory"
-          ? `&category=${selectedCategory}`
-          : "";
-          const trashParam = isDelete ? `&isDeleted=true` : "";
+			const categoryParam =
+				selectedCategory && selectedCategory !== "allCategory"
+					? `&category=${selectedCategory}`
+					: "";
+			const trashParam = isDelete ? `&isDeleted=true` : "";
 			const response = await instance.get(
 				`sizes?search=${searchTerm}${categoryParam}&page=${currentPage}&limit=${pageSize}${trashParam}`,
 			);
@@ -161,6 +182,21 @@ const SizeManagerPage: React.FC = () => {
 		},
 	});
 
+	const handleStatusChange = async (checked: boolean, id: string) => {
+		try {
+			const newStatus = checked ? "available" : "unavailable";
+			await instance.patch(`/sizes/${id}/update-status`, {
+				status: newStatus,
+			}); // Gọi API cập nhật trạng thái
+			message.success("Cập nhật trạng thái size thành công!");
+			queryClient.invalidateQueries({
+				queryKey: ["sizes"],
+			});
+		} catch (error) {
+			message.error("Lỗi khi cập nhật trạng thái!");
+		}
+	};
+
 	const showModal = (size: Size) => {
 		setSelectedSize(size);
 		setIsModalVisible(true);
@@ -197,6 +233,28 @@ const SizeManagerPage: React.FC = () => {
 			key: "category_id",
 			render: (category_id: { _id: string; title: string }) =>
 				getCategoryName(category_id),
+		},
+		{
+			title: "Trạng Thái",
+			dataIndex: "status",
+			key: "status",
+			render: (status: string, record: Size) => (
+				<div className="flex items-center space-x-2">
+					{/* Tooltip giải thích trạng thái */}
+					<Tooltip content={status === "available" ? "Size có sẵn" : "Size hết hàng"}>
+						<Switch
+							checked={status === "available"}
+							onChange={checked => handleStatusChange(checked, record._id)}
+							checkedChildren={<CheckOutlined />}
+							unCheckedChildren={<CloseOutlined />}
+							style={{
+								backgroundColor: status === "available" ? "#52c41a" : "#f5222d",
+							}}
+						/>
+					</Tooltip>
+				</div>
+			),
+			
 		},
 		{
 			title: "Hành động",
@@ -295,19 +353,19 @@ const SizeManagerPage: React.FC = () => {
 						allowClear
 						style={{ width: 300 }}
 					/>
-          <Select
-            value={selectedCategory}
-            onChange={(value) => setSelectedCategory(value)}
-            style={{ width: 150 }}
-            placeholder="Chọn danh mục"
-            options={[
-              { label: "Tất cả", value: "allCategory" },
-              ...(categoriesData?.data?.map((category: Category) => ({
-                label: category.title,
-                value: category._id,
-              })) || []),
-            ]}
-          />
+					<Select
+						value={selectedCategory}
+						onChange={value => setSelectedCategory(value)}
+						style={{ width: 150 }}
+						placeholder="Chọn danh mục"
+						options={[
+							{ label: "Tất cả", value: "allCategory" },
+							...(categoriesData?.data?.map((category: Category) => ({
+								label: category.title,
+								value: category._id,
+							})) || []),
+						]}
+					/>
 					<Button
 						type="primary"
 						icon={<DeleteOutlined />}

@@ -10,38 +10,34 @@ class SizeController {
         limit = 10,
         search = "",
         category,
-        isDeleted,
+        isDeleted = "false", // Mặc định chỉ lấy những size không bị xóa
       } = req.query;
-  
-      // Tạo query để tìm kiếm, lọc theo các tiêu chí
+
       const query = {
-        isDeleted: isDeleted === "true" ? true : false,
+        isDeleted: isDeleted === "true",
       };
-  
+
       if (search) {
-        query.name = { $regex: search, $options: "i" }; // Tìm kiếm theo tên sản phẩm
+        query.name = { $regex: search, $options: "i" };
       }
-  
-      // Lọc theo danh mục nếu có
+
       if (category) {
-        query.category_id = category;
+        query.category_id = category; // Chỉ lấy size thuộc về danh mục được chỉ định
       }
-  
-      // Chuyển đổi các tham số phân trang
-      const pageLimit = parseInt(limit, 10) || 10; // Mặc định là 10 mục nếu không có `limit`
-      const currentPage = parseInt(page, 10) || 1; // Mặc định là trang 1 nếu không có `page`
-  
-      // Thực hiện query để lấy danh sách sizes với limit và skip
+
+      const pageLimit = parseInt(limit, 10) || 10;
+      const currentPage = parseInt(page, 10) || 1;
+
       const sizes = await Size.find(query)
-        .populate([{ path: "category_id", select: "title" }])
+        .populate("category_id", "title")
         .limit(pageLimit)
         .skip((currentPage - 1) * pageLimit)
         .lean();
-  
-      // Tổng số danh mục để tính tổng số trang
+
       const totalItems = await Size.countDocuments(query);
+
       res.status(200).json({
-        message: "Lấy sản phẩm thành công",
+        message: "Lấy size thành công",
         data: sizes,
         pagination: {
           totalItems: totalItems,
@@ -165,6 +161,39 @@ class SizeController {
       });
     }
   }
+
+  async updateStatusSize(req, res) {
+    try {
+        const { status } = req.body;
+
+        // Kiểm tra xem trạng thái có hợp lệ không
+        if (!status || !["available", "unavailable"].includes(status)) {
+            return res.status(400).json({
+                message: "Trạng thái không hợp lệ. Nó phải là 'available' hoặc 'unavailable'."
+            });
+        }
+
+        // Tìm size và cập nhật trạng thái
+        const size = await Size.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        );
+
+        if (!size || size.isDeleted) {
+            return res.status(404).json({ message: "Không tìm thấy size" });
+        }
+
+        res.status(200).json({
+            message: "Cập nhật trạng thái size thành công",
+            data: size,
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+
 }
 
 export default SizeController;

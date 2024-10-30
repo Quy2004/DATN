@@ -60,6 +60,7 @@ const AdminLayout = () => {
     { name: "Quản lí bình luận", link: "comment", icon: <FaComments /> },
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
     { name: "Quản lí banner", link: "banner", icon: <FaImage /> },
+    { name: "Quản lí danh mục post", link: "CategoryPost", icon: <FaImage /> },
   ];
 
   // Determine breadcrumb based on current route
@@ -82,6 +83,8 @@ const AdminLayout = () => {
       return "Quản lý tài khoản ";
     } else if (location.pathname.includes("banner")) {
       return "Quản lý banner";
+    }else if (location.pathname.includes("CategoryPost")) {
+      return "Quản lý danh mục post";
     } else {
       return "Thống kê "; // Default breadcrumb
     }

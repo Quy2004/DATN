@@ -1,8 +1,9 @@
 import { BackwardFilled } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Form, FormProps, Input, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
+import { Category } from "../../../types/category";
 
 type FieldType = {
   nameTopping: string;
@@ -33,7 +34,14 @@ const ToppingAddPage = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-
+  // kết nối đền bảng category
+  const { data: categories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await instance.get(`/categories`);
+      return response.data;
+    },
+  });
   // Xử lý khi submit form
   const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
     console.log("Success:", values);
@@ -44,11 +52,11 @@ const ToppingAddPage = () => {
     <>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-semibold text-2xl">Thêm Topping mới</h1>
-        <Button type="primary">
-          <Link to="/admin/topping">
+        <Link to="/admin/topping">
+          <Button type="primary">
             <BackwardFilled /> Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         {contextHolder}
@@ -79,6 +87,23 @@ const ToppingAddPage = () => {
               placeholder="Nhập tên topping"
             />
           </Form.Item>
+          <Form.Item
+            label="Danh mục"
+            name="category_id"
+            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+          >
+            <Select
+              placeholder="Chọn danh mục"
+              loading={isLoadingCategories}
+              disabled={isLoadingCategories}
+            >
+              {categories?.data?.map((category: Category) => (
+                <Select.Option key={category._id} value={category._id}>
+                  {category.title}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
 
           <Form.Item<FieldType>
             label="Giá Topping"
@@ -104,17 +129,6 @@ const ToppingAddPage = () => {
               className="Input-antd text-sm placeholder-gray-400"
               placeholder="Nhập giá topping"
             />
-          </Form.Item>
-
-          <Form.Item
-            label="Trạng thái"
-            name="statusTopping"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-          >
-            <Select>
-              <Select.Option value="available">Có sẵn</Select.Option>
-              <Select.Option value="unavailable">Hết hàng</Select.Option>
-            </Select>
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
