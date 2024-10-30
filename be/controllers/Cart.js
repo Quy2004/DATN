@@ -1,35 +1,33 @@
 import Cart from "../models/Cart.js";
-import Product from "../models/ProductModel";
+import Product from "../models/ProductModel.js";
 
-// Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
 export const addtoCart = async (req, res) => {
   try {
-    const { userId, products } = req.body;
+    const { userId, productId, quantity } = req.body;
 
-    if (!userId || !products || !products.length) {
+    if (!userId || !productId || !quantity) {
       return res
         .status(400)
-        .json({ message: "User ID and products are required." });
+        .json({ message: "User ID, product ID, and quantity are required." });
     }
 
-    // Kiểm tra nếu giỏ hàng tồn tại
+    // Tìm hoặc tạo giỏ hàng mới cho người dùng
     let cart = await Cart.findOne({ userId });
 
-    // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
-      cart = new Cart({ userId, products });
+      cart = new Cart({ userId, products: [{ product: productId, quantity }] });
     } else {
-      // Nếu giỏ hàng đã tồn tại, cập nhật sản phẩm
-      for (let product of products) {
-        const existingProduct = cart.products.find(
-          (p) => p.product.toString() === product.product
-        );
+      // Tìm sản phẩm trong giỏ hàng nếu đã tồn tại
+      const existingProductIndex = cart.products.findIndex(
+        (item) => item.product.toString() === productId
+      );
 
-        if (existingProduct) {
-          existingProduct.quantity += product.quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
-        } else {
-          cart.products.push(product); // Thêm sản phẩm mới vào giỏ hàng
-        }
+      if (existingProductIndex > -1) {
+        // Nếu sản phẩm đã tồn tại, tăng số lượng
+        cart.products[existingProductIndex].quantity += quantity;
+      } else {
+        // Nếu sản phẩm chưa tồn tại, thêm vào giỏ hàng
+        cart.products.push({ product: productId, quantity });
       }
     }
 
@@ -65,5 +63,3 @@ export const addtoCart = async (req, res) => {
       .json({ message: "Server error", error: error.message });
   }
 };
-
-
