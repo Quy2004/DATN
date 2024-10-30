@@ -13,7 +13,11 @@ import {
 
 import instance from "../../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleFilled,
+  UndoOutlined,
+} from "@ant-design/icons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import Search from "antd/es/input/Search";
@@ -45,7 +49,7 @@ export const CategoryManagerPage = () => {
     params.set("filterStatus", filterStatus);
     params.set("page", currentPage.toString());
     params.set("limit", pageSize.toString());
-    navigate({ search: params.toString() });
+    navigate({ search: params.toString() }, { replace: true });
   }, [
     filterStatus,
     searchTerm,
@@ -157,7 +161,11 @@ export const CategoryManagerPage = () => {
     setCurrentPage(pagination.current || 1);
     setPageSize(pagination.pageSize || 10);
   };
-
+  const handleIsDeleteToggle = () => {
+    setIsDelete((prev) => !prev);
+    setCurrentPage(1);
+    updateUrlParams();
+  };
   // Định nghĩa các cột cho bảng
   const columns = [
     {
@@ -205,12 +213,12 @@ export const CategoryManagerPage = () => {
                 cancelText="No"
               >
                 <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-                  Khôi phục
+                  <UndoOutlined className="h-4 w-4" /> Khôi phục
                 </Button>
               </Popconfirm>
 
               <Popconfirm
-                title="Xóa cứng danh mục"
+                title="Xóa vĩnh viễn"
                 description="Bạn có chắc muốn xóa danh mục này vĩnh viễn?"
                 onConfirm={() =>
                   mutationHardDeleteCategory.mutate(category._id)
@@ -219,15 +227,15 @@ export const CategoryManagerPage = () => {
                 cancelText="No"
               >
                 <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
-                  Xóa cứng
+                  <DeleteOutlined /> Xóa vĩnh viễn
                 </Button>
               </Popconfirm>
             </>
           ) : (
             <>
               <Popconfirm
-                title="Xóa mềm danh mục"
-                description="Bạn có chắc muốn xóa mềm danh mục này không?"
+                title="Xóa danh mục"
+                description="Bạn có chắc muốn xóa danh mục này không?"
                 onConfirm={() =>
                   mutationSoftDeleteCategory.mutate(category._id)
                 }
@@ -239,11 +247,11 @@ export const CategoryManagerPage = () => {
                 </Button>
               </Popconfirm>
 
-              <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-                <Link to={`/admin/category/${category._id}/update`}>
+              <Link to={`/admin/category/${category._id}/update`}>
+                <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
                   Cập nhật
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </>
           )}
         </div>
@@ -307,22 +315,19 @@ export const CategoryManagerPage = () => {
               className={`transform transition-transform duration-300 ${
                 isDelete ? "scale-110" : ""
               }`}
-              onClick={() => setIsDelete(!isDelete)}
+              onClick={handleIsDeleteToggle}
             ></Button>
           </Tooltip>
         </div>
-        <Button
-          type="primary"
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-        >
-          <Link
-            to="/admin/category/add"
-            className="flex items-center space-x-2"
+        <Link to="/admin/category/add" className="flex items-center space-x-2">
+          <Button
+            type="primary"
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
           >
             <PlusCircleFilled />
             <span>Thêm danh mục</span>
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
       <Table
@@ -336,6 +341,7 @@ export const CategoryManagerPage = () => {
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         onChange={handleTableChange}
+        scroll={{ x: "max-content", y: 400 }}
       />
     </>
   );

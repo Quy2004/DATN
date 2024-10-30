@@ -24,6 +24,9 @@ const ProductAddPage: React.FC = () => {
   const [, contextHolder] = message.useMessage();
   const [image, setImage] = useState<string>("");
   const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
 
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -38,20 +41,35 @@ const ProductAddPage: React.FC = () => {
     },
   });
 
+  // const { data: sizes, isLoading: isLoadingSizes } = useQuery({
+  //   queryKey: ["sizes"],
+  //   queryFn: async () => {
+  //     const response = await instance.get(`/sizes`);
+  //     return response.data;
+  //   },
+  // });
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
-    queryKey: ["sizes"],
+    queryKey: ["sizes", selectedCategoryId], // Thêm selectedCategoryId làm phần của key
     queryFn: async () => {
-      const response = await instance.get(`/sizes`);
+      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      const response = await instance.get(
+        `/sizes?category=${selectedCategoryId}`
+      );
       return response.data;
     },
+    enabled: !!selectedCategoryId, // Chỉ enable query khi có selectedCategoryId
   });
 
   const { data: toppings, isLoading: isLoadingToppings } = useQuery({
-    queryKey: ["toppings"],
+    queryKey: ["toppings", selectedCategoryId], // Thêm selectedCategoryId vào queryKey
     queryFn: async () => {
-      const response = await instance.get(`/toppings`);
+      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      const response = await instance.get(
+        `/toppings?category=${selectedCategoryId}`
+      ); // Gọi API với selectedCategoryId
       return response.data;
     },
+    enabled: !!selectedCategoryId, // Chỉ gọi query khi có selectedCategoryId
   });
 
   // Upload Ảnh Cloudinary
@@ -70,7 +88,6 @@ const ProductAddPage: React.FC = () => {
       } else {
         setThumbnails((prev) => [...prev, res.data.secure_url]);
       }
-      message.success("Ảnh đã được upload thành công!");
     } catch (error) {
       message.error("Upload ảnh thất bại!");
     }
@@ -98,7 +115,6 @@ const ProductAddPage: React.FC = () => {
         })
       ),
       description: values.description,
-      stock: values.stock,
       discount: values.discount,
       status: values.status,
     };
@@ -136,21 +152,24 @@ const ProductAddPage: React.FC = () => {
     );
     message.info("Ảnh phụ đã được xóa.");
   };
+  const handleCategoryChange = (value: number | null) => {
+    setSelectedCategoryId(value);
+  };
 
   return (
     <div>
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Thêm mới sản phẩm</Title>
-        <Button
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-          type="primary"
-          icon={<DoubleLeftOutlined />}
-        >
-          <Link to="/admin/product" style={{ color: "white" }}>
+        <Link to="/admin/product" style={{ color: "white" }}>
+          <Button
+            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            type="primary"
+            icon={<DoubleLeftOutlined />}
+          >
             Quay lại
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         <Form
@@ -190,6 +209,7 @@ const ProductAddPage: React.FC = () => {
               placeholder="Chọn danh mục"
               loading={isLoadingCategories}
               disabled={isLoadingCategories}
+              onChange={handleCategoryChange}
             >
               {categories?.data?.map((category: Category) => (
                 <Option key={category._id} value={category._id}>
@@ -250,11 +270,7 @@ const ProductAddPage: React.FC = () => {
           </Form.Item>
 
           {/* Upload Ảnh Phụ */}
-          <Form.Item
-            label="Ảnh phụ"
-            name="thumbnail"
-            rules={[{ required: true, message: "Vui lòng upload ảnh phụ" }]}
-          >
+          <Form.Item label="Ảnh phụ" name="thumbnail">
             <Upload
               name="files"
               listType="picture-card"
@@ -319,41 +335,29 @@ const ProductAddPage: React.FC = () => {
                           disabled={isLoadingSizes}
                           className="w-full"
                         >
-                          {sizes?.data.map((size: Size) => (
-                            <Option key={size._id} value={size._id}>
-                              {size.name}
-                            </Option>
-                          ))}
+                          {sizes?.data
+                            .filter(
+                              (size: Size) =>
+                                size.status === "available" &&
+                                size.isDeleted === false
+                            )
+                            .map((size: Size) => (
+                              <Option key={size._id} value={size._id}>
+                                {size.name}
+                              </Option>
+                            ))}
                         </Select>
                       </Form.Item>
 
-                      <Form.Item
-                        name={[field.name, "status"]}
-                        label="Trạng thái"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Vui lòng chọn trạng thái",
-                          },
-                        ]}
-                        className="flex-1 mb-0"
-                      >
-                        <Select
-                          placeholder="Chọn trạng thái"
-                          className="w-full"
+                      {fields.length > 1 && (
+                        <Button
+                          onClick={() => remove(field.name)}
+                          danger
+                          className="text-red-500 mb-0"
                         >
-                          <Option value="available">Có sẵn</Option>
-                          <Option value="unavailable">Hết hàng</Option>
-                        </Select>
-                      </Form.Item>
-
-                      <Button
-                        onClick={() => remove(field.name)}
-                        danger
-                        className="text-red-500 mb-0"
-                      >
-                        Xóa
-                      </Button>
+                          Xóa
+                        </Button>
+                      )}
                     </div>
                   ))}
 
@@ -449,12 +453,7 @@ const ProductAddPage: React.FC = () => {
             </Form.List>
           </div>
 
-          <Form.Item
-            label="Mô tả sản phẩm"
-            name="description"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-            className="mt-5"
-          >
+          <Form.Item label="Mô tả sản phẩm" name="description" className="mt-5">
             <ReactQuill theme="snow" placeholder="Nhập mô tả sản phẩm" />
           </Form.Item>
 
@@ -486,17 +485,6 @@ const ProductAddPage: React.FC = () => {
               className="Input-antd text-sm placeholder-gray-400"
               placeholder="Nhập giảm giá"
             />
-          </Form.Item>
-
-          <Form.Item
-            label="Trạng thái"
-            name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-          >
-            <Select placeholder="Chọn trạng thái">
-              <Option value="available">Có sẵn</Option>
-              <Option value="unavailable">Hết hàng</Option>
-            </Select>
           </Form.Item>
 
           <Form.Item>

@@ -1,23 +1,48 @@
-import React from "react";
-import { Button, Table, Space, message, Spin, Alert, Popconfirm } from "antd";
+import React, { useState } from "react";
+import {
+  Button,
+  Table,
+  Space,
+  message,
+  Spin,
+  Alert,
+  Popconfirm,
+  Image,
+  Input,
+} from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { Link } from "react-router-dom";
 import { Banner } from "../../types/banner";
 import Title from "antd/es/typography/Title";
-import { PlusCircleFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleFilled,
+  SearchOutlined,
+  UndoOutlined,
+} from "@ant-design/icons";
 
 const BannerManagerPage = () => {
   const queryClient = useQueryClient();
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const {
     data: banners,
     isLoading,
     isError,
-  } = useQuery<Banner[]>({
-    queryKey: ["banners"],
+  } = useQuery({
+    queryKey: ["banners", showDeleted, currentPage, pageSize],
     queryFn: async () => {
       try {
-        const response = await instance.get("banners");
+        const response = await instance.get("banners", {
+          params: {
+            page: currentPage,
+            limit: pageSize,
+            isDeleted: showDeleted,
+          },
+        });
         return response.data;
       } catch (error) {
         throw new Error("Lỗi khi tải danh sách banner");
@@ -32,7 +57,7 @@ const BannerManagerPage = () => {
     },
     onSuccess: () => {
       message.success("Xóa mềm banner thành công");
-      queryClient.invalidateQueries({ queryKey: ["banners"] }); // Làm mới dữ liệu
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
     },
     onError: (error) => {
       message.error(`Lỗi: ${error.message}`);
@@ -52,14 +77,36 @@ const BannerManagerPage = () => {
       message.error(`Lỗi: ${error.message}`);
     },
   });
-
-  const dataSource = banners?.map((item: Banner, index: number) => ({
-    _id: item._id,
-    key: index + 1,
-    title: item.title,
-    imageBanner: item.imageBanner,
-    isDeleted: item.isDeleted,
-  }));
+  // Mutation để khôi phục banner
+  const restoreBanner = useMutation<void, Error, string>({
+    mutationFn: async (_id: string) => {
+      try {
+        return await instance.patch(`/banners/${_id}/restore`);
+      } catch (error) {
+        throw new Error("Khôi phục banner thất bại");
+      }
+    },
+    onSuccess: () => {
+      message.success("Khôi phục banner thành công");
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+    },
+    onError: (error) => {
+      message.error(`Lỗi: ${error.message}`);
+    },
+  });
+  const dataSource = banners?.data
+    .filter(
+      (item: Banner) =>
+        showDeleted === Boolean(item.isDeleted) &&
+        item.title.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .map((item: Banner, index: number) => ({
+      _id: item._id,
+      key: (currentPage - 1) * pageSize + index + 1,
+      title: item.title,
+      imageBanner: item.imageBanner,
+      isDeleted: item.isDeleted,
+    }));
 
   const columns = [
     {
@@ -71,13 +118,28 @@ const BannerManagerPage = () => {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
+      filterDropdown: () => (
+        <Input
+          className="Input-antd text-sm placeholder-gray-400 "
+          placeholder="Tìm kiếm"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      ),
+      filterIcon: <SearchOutlined />,
     },
     {
       title: "Ảnh Banner",
       dataIndex: "imageBanner",
       key: "imageBanner",
-      render: (text: string) => (
-        <img src={text} alt="banner" style={{ width: "100px" }} />
+      render: (image: string) => (
+        <Image
+          src={image}
+          alt={image}
+          width={100}
+          height={100}
+          className="object-cover"
+        />
       ),
     },
     {
@@ -85,38 +147,69 @@ const BannerManagerPage = () => {
       key: "action",
       render: (_: string, banner: Banner) => (
         <Space size="middle">
-          <Popconfirm
-            title="Xóa"
-            description="Bạn có chắc chắn muốn xóa banner này không?"
-            onConfirm={() => softDeleteMutation.mutate(banner._id)}
-            okText="Có"
-            cancelText="Không"
-            disabled={banner.isDeleted}
-          >
-            <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-              Xóa
-            </Button>
-          </Popconfirm>
+          {banner.isDeleted ? (
+            <Space>
+              <Popconfirm
+                title="Khôi phục"
+                description="Bạn chắc chắn muốn khôi phục banner này không?"
+                onConfirm={() => restoreBanner.mutate(banner._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                  <UndoOutlined className="h-4 w-4" />
+                  Khôi phục
+                </Button>
+              </Popconfirm>
 
-          <Popconfirm
-            title="Xóa vĩnh viễn"
-            description="Bạn chắc chắn muốn xóa vĩnh viễn banner này không?"
-            onConfirm={() => hardDeleteMutation.mutate(banner._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
-              Xóa cứng
-            </Button>
-          </Popconfirm>
-          <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-            <Link to={`/admin/banner/${banner._id}/update`}>Cập nhật</Link>
-          </Button>
+              <Popconfirm
+                title="Xóa vĩnh viễn"
+                description="Bạn chắc chắn muốn xóa vĩnh viễn banner này không?"
+                onConfirm={() => hardDeleteMutation.mutate(banner._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
+                  <DeleteOutlined /> Xóa vĩnh viễn
+                </Button>
+              </Popconfirm>
+            </Space>
+          ) : (
+            <Space>
+              <Popconfirm
+                title="Xóa"
+                description="Bạn có chắc chắn muốn xóa banner này không?"
+                onConfirm={() => softDeleteMutation.mutate(banner._id)}
+                okText="Có"
+                cancelText="Không"
+                disabled={banner.isDeleted}
+              >
+                <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
+                  Xóa
+                </Button>
+              </Popconfirm>
+              <Link to={`/admin/banner/${banner._id}/update`}>
+                <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+                  Cập nhật
+                </Button>
+              </Link>
+            </Space>
+          )}
         </Space>
       ),
     },
   ];
-
+  const handleToggleDeleted = () => {
+    setShowDeleted((prev) => !prev);
+    setCurrentPage(1);
+    queryClient.invalidateQueries({ queryKey: ["banners"] });
+  };
+  const handlePageChange = (page: number, newPageSize: number) => {
+    setCurrentPage(page);
+    if (pageSize !== newPageSize) {
+      setPageSize(newPageSize);
+    }
+  };
   if (isLoading) {
     return (
       <div style={{ textAlign: "center", padding: "20px" }}>
@@ -136,21 +229,43 @@ const BannerManagerPage = () => {
     <div>
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách banner</Title>
-        <Button
-          type="primary"
-          className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
-        >
+        <Space>
+          <Button
+            onClick={handleToggleDeleted}
+            className={`flex items-center gap-2 ${
+              showDeleted
+                ? "bg-blue-500 hover:bg-blue-600"
+                : "bg-gray-500 hover:bg-gray-600"
+            } text-white`}
+          >
+            <DeleteOutlined className="h-4 w-4" />
+            {showDeleted ? "Quay lại" : "Thùng rác"}
+          </Button>
           <Link to="/admin/banner/add" className="flex items-center space-x-2">
-            <PlusCircleFilled />
-            <span>Thêm banner</span>
+            <Button
+              type="primary"
+              className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            >
+              <PlusCircleFilled />
+              <span>Thêm banner</span>
+            </Button>
           </Link>
-        </Button>
+        </Space>
       </div>
 
       <Table
         columns={columns}
         dataSource={dataSource}
         rowKey={(record) => record._id}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: banners?.total,
+          onChange: handlePageChange,
+          showSizeChanger: true,
+          showTotal: (total) => `Tổng ${total} mục`,
+        }}
+        scroll={{ x: "max-content", y: 400 }}
       />
     </div>
   );
