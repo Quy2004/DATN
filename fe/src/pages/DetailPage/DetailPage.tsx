@@ -67,7 +67,7 @@ const DetailPage = () => {
                                 />
                                 <div className="flex gap-4 py-4 justify-center overflow-x-auto">
                                     {Array.isArray(product.thumbnail) && product.thumbnail.slice(0, 4).map((thumb, index) => (
-                                        <img
+<img
                                             key={index}
                                             src={thumb}
                                             alt={`Thumbnail ${index + 1}`}
@@ -117,7 +117,7 @@ const DetailPage = () => {
                                         name="quantity"
                                         min={1}
                                         defaultValue={1}
-                                        className="w-16 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+className="w-16 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                     />
                                 </div>
                                 <div className="flex space-x-4 mb-6">
