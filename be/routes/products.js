@@ -15,4 +15,8 @@ productsRouter.patch(
   "/:id/update-status",
   productsController.updateStatusProduct
 );
+productsRouter.patch(
+  "/:id/update-active",
+  productsController.updateActiveProduct
+);
 export default productsRouter;
