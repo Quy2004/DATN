@@ -46,6 +46,7 @@ class ProductController {
       const options = {
         page: parseInt(page),
         limit: parseInt(limit),
+        sort: { createdAt: -1 },
         populate: [
           { path: "category_id", select: "title" },
           { path: "product_sizes.size_id", select: "name" },

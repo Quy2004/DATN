@@ -65,6 +65,17 @@ const HomePage: React.FC = () => {
   };
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
+  // Tăng giảm số lượng
+  const [quantity, setQuantity] = useState(1);
+  const handleIncrement = () => {
+    setQuantity(prevQuantity => prevQuantity + 1);
+  };
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      setQuantity(prevQuantity => prevQuantity - 1);
+    }
+  };
+
   return (
     <>
       <div >
@@ -213,54 +224,111 @@ const HomePage: React.FC = () => {
         </div >
         <Homes />
       </div >
+      {/* Mua ngay */}
       <Drawer open={isOpen} onClose={handleClose} position="right">
-        <Drawer.Header title="Cart" />
+        {/* <Drawer.Header title="Cart" /> */}
         <Drawer.Items>
           <Modal show={isModalOpen} onClose={toggleModal}>
-            <Modal.Header>
-              <h1 className="text-2xl">
-                Mua ngay
-              </h1>
+            <Modal.Header className="relative h-0 top-2 text-black p-0 mr-2 border-none">
             </Modal.Header>
-            <Modal.Body>
-              <div className="flex *:border-2">
-                <div>
-                  <img src="" alt="Ảnh.jpg" />
+            <Modal.Body className="bg-gray-100">
+              <div className="flex gap-3">
+                {/* Cart-left */}
+                <div className="w-[170px]">
+                  <img src="src/account/AuthPage/Bg-coffee.jpg" alt="Ảnh.jpg" className="w-[160px] h-[160px] rounded-xl" />
                 </div>
-                <div>
-                  <h1>Cà phê không phê</h1>
-                  <p>30.000 đ</p>
-                  <i>Không ngon không lấy tiền</i>
-                  <br />
-                  <input type="number" min={1} />
-                  <br />
-                  <button>
-                    +30.000 đ
-                  </button>
+                {/* Cart-right */}
+                <div className="w-max flex-1">
+                  <h1 className="text-lg font-medium">Cà phê không phê</h1>
+                  <p className="text-sm text-[#ea8025] font-medium py-1">30.000 đ</p>
+                  <i className="text-sm text-black">Không ngon không lấy tiền</i>
+                  {/* Số lượng và giá */}
+                  <div className="flex gap-10 items-center py-4">
+                    <form className="max-w-xs py-1">
+                      <div className="relative flex items-center">
+                        <button
+                          type="button"
+                          onClick={handleDecrement}
+                          className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                        >
+                          <svg className="w-2.5 h-2.5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 1h16" />
+                          </svg>
+                        </button>
+                        <input
+                          type="text"
+                          id="counter-input"
+                          value={quantity}
+                          readOnly
+                          className="flex-shrink-0 text-gray-900 dark:text-white border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleIncrement}
+                          className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                        >
+                          <svg className="w-2.5 h-2.5  text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </form>
+                    <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
+                      +30.000 đ
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div>
-                  <h2>Chọn size</h2>
-                  <input type="radio" name="S" id="S" />S
-                  <input type="radio" name="M" id="" />M
-                  <input type="radio" name="L" id="" />L
+              {/* Size */}
+              <div className="py-5">
+                <div className="">
+                  <h2 className="font-medium px-6">Chọn size</h2>
+                  <form action="" className="flex justify-between my-2 bg-[#fff] shadow-xl">
+                    <div className="flex items-center gap-2 px-6 py-2">
+                      <input type="radio" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Size S</label>
+                    </div>
+                    <div className="flex items-center gap-2 px-6">
+                      <input type="radio" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Size M</label>
+                    </div>
+                    <div className="flex items-center gap-2 px-6">
+                      <input type="radio" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Size L</label>
+                    </div>
+                  </form>
                 </div>
-                <div>
-                  <h2>Topping</h2>
-                  <input type="radio" name="S" id="S" />A
-                  <input type="radio" name="M" id="" />B
-                  <input type="radio" name="L" id="" />C
+                {/* Topping */}
+                <div className="">
+                  <h2 className="font-medium px-6">Topping</h2>
+                  <form action="" className=" my-2 bg-[#fff] shadow-xl">
+                    <div className="flex items-center gap-2 px-6 py-2">
+                      <input type="checkbox" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Topping 1</label>
+                    </div>
+                    <div className="flex items-center gap-2 px-6 py-2">
+                      <input type="checkbox" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Topping 2</label>
+                    </div>
+                    <div className="flex items-center gap-2 px-6 py-2">
+                      <input type="checkbox" name="size" id="" className="text-[#ea8025] border-[#ea8025] border-2" />
+                      <label htmlFor="">Topping 3</label>
+                    </div>
+                  </form>
                 </div>
               </div>
               <div className="flex">
-                <Button type="submit">
-                  Thêm giỏ hàng
-                </Button>
+                <button
+                  className="relative bg-white  px-6 py-2 border border-[#ccc] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                >
+                  <span className="relative z-10 transition duration-300 group-hover:text-white"><p className="text-base">Thêm giỏ hàng</p></span>
+                  <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                  <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                </button>
                 {/* <Button type="submit">
                   Thanh toán
                 </Button> */}
-                <Link to={'register'} >Thanh toán</Link>
+
               </div>
             </Modal.Body>
           </Modal>
