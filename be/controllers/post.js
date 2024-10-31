@@ -1,3 +1,4 @@
+import slugify from "slugify";
 import Post from "../models/PostModel.js";
 
 class PostController {
@@ -72,6 +73,112 @@ class PostController {
       });
     } catch (error) {
       res.status(500).json({ error: "Lỗi khi tạo bài viết" });
+    }
+  }
+
+  // Cập nhật bài viết
+  async updatePost(req, res) {
+    try {
+      const { id } = req.params;
+      const { title } = req.body;
+
+      // Kiểm tra xem bài viết có tồn tại hay không
+      const post = await Post.findOne({ _id: id, isDeleted: false });
+      if (!post) {
+        return res.status(404).json({ error: "Bài viết không tồn tại." });
+      }
+
+      // Kiểm tra xem title có trùng với bất kỳ bài viết nào khác
+      if (title) {
+        const existingPost = await Post.findOne({
+          title: title,
+          _id: { $ne: id },
+          isDeleted: false,
+        });
+
+        if (existingPost) {
+          return res
+            .status(400)
+            .json({ error: "Tiêu đề bài viết đã tồn tại." });
+        }
+
+        // Cập nhật tiêu đề và slug
+        post.title = title;
+        post.slug = slugify(title, { lower: true, strict: true });
+      }
+
+      // Cập nhật bài viết với req.body và các trường đã thay đổi
+      const updatedPost = await Post.findByIdAndUpdate(id, post, {
+        new: true,
+        runValidators: true,
+      });
+
+      res.status(200).json({
+        message: "Cập nhật bài viết thành công!",
+        data: updatedPost,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Lỗi khi cập nhật bài viết" });
+    }
+  }
+
+  // Xóa mềm bài viết
+  async softDeletePost(req, res) {
+    try {
+      const post = await Post.findByIdAndUpdate(req.params.id, {
+        isDeleted: true,
+      });
+
+      if (!post) {
+        return res
+          .status(404)
+          .json({ error: "Bài viết không tồn tại hoặc đã bị xóa." });
+      }
+
+      res.status(200).json({ message: "Bài viết đã được xóa mềm." });
+    } catch (error) {
+      res.status(500).json({ error: "Lỗi khi xóa mềm bài viết" });
+    }
+  }
+
+  // Xóa cứng bài viết
+  async hardDeletePost(req, res) {
+    try {
+      const { id } = req.params;
+      const post = await Post.findOneAndDelete({ _id: id });
+
+      if (!post) {
+        return res.status(404).json({ error: "Bài viết không tồn tại." });
+      }
+
+      res.status(200).json({ message: "Bài viết đã được xóa cứng." });
+    } catch (error) {
+      res.status(500).json({ error: "Lỗi khi xóa cứng bài viết" });
+    }
+  }
+
+  // Khôi phục bài viết đã xóa mềm
+  async restorePost(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Tìm bài viết đã bị xóa mềm
+      const post = await Post.findOne({ _id: id, isDeleted: true });
+      if (!post) {
+        return res
+          .status(404)
+          .json({ error: "Bài viết không tồn tại hoặc chưa bị xóa mềm." });
+      }
+
+      // Khôi phục bài viết
+      post.isDeleted = false;
+      await post.save();
+
+      res
+        .status(200)
+        .json({ message: "Bài viết đã được khôi phục thành công." });
+    } catch (error) {
+      res.status(500).json({ error: "Lỗi khi khôi phục bài viết" });
     }
   }
 }
