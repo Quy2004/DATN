@@ -341,7 +341,7 @@ export const CategoryManagerPage = () => {
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
         onChange={handleTableChange}
-        scroll={{ x: "max-content", y: 400 }}
+        scroll={{ x: "max-content", y: 350 }}
       />
     </>
   );
