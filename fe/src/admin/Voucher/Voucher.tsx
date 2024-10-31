@@ -107,15 +107,16 @@ const Voucher = () => {
 			try {
 				return await instance.patch(`/vouchers/${_id}/restore`);
 			} catch (error) {
-				throw new Error("Khôi phục voucher thất bại");
+				throw new Error((error as any).response.data.message);
 			}
+			
 		},
 		onSuccess: () => {
 			messageApi.success("Khôi phục voucher thành công");
 			queryClient.invalidateQueries({ queryKey: ["vouchers"] });
 		},
 		onError: error => {
-			messageApi.error(`Lỗi: ${error.message}`);
+			messageApi.error(`Thất bại: ${error.message}`);
 		},
 	});
 
