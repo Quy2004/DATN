@@ -30,10 +30,10 @@ export interface Product {
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
     slug: string;
-    stock: number;
     discount: number;
     status: "available" | "unavailable";
     isDeleted: boolean;
+    active: boolean;
 }
 
 // Định nghĩa ProductFormValues (Giá trị của form sản phẩm khi thêm/sửa sản phẩm)
@@ -44,9 +44,9 @@ export interface ProductFormValues {
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
     description: string;
-    stock: number;
     discount: number;
     status: "available" | "unavailable";
+    active: boolean;
 }
 
 // Định nghĩa cho file upload

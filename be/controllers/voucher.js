@@ -5,27 +5,17 @@ class VoucherController {
 	// get all vouchers
 	async getAllVouchers(req, res) {
 		try {
-			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
+			const { isDeleted= "false", search, page = 1, limit = 10 } = req.query;
 
 			// Tạo điều kiện lọc
-			let query = {};
-
-			if (all === "true") {
-				// Nếu `all=true`, lấy tất cả danh mục
-				query = {};
-			} else if (isDeleted === "true") {
-				// Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
-				query.isDeleted = true;
-			} else {
-				// Mặc định lấy các danh mục chưa bị xóa mềm
-				query.isDeleted = false;
-			}
+			const query = {
+				isDeleted: isDeleted === "true",
+			  };
 
 			// search - điều kiện search theo name
 			if (search) {
 				query.name = { $regex: search, $options: "i" };
-				// không phân biệt viết hoa hay viết thường
-			}
+			  }
 
 			// số lượng trên mỗi trang
 			const pageLimit = parseInt(limit, 10) || 10;
@@ -167,7 +157,7 @@ class VoucherController {
 	
 			if (voucher.quantity === 0 || voucher.maxOrderDate < currentDate) {
 				return res.status(400).json({
-					message: "Voucher cannot be restored as it has expired or quantity is zero.",
+					message: "Số lượng phải lớn hơn 0, thời gian kết thúc không được trước thời điểm hiện tại",
 				});
 			}
 	
