@@ -50,6 +50,29 @@ const DetailPage = () => {
         return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
+  const addToCart = async (productId: string) => {
+   console.log({
+    userId: user._id,
+    productId: productId,
+    quantity: 1,
+  });
+   
+    if (!productId) {
+      return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
+    }
+    try {
+      const { data } = await instance.post("/cart", {
+        userId: user._id,
+        productId: productId,
+        quantity: 1,
+      });
+      console.log("Data returned from API:", data);
+      toast.success(data.messsage || "Thêm thành công");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    }
+  };
     const addToCart = async (productId: string) => {
         if (!productId) {
             return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
