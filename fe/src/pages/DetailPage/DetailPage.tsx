@@ -57,6 +57,7 @@ const DetailPage = () => {
 
     //add To Cart
   const addToCart = async (productId: string) => {
+   
     if (!productId) {
       return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
     }
