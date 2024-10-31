@@ -28,7 +28,6 @@ import ProductEditPage from "../admin/ProductAdmin/edit/page";
 import SizeManagerPage from "../admin/Size/Size";
 import SizeAddPage from "../admin/Size/add/page";
 import SizeUpdatePage from "../admin/Size/edit/page";
-import Voucher from "../admin/Voucher/Voucher";
 import VoucherAddPage from "../admin/Voucher/add/page";
 import VoucherUpdatePage from "../admin/Voucher/edit/page";
 import ToppingManagerPage from "../admin/Topping/Topping";
@@ -50,6 +49,7 @@ import DetailPage from "../pages/DetailPage/DetailPage";
 import CategoryPostAddPage from "../admin/CategoryPost/add/page";
 import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
 import CheckOut from "../pages/CheckOutPage/CheckOut";
+import VoucherPage from "../admin/Voucher/Voucher";
 
 
 
@@ -90,7 +90,7 @@ const Router = () => {
           <Route path="size/add" element={<SizeAddPage />} />
           <Route path="size/:id/update" element={<SizeUpdatePage />} />
 
-          <Route path="voucher" element={<Voucher />} />
+          <Route path="voucher" element={<VoucherPage />} />
           <Route path="voucher/add" element={<VoucherAddPage />} />
           <Route path="voucher/:id/update" element={<VoucherUpdatePage />} />
 
