@@ -21,22 +21,19 @@ export const addtoCart = async (req, res) => {
     
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
-      cart = new Cart({ userId, products: [{
-        product,
-        quantity
-      }] });
+      cart = new Cart({
+        userId,
+        products: [{ product: productId, quantity }]
+      });
     } else {
-      
-      // for (let product of products) {
-        const existingProduct = cart.products.find(p => p?._id === productId);
-        console.log(cart.products);
-        
-        if (existingProduct) {
-          existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
-        } else {
-          cart.products.push(existingProduct); // Thêm sản phẩm mới vào giỏ hàng
-        }
-      // }
+      // Tìm sản phẩm trong giỏ hàng
+      const existingProduct = cart.products.find(p => p.product.toString() === productId);
+
+      if (existingProduct) {
+        existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
+      } else {
+        cart.products.push({ product: productId, quantity }); // Thêm sản phẩm mới vào giỏ hàng
+      }
     }
 
     // Tính tổng số lượng và tổng tiền
