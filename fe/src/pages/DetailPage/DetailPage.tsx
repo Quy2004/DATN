@@ -56,24 +56,24 @@ const DetailPage = () => {
     };
 
     //add To Cart
-  const addToCart = async (productId: string) => {
-   
-    if (!productId) {
-      return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
-    }
-    try {
-      const { data } = await instance.post("/cart", {
-        userId: user._id,
-        productId: productId,
-        quantity: 1,
-      });
-      console.log("Data returned from API:", data);
-      toast.success(data.messsage || "Thêm thành công");
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
-    }
-  };
+    const addToCart = async (productId: string) => {
+
+        if (!productId) {
+            return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
+        }
+        try {
+            const { data } = await instance.post("/cart", {
+                userId: user._id,
+                productId: productId,
+                quantity: 1,
+            });
+            console.log("Data returned from API:", data);
+            toast.success(data.messsage || "Thêm thành công");
+        } catch (error) {
+            console.error("Failed to add to cart:", error);
+            toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+        }
+    };
     return (
         <>
             {product && (
@@ -89,7 +89,7 @@ const DetailPage = () => {
                                 />
                                 <div className="flex gap-4 py-4 justify-center overflow-x-auto">
                                     {Array.isArray(product.thumbnail) && product.thumbnail.slice(0, 4).map((thumb, index) => (
-<img
+                                        <img
                                             key={index}
                                             src={thumb}
                                             alt={`Thumbnail ${index + 1}`}
@@ -139,15 +139,15 @@ const DetailPage = () => {
                                         name="quantity"
                                         min={1}
                                         defaultValue={1}
-className="w-16 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        className="w-16 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                     />
                                 </div>
                                 <div className="flex space-x-4 mb-6">
                                     <button onClick={() => {
-                                     console.log("Button clicked", product?._id);
-                                     addToCart(product?._id);
-                                     }}
-                                    className="bg-[#ea8025] flex gap-2 items-center text-white px-6 py-2 rounded-md hover:bg-[#FF6600] focus:outline-none">
+                                        console.log("Button clicked", product?._id);
+                                        addToCart(product?._id);
+                                    }}
+                                        className="bg-[#ea8025] flex gap-2 items-center text-white px-6 py-2 rounded-md hover:bg-[#FF6600] focus:outline-none">
                                         Thêm vào giỏ hàng
                                     </button>
                                     <button className="bg-[#ea8025] flex gap-2 items-center text-white px-6 py-2 rounded-md hover:bg-[#FF6600] focus:outline-none">
