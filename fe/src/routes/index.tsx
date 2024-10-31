@@ -15,7 +15,6 @@ import BlogTab from "../pages/ChuyenNhaPage/Tabs/BlogHomes";
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 
-
 import OrderAdmin from "../admin/OrderAdmin/OrderAdmin";
 import CommentAdmin from "../admin/Comment/Comment";
 import ClientAdmin from "../admin/Client/ClientAdmin";
@@ -50,6 +49,7 @@ import CategoryPostManagerPage from "../admin/CategoryPost/page";
 import DetailPage from "../pages/DetailPage/DetailPage";
 import CategoryPostAddPage from "../admin/CategoryPost/add/page";
 import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
+import CheckOut from "../pages/CheckOutPage/CheckOut";
 
 
 
@@ -69,6 +69,7 @@ const Router = () => {
             <Route path="teaside" element={<TeaSideBar />} />
           </Route>
           <Route path="detail/:id" element={<DetailPage />} />
+          <Route path="checkout" element={<CheckOut/>}/>
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
             <Route path="coffeeholic" element={<CoffeHolicTab />} />

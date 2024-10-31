@@ -136,7 +136,9 @@ const BannerManagerPage = () => {
         <Image
           src={image}
           alt={image}
-          style={{ width: "100px", height: "auto" }}
+          width={100}
+          height={100}
+          className="object-cover"
         />
       ),
     },
@@ -263,6 +265,7 @@ const BannerManagerPage = () => {
           showSizeChanger: true,
           showTotal: (total) => `Tổng ${total} mục`,
         }}
+        scroll={{ x: "max-content", y: 400 }}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { Category } from "./category";
 
 export interface Topping {
     _id: string;
@@ -5,4 +6,5 @@ export interface Topping {
     priceTopping: number;
     statusTopping: string;
     isDeleted: boolean;
+    category_id: Category;
 }
