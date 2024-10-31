@@ -12,6 +12,8 @@ import ordersRouter from"./ordersRouter.js"
 import ordersDetailRouter from"./ordersDetail.js"
 import bannerRouter from "./banners.js";
 import categoryPostRouter from "./categoryPost.js";
+import postRouter from "./post.js";
+
 const router = Router();
 
 router.get("/", (req, res) => {
@@ -31,5 +33,6 @@ router.use("/orders", ordersRouter);
 router.use("/orders-detail", ordersDetailRouter);
 router.use("/banners", bannerRouter);
 router.use("/categoryPost", categoryPostRouter);
+router.use("/posts", postRouter);
 
 export default router;

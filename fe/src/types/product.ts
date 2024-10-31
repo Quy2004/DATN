@@ -1,23 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Định nghĩa Category (Danh mục)
+
 import { Category } from "./category";
-
-// Định nghĩa Size (Kích thước sản phẩm)
-export interface Size {
-    _id: string;
-    name: string;
-    priceSize?: number;
-    isDeleted: boolean;
-    category_id: string;
-}
-
-// Định nghĩa Topping (Topping sản phẩm)
-export interface Topping {
-    _id: string;
-    nameTopping: string;
-    priceTopping?: number;
-    statusTopping: "available" | "unavailable";
-}
+import { Size } from "./size";
+import { Topping } from "./topping";
 
 // Định nghĩa ProductSize (Kích thước của sản phẩm cụ thể)
 export interface ProductSize {
@@ -46,10 +30,10 @@ export interface Product {
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
     slug: string;
-    stock: number;
     discount: number;
     status: "available" | "unavailable";
     isDeleted: boolean;
+    active: boolean;
 }
 
 // Định nghĩa ProductFormValues (Giá trị của form sản phẩm khi thêm/sửa sản phẩm)
@@ -60,9 +44,9 @@ export interface ProductFormValues {
     product_sizes: ProductSize[];
     product_toppings: ProductTopping[];
     description: string;
-    stock: number;
     discount: number;
     status: "available" | "unavailable";
+    active: boolean;
 }
 
 // Định nghĩa cho file upload
