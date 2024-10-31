@@ -14,7 +14,6 @@ import {
   Tooltip,
   Switch,
   TablePaginationConfig,
-  Checkbox,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
@@ -317,7 +316,7 @@ const ProductManagerPage: React.FC = () => {
       },
     },
     {
-      title: "Trạng thái",
+      title: "Kích hoạt",
       dataIndex: "active",
       key: "active",
       render: (active: boolean, record: Product) => (
@@ -331,7 +330,7 @@ const ProductManagerPage: React.FC = () => {
             unCheckedChildren={<PauseCircleOutlined className="text-red-500" />}
             className={`custom-switch ${
               active ? "bg-green-500" : "bg-red-500"
-            } rounded-full`} 
+            } rounded-full`}
           />
         </Tooltip>
       ),
@@ -489,16 +488,17 @@ const ProductManagerPage: React.FC = () => {
           },
         }}
         onChange={handleTableChange}
-        scroll={{ x: "max-content", y: 400 }}
+        scroll={{ x: "max-content", y: 350 }}
       />
 
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
-        title="Chi tiết sản phẩm"
+       title={<Title level={3}>Chi tiết sản phẩm</Title>}
         open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
+        className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50"
       >
         {selectedProduct && (
           <div className="p-5 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">

@@ -65,24 +65,78 @@ const Checkout: React.FC = () => {
                     <section className="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
                         <form action="#!" method="get">
                             <h6 className="text-lg font-semibold mb-2">Thông tin liên hệ</h6>
-                            {['E-mail', 'Điện thoại', 'Họ và tên', 'Địa chỉ'].map((field, index) => (
-                                <div className="mb-4" key={index}>
-                                    <label className="block text-sm font-medium mb-1">{field}</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                            <i className={`fa fa-${field === 'E-mail' ? 'envelope' : field === 'Điện thoại' ? 'phone' : field === 'Họ và tên' ? 'user-circle' : field === 'Địa chỉ' ? 'home' : 'building'}`}></i>
-                                        </span>
-                                        <input
-                                            type={field === 'E-mail' ? 'email' : field === 'Điện thoại' ? 'tel' : 'text'}
-                                            placeholder={field === 'E-mail' ? 'Nhập email của bạn' : field === 'Điện thoại' ? 'Nhập số điện thoại' : field === 'Họ và tên' ? 'Nhập họ và tên' : field === 'Địa chỉ' ? 'Nhập địa chỉ' : 'Nhập thành phố'}
-                                            className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                        />
-                                    </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-1">E-mail</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i className="fa fa-envelope"></i>
+                                    </span>
+                                    <input
+                                        type="email"
+                                        placeholder="Nhập email của bạn"
+                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    />
                                 </div>
-                            ))}
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-1">Điện thoại</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i className="fa fa-phone"></i>
+                                    </span>
+                                    <input
+                                        type="tel"
+                                        placeholder="Nhập số điện thoại"
+                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-1">Họ và tên</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i className="fa fa-user-circle"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập họ và tên"
+                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-1">Địa chỉ</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i className="fa fa-home"></i>
+                                    </span>
+                                    <input
+                                        type="text"
+                                        placeholder="Nhập địa chỉ"
+                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-1">Ghi chú</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                        <i className="fa fa-building"></i>
+                                    </span>
+                                    <textarea
+                                        placeholder="Nhập ghi chú khi đặt hàng"
+                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    ></textarea>
+                                </div>
+                            </div>
+
                             <div className="flex flex-col md:flex-row md:justify-between mb-4">
                             </div>
-                            <div className=''>
+                            <div className="">
                                 <h1 className='font-semibold'>Phương thức thanh toán:</h1>
                                 <form className='py-2 *:py-1' action="">
                                     <div className='flex items-center gap-2'>
@@ -107,6 +161,14 @@ const Checkout: React.FC = () => {
                                         />
                                         <label htmlFor="atm">Thẻ ATM nội địa/ Internet Banking</label>
                                     </div>
+
+                                    {/* Box Note cho phần ghi chú */}
+                                    {!paymentMethod && (
+                                        <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-md shadow-lg my-4">
+                                            <p className='text-yellow-800 font-semibold'>Lưu ý:</p>
+                                            <p className='text-gray-700'>Vui lòng chọn phương thức thanh toán của bạn.</p>
+                                        </div>
+                                    )}
 
                                     {/* Hiển thị các tùy chọn khi chọn "Thẻ ATM" */}
                                     {paymentMethod === 'atm' && (

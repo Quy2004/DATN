@@ -6,7 +6,8 @@ import Product from '../models/ProductModel';
 export const addtoCart = async (req, res) => {
   try {
     const { userId, productId ,quantity} = req.body;
-
+    
+    
     if (!userId) {
       return res.status(400).json({ message: "User ID  are required." });
     }
@@ -15,19 +16,21 @@ export const addtoCart = async (req, res) => {
     }
 
     // Kiểm tra nếu giỏ hàng tồn tại
-    let cart = await Cart.findOne({ userId });
-
+    let cart = await Cart.findOne({ userId});
+    var product = await Product.findOne({_id: productId})
+    
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
-      cart = new Cart({ userId, productId,quantity });
+      cart = new Cart({ userId, products: [{
+        product,
+        quantity
+      }] });
     } else {
-      // Nếu giỏ hàng đã tồn tại, cập nhật sản phẩm
-      var products = cart.products
       
       // for (let product of products) {
         const existingProduct = cart.products.find(p => p?._id === productId);
-
-
+        console.log(cart.products);
+        
         if (existingProduct) {
           existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
         } else {
