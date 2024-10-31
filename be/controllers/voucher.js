@@ -5,21 +5,12 @@ class VoucherController {
 	// get all vouchers
 	async getAllVouchers(req, res) {
 		try {
-			const { isDeleted, all, search, page = 1, limit = 10 } = req.query;
+			const { isDeleted= "false", all, search, page = 1, limit = 10 } = req.query;
 
 			// Tạo điều kiện lọc
-			let query = {};
-
-			if (all === "true") {
-				// Nếu `all=true`, lấy tất cả danh mục
-				query = {};
-			} else if (isDeleted === "true") {
-				// Nếu `isDeleted=true`, chỉ lấy các danh mục đã bị xóa mềm
-				query.isDeleted = true;
-			} else {
-				// Mặc định lấy các danh mục chưa bị xóa mềm
-				query.isDeleted = false;
-			}
+			const query = {
+				isDeleted: isDeleted === "true",
+			  };
 
 			// search - điều kiện search theo name
 			if (search) {
