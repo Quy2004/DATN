@@ -58,7 +58,7 @@ const ToppingAddPage = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
         {contextHolder}
         <Form
           form={form}
