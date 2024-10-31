@@ -26,11 +26,19 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
-    orderStatus: {
-      type: String,
-      enum: ["pending", "completed", "canceled"],
-      default: "pending",
-    },
+   orderStatus: {
+    type: String,
+    enum: [
+      "pending",         // Chờ xác nhận
+      "confirmed",       // Đã xác nhận
+      "preparing",       // Đang chuẩn bị
+      "shipping",        // Đang giao hàng
+      "delivered",       // Đã giao hàng
+      "completed",       // Đã hoàn thành
+      "canceled",        // Đã hủy
+    ],
+    default: "pending",
+},
     orderDetail_id: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "OrderDetail", 
