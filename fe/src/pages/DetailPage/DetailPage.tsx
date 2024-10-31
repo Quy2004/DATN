@@ -56,12 +56,12 @@ const DetailPage = () => {
     };
 
     //add To Cart
-  const addToCart = async (productId: string) => {
-   console.log({
-    userId: user._id,
-    productId: productId,
-    quantity: 1,
-  });
+    const addToCart = async (productId: string) => {
+        console.log({
+         userId: user._id,
+         productId: productId,
+         quantity: 1,
+       });
    
     if (!productId) {
       return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
