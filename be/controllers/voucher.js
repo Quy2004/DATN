@@ -5,7 +5,7 @@ class VoucherController {
 	// get all vouchers
 	async getAllVouchers(req, res) {
 		try {
-			const { isDeleted= "false", all, search, page = 1, limit = 10 } = req.query;
+			const { isDeleted= "false", search, page = 1, limit = 10 } = req.query;
 
 			// Tạo điều kiện lọc
 			const query = {
@@ -15,8 +15,7 @@ class VoucherController {
 			// search - điều kiện search theo name
 			if (search) {
 				query.name = { $regex: search, $options: "i" };
-				// không phân biệt viết hoa hay viết thường
-			}
+			  }
 
 			// số lượng trên mỗi trang
 			const pageLimit = parseInt(limit, 10) || 10;

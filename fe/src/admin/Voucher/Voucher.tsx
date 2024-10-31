@@ -36,12 +36,10 @@ const VoucherPage = () => {
 	const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
 
 	const navigate = useNavigate();
-	const location = useLocation();
-	const params = new URLSearchParams(location.search);
 	// Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
 
 	const updateUrlParams = () => {
-		const searchParams = new URLSearchParams();
+		const params = new URLSearchParams();
 		if (searchTerm) params.set("search", searchTerm);
 
 		if (isDelete) {
@@ -64,7 +62,7 @@ const VoucherPage = () => {
 			try {
 				const trashParam = isDelete ? `&isDeleted=true` : "";
 				const response = await instance.get(
-					`/vouchers?${trashParam}${searchTerm}&page=${currentPage}&limit=${pageSize}`,
+					`/vouchers?search=${searchTerm}${trashParam}&page=${currentPage}&limit=${pageSize}`,
 				);
 				return response.data;
 			} catch (error) {
