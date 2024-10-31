@@ -167,7 +167,7 @@ class VoucherController {
 	
 			if (voucher.quantity === 0 || voucher.maxOrderDate < currentDate) {
 				return res.status(400).json({
-					message: "Voucher cannot be restored as it has expired or quantity is zero.",
+					message: "Số lượng phải lớn hơn 0, thời gian kết thúc không được trước thời điểm hiện tại",
 				});
 			}
 	
