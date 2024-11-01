@@ -153,14 +153,10 @@ const VoucherPage = () => {
 	// Đinh nghĩa table
 	const columns = [
 		{
-			title: "STT",
-			dataIndex: "key",
-			key: "key",
-		},
-		{
 			title: "Tên",
 			dataIndex: "name",
 			key: "name",
+			width: 120,
 			render: (text: string, size: Voucher) => (
 				<span
 					onClick={() => showModal(size)}
@@ -174,28 +170,33 @@ const VoucherPage = () => {
 			title: "Phần trăm giảm giá",
 			dataIndex: "discountPercentage",
 			key: "discountPercentage",
+			width: 100,
 		},
 		{
 			title: "Số lượng",
 			dataIndex: "quantity",
 			key: "quantity",
+			width: 90,
 		},
 		{
 			title: "Ngày bắt đầu",
 			dataIndex: "minOrderDate",
 			key: "minOrderDate",
+			width: 130,
 			render: (text: any) => moment(text).format("DD/MM/YYYY HH:mm"),
 		},
 		{
 			title: "Ngày kết thúc",
 			dataIndex: "maxOrderDate",
 			key: "maxOrderDate",
+			width: 130,
 			render: (text: any) => moment(text).format("DD/MM/YYYY HH:mm"),
 		},
 		{
 			title: "Trạng thái",
 			dataIndex: "status",
 			key: "status",
+			
 			render: (status: any) => {
 				switch (status) {
 					case "upcoming":
@@ -266,11 +267,13 @@ const VoucherPage = () => {
 	];
 
 	const dataSource = data?.data?.map((item: any, index: number) => ({
-		key: index + 1,
+		// key: index + 1,
 		name: item.name,
 		code: item.code,
 		description: item.description,
 		status: item.status,
+		applicableProducts: item.applicableProducts,
+		applicableCategories: item.applicableCategories,
 		discountPercentage: item.discountPercentage,
 		quantity: item.quantity,
 		minOrderDate: item.minOrderDate,
@@ -338,7 +341,7 @@ const VoucherPage = () => {
 			</div>
 			<Table
 				dataSource={dataSource}
-				columns={columns}
+				columns={columns} // Cố định chiều rộng cho các cột
 				pagination={{
 					current: currentPage,
 					pageSize: pageSize,
@@ -347,6 +350,8 @@ const VoucherPage = () => {
 					pageSizeOptions: ["10", "20", "50", "100"],
 				}}
 				onChange={handleTableChange}
+				scroll={{ y: 300 }} // Chỉ cần chiều cao
+				style={{ tableLayout: "fixed"}} // Giữ chiều rộng ổn định
 			/>
 
 			<Modal
