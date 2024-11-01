@@ -12,6 +12,11 @@ const cartSchema = new Schema({
     products: [cartItem],
     totalprice: { type: Number, default: 0 },
     
-});
+},
+{
+  timestamps: true,
+  versionKey: false,
+}
+);
 
 export default mongoose.model("carts", cartSchema);
