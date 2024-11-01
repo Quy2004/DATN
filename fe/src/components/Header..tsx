@@ -50,18 +50,26 @@ const Header: React.FC = () => {
 	const formatPrice = (price: number) => {
 		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
-	//Cart
-	const dataLocal = JSON.parse(localStorage.getItem('user') as string)?._id;
-    useEffect(() => {
-        const fecth = async () => {
-            if (dataLocal) {
-                const { data } = await axios.get(`http://localhost:8000/cart/${dataLocal}`)
-                console.log(data)
-                setCart(data?.cart?.products)
-            }
-        }
-        fecth()
-    }, [])
+
+	//cart
+	const user = JSON.parse(localStorage.getItem("user") || '');
+	console.log(user);
+	
+	const fetchCart = async () => {
+	  try {
+		const { data } = await instance.get(`/cart/${user._id}`);
+		console.log(data);
+		 // Gọi API từ backend
+		setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
+		// setLoading(false); // Tắt trạng thái loading
+	  } catch (error) {
+		console.error("Lỗi khi lấy sản phẩm:", error);
+		// setLoading(false); // Tắt trạng thái loading trong trường hợp lỗi
+	  }
+	};
+	useEffect(() => {
+		fetchCart();
+	}, []);
 
 	
 
@@ -212,7 +220,7 @@ const Header: React.FC = () => {
 											/>
 										</svg>
 										<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white">
-											0
+											{cart?.length}
 										</span>
 									</button>
 								</div>
@@ -229,12 +237,13 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					
-					{cart?.map((item : any)=>{
-						<div className="flex *:mx-1 items-center border-b-2 pb-2">
+					{cart.map((item:any)=>{
+						console.log(cart);
+						
+						return 	<div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
 							<img
-								src=''
+								src={item?.product?.image}
 								alt="Ảnh"
 								className="border rounded-lg p-1"
 							/>
@@ -245,7 +254,7 @@ const Header: React.FC = () => {
 							<p className="text-xs text-red-500 font-semibold">{item?.product?.price} VNĐ</p>
 						</div>
 						<div>
-							<span></span>
+							<span>{item?.quantity}</span>
 						</div>
 						<div className="1/5">
 							<button className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400">
@@ -267,6 +276,7 @@ const Header: React.FC = () => {
 						</div>
 					</div>
 					})}
+				
 						
 					<div className="flex gap-2">
 						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">

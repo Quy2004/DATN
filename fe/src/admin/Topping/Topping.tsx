@@ -367,7 +367,7 @@ const ToppingManagerPage = () => {
           showSizeChanger: true,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
-        scroll={{ x: "max-content", y: 400 }}
+        scroll={{ x: "max-content", y: 350 }}
       />
     </>
   );

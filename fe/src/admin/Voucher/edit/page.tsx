@@ -135,7 +135,7 @@ useEffect(() => {
 					</Link>
 				</Button>
 			</div>
-			<div className="max-w-3xl mx-auto">
+			<div className="max-w-3xl mx-auto overflow-y-auto max-h-[400px]">
 				{contextHolder}
 				<Form
 					form={form}

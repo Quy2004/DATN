@@ -401,6 +401,9 @@ const SizeManagerPage: React.FC = () => {
 						setPageSize(pageSize);
 					},
 				}}
+				
+				scroll={{ y: 300 }} // Chỉ cần chiều cao
+				style={{ tableLayout: "fixed"}} // Giữ chiều rộng ổn định
 			/>
 
 			<Modal
