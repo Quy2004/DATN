@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button, Drawer, Modal } from "flowbite-react";
+import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
-import axios from "axios";
+
 
 const Header: React.FC = () => {
+	const user = JSON.parse(localStorage.getItem("user") || '');
 	const [cart, setCart] = useState<any>([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
@@ -52,9 +53,6 @@ const Header: React.FC = () => {
 	};
 
 	//cart
-	const user = JSON.parse(localStorage.getItem("user") || '');
-	console.log(user);
-	
 	const fetchCart = async () => {
 	  try {
 		const { data } = await instance.get(`/cart/${user._id}`);
@@ -238,8 +236,6 @@ const Header: React.FC = () => {
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
 					{cart.map((item:any)=>{
-						console.log(cart);
-						
 						return 	<div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
 							<img
@@ -276,8 +272,6 @@ const Header: React.FC = () => {
 						</div>
 					</div>
 					})}
-				
-						
 					<div className="flex gap-2">
 						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
 							Checking
