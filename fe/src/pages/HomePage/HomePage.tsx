@@ -7,11 +7,8 @@ import { Product, ProductSize, ProductTopping } from "../../types/product";
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import {  Drawer, Modal } from "flowbite-react";
-import toast from "react-hot-toast";
+import { Drawer, Modal } from "flowbite-react";
 const HomePage: React.FC = () => {
-  //cart
-  const user = JSON.parse(localStorage.getItem("user") || '');
   // slideShow
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const images: string[] = [
@@ -105,31 +102,6 @@ const HomePage: React.FC = () => {
       setQuantity(prevQuantity => prevQuantity - 1);
     }
   };
-
-   //add To Cart
-   const addToCart = async (productId: string) => {
-    console.log({
-     userId: user._id,
-     productId: productId,
-     quantity: 1,
-   });
-
-if (!productId) {
-  return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
-}
-try {
-  const { data } = await instance.post("/cart", {
-    userId: user._id,
-    productId: productId,
-    quantity: 1,
-  });
-  console.log("Data returned from API:", data);
-  toast.success(data.messsage || "Thêm thành công");
-} catch (error) {
-  console.error("Failed to add to cart:", error);
-  toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
-}
-};
 
   return (
     <>
@@ -376,10 +348,6 @@ try {
                 </div>
                 <div className="flex mt-4">
                   <button
-                    onClick={() => {
-                      console.log("Button clicked", selectedProduct?._id);
-                      addToCart(selectedProduct?._id);
-                      }}
                     className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
                   >
                     <span className="relative z-10 transition duration-300 group-hover:text-white"><p className="text-base">Thêm giỏ hàng</p></span>
