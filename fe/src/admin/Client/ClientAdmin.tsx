@@ -359,6 +359,9 @@ const ClientAdmin = () => {
 					pageSizeOptions: ["10", "20", "50", "100"],
 				}}
 				onChange={handleTableChange}
+				
+				scroll={{ y: 300 }} // Chỉ cần chiều cao
+				style={{ tableLayout: "fixed"}} // Giữ chiều rộng ổn định
 			/>
 
 			<Modal

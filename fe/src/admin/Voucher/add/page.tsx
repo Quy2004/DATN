@@ -69,22 +69,38 @@ const VoucherAddPage = () => {
 	// Hàm xử lý chọn loại
 	const handleTypeSelect = (type: string) => {
 		setSelectedTypes(prev =>
-			prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+			prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type],
 		);
+	};
+
+	// Hàm tạo mã ngẫu nhiên
+	const generateRandomCode = () => {
+		const randomCode = Math.random()
+			.toString(36)
+			.substring(2, 10)
+			.toUpperCase(); // Tạo mã gồm 8 ký tự
+		form.setFieldsValue({ code: randomCode }); // Gán mã ngẫu nhiên vào input
 	};
 
 	return (
 		<>
 			<div className="flex items-center justify-between mb-5">
-				<h1 className="font-semibold text-2xl">Thêm voucher mới</h1>
-				<Button type="primary">
-					<Link to="/admin/voucher">
-						<BackwardFilled /> Quay lại
-					</Link>
-				</Button>
-			</div>
-			<div className="max-w-3xl mx-auto">
 				{contextHolder}
+				<h1 className="font-semibold text-2xl">Thêm voucher mới</h1>
+
+				<Button
+					className="ml-[504px]"
+					onClick={generateRandomCode}
+				>
+					Tạo mã ngẫu nhiên
+				</Button>
+				<Link to="/admin/voucher">
+					<Button type="primary">
+						<BackwardFilled /> Quay lại
+					</Button>
+				</Link>
+			</div>
+			<div className="w-full mx-auto overflow-y-auto max-h-[400px]">
 				<Form
 					form={form}
 					name="voucherForm"
@@ -135,11 +151,16 @@ const VoucherAddPage = () => {
 					</div>
 
 					{/* Select cho danh mục */}
-					{selectedTypes.includes("category") && ( 
+					{selectedTypes.includes("category") && (
 						<Form.Item
 							label="Danh mục"
 							name="applicableCategories" // Thay đổi thành category_ids
-							rules={[{ required: true, message: "Vui lòng chọn ít nhất một danh mục" }]}
+							rules={[
+								{
+									required: true,
+									message: "Vui lòng chọn ít nhất một danh mục",
+								},
+							]}
 						>
 							<Select
 								placeholder="Chọn danh mục"
@@ -160,11 +181,16 @@ const VoucherAddPage = () => {
 					)}
 
 					{/* Select cho sản phẩm */}
-					{selectedTypes.includes("product") && ( 
+					{selectedTypes.includes("product") && (
 						<Form.Item
 							label="Sản phẩm"
 							name="applicableProducts" // Thay đổi thành product_ids
-							rules={[{ required: true, message: "Vui lòng chọn ít nhất một sản phẩm" }]}
+							rules={[
+								{
+									required: true,
+									message: "Vui lòng chọn ít nhất một sản phẩm",
+								},
+							]}
 						>
 							<Select
 								placeholder="Chọn sản phẩm"
@@ -200,18 +226,22 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Phần trăm giảm giá"
 						name="discountPercentage"
-						rules={[{ required: true, message: "Vui lòng nhập phần trăm giảm giá!" },
-						{ 
-							validator: (_, value) => {
-								if (value < 0) {
-									return Promise.reject("Phần trăm giảm giá ít nhất là 0!");
-								}
-								if (value > 100) {
-									return Promise.reject("Phần trăm giảm giá nhiều nhất là 100!");
-								}
-								return Promise.resolve();
+						rules={[
+							{ required: true, message: "Vui lòng nhập phần trăm giảm giá!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Phần trăm giảm giá ít nhất là 0!");
+									}
+									if (value > 100) {
+										return Promise.reject(
+											"Phần trăm giảm giá nhiều nhất là 100!",
+										);
+									}
+									return Promise.resolve();
+								},
 							},
-						},]}
+						]}
 					>
 						<InputNumber
 							formatter={value => `${value}`}
@@ -223,14 +253,16 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Giảm giá tối đa"
 						name="maxDiscount"
-						rules={[{
-							validator: (_, value) => {
-								if (value < 0) {
-									return Promise.reject("Giảm giá ít nhất là 0!");
-								}
-								return Promise.resolve();
+						rules={[
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Giảm giá ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
 							},
-						},]}
+						]}
 					>
 						<InputNumber
 							formatter={value => `${value}`}
@@ -242,15 +274,17 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Số lượng"
 						name="quantity"
-						rules={[{ required: true, message: "Vui lòng nhập số lượng!" },
-						{ 
-							validator: (_, value) => {
-								if (value < 0) {
-									return Promise.reject("Số lượng ít nhất là 0!");
-								}
-								return Promise.resolve();
+						rules={[
+							{ required: true, message: "Vui lòng nhập số lượng!" },
+							{
+								validator: (_, value) => {
+									if (value < 0) {
+										return Promise.reject("Số lượng ít nhất là 0!");
+									}
+									return Promise.resolve();
+								},
 							},
-						},]}
+						]}
 					>
 						<InputNumber style={{ width: "100%" }} />
 					</Form.Item>
@@ -275,7 +309,9 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Ngày kết thúc"
 						name="maxOrderDate"
-						rules={[{ required: true, message: "Vui lòng chọn ngày kết thúc!" }]}
+						rules={[
+							{ required: true, message: "Vui lòng chọn ngày kết thúc!" },
+						]}
 					>
 						<DatePicker
 							style={{ width: "100%" }}
@@ -289,7 +325,11 @@ const VoucherAddPage = () => {
 
 					{/* Nút thêm voucher */}
 					<Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-						<Button type="primary" htmlType="submit" className="w-full">
+						<Button
+							type="primary"
+							htmlType="submit"
+							className="w-full"
+						>
 							Thêm voucher
 						</Button>
 					</Form.Item>
