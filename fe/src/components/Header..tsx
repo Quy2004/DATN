@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button, Drawer, Modal } from "flowbite-react";
+import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 
+
 const Header: React.FC = () => {
+	const user = JSON.parse(localStorage.getItem("user") || '');
+	const [cart, setCart] = useState<any>([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
 		setIsModalOpen(!isModalOpen);
@@ -48,10 +51,8 @@ const Header: React.FC = () => {
 	const formatPrice = (price: number) => {
 		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
-//cart
-	const user = JSON.parse(localStorage.getItem("user") || '');
-	console.log(user);
-	
+
+	//cart
 	const fetchCart = async () => {
 	  try {
 		const { data } = await instance.get(`/cart/${user._id}`);
@@ -67,6 +68,9 @@ const Header: React.FC = () => {
 	useEffect(() => {
 		fetchCart();
 	}, []);
+
+	
+
 	return (
 		<>
 			<header className="absolute z-10">
@@ -231,9 +235,7 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-{cart.map((item:any)=>{
-						console.log(cart);
-						
+					{cart.map((item:any)=>{
 						return 	<div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
 							<img
@@ -281,6 +283,71 @@ const Header: React.FC = () => {
 							Thanh Toán
 						</Button>
 					</div>
+					{/* <Modal show={isModalOpen} onClose={toggleModal}>
+                        <Modal.Header>
+                            <h1 className="text-2xl">
+                                Thanh Toán
+                            </h1>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <form className="space-y-4" action="#">
+                                <div className="grid gap-4 mb-4 grid-cols-2">
+                                    <div className="col-span-2 ">
+                                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Address
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            id="text"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                        />
+                                    </div>
+                                    <div className="col-span-2 sm:col-span-1">
+                                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            id="text"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                        />
+                                    </div>
+                                    <div className="col-span-2 sm:col-span-1">
+                                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Phone
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="pirce"
+                                            id="number"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-4 p-2 rounded-lg border-2 ">
+                                    <img src="../src/assets/images/shirt.png" alt="Anh san pham" className="w-[70px] h-[70px] col-span-1" />
+                                    <p className="col-span-2">T-Shirt</p>
+                                    <span><b className="col-span-1">100.000</b> VND</span>
+                                </div>
+                            </form>
+                            <div className="my-3">
+                                <p className="font-medium">Phương thức thanh toán :</p>
+                                <div className="my-1">
+                                    <input type="radio" name="default-radio" id="" />
+                                    <label htmlFor="" className="ms-2 text-gray-900 dark:text-gray-300">Thanh toán khi nhân hàng</label>
+                                </div>
+                                <div className="mb-4">
+                                    <input type="radio" name="default-radio" id="" />
+                                    <label htmlFor="" className="ms-2  text-gray-900 dark:text-gray-300">Thanh toán qua momo</label>
+                                </div>
+                            </div>
+                            <Button type="submit" fullSized>
+                                Thanh Toán
+                            </Button>
+                        </Modal.Body>
+                    </Modal> */}
 				</Drawer.Items>
 			</Drawer>
 		</>
