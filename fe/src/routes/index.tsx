@@ -42,7 +42,7 @@ import instance from "../services/api";
 import AuthPage from "../account/AuthPage/AuthPage";
 
 import BannerManagerPage from "../admin/Banner/Banner";
-import BannerAddPage from '../admin/Banner/add/page';
+import BannerAddPage from "../admin/Banner/add/page";
 import BannerUpdatePage from "../admin/Banner/edit/page";
 import CategoryPostManagerPage from "../admin/CategoryPost/page";
 import DetailPage from "../pages/DetailPage/DetailPage";
@@ -50,14 +50,9 @@ import CategoryPostAddPage from "../admin/CategoryPost/add/page";
 import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
 import CheckOut from "../pages/CheckOutPage/CheckOut";
 import VoucherPage from "../admin/Voucher/Voucher";
-import CartPage from "../pages/CartPage/Cartpage";
-
-
-
-
+import PostManagerPage from "../admin/Post/page";
 
 const Router = () => {
-
   return (
     <div>
       <Routes>
@@ -70,8 +65,7 @@ const Router = () => {
             <Route path="teaside" element={<TeaSideBar />} />
           </Route>
           <Route path="detail/:id" element={<DetailPage />} />
-          <Route path="checkout" element={<CheckOut/>}/>
-          <Route path="cart" element={<CartPage/>}/>
+          <Route path="checkout" element={<CheckOut />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
             <Route path="coffeeholic" element={<CoffeHolicTab />} />
@@ -113,7 +107,12 @@ const Router = () => {
 
           <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
           <Route path="CategoryPost/add" element={<CategoryPostAddPage />} />
-          <Route path="CategoryPost/:id/update" element={<CategoryPostupdatePage />} />
+          <Route
+            path="CategoryPost/:id/update"
+            element={<CategoryPostupdatePage />}
+          />
+
+          <Route path="post" element={<PostManagerPage />} />
         </Route>
       </Routes>
     </div>
