@@ -1,5 +1,7 @@
+import { Product } from "./product";
+
 export interface CartItem{
-    product : string,
+    product : Product[],
     quantity : number
 }
 export interface Cart{
