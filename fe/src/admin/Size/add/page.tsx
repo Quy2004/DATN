@@ -4,7 +4,7 @@ import { Button, Form, FormProps, Input, InputNumber, message, Select } from "an
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
-import { Size } from "../../../types/product";
+import { Size } from "../../../types/size";
 const { Option } = Select;
 
 

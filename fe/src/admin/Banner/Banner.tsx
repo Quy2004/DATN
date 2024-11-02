@@ -265,7 +265,7 @@ const BannerManagerPage = () => {
           showSizeChanger: true,
           showTotal: (total) => `Tổng ${total} mục`,
         }}
-        scroll={{ x: "max-content", y: 400 }}
+        scroll={{ x: "max-content", y: 350 }}
       />
     </div>
   );

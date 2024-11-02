@@ -21,6 +21,8 @@ import {
   CheckOutlined,
   CloseOutlined,
   DeleteOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
   PlusCircleFilled,
   UndoOutlined,
 } from "@ant-design/icons";
@@ -30,6 +32,7 @@ import Title from "antd/es/typography/Title";
 import Search from "antd/es/input/Search";
 import { Product, ProductSize } from "../../types/product";
 import { Category } from "../../types/category";
+
 const ProductManagerPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
@@ -210,6 +213,21 @@ const ProductManagerPage: React.FC = () => {
       message.error("Lỗi khi cập nhật trạng thái!");
     }
   };
+  const handleActiveChange = async (checked: boolean, id: string) => {
+    try {
+      const newActiveStatus = checked; // true nếu active, false nếu inactive
+      await instance.patch(`/products/${id}/update-active`, {
+        active: newActiveStatus,
+      }); // Gọi API cập nhật trạng thái active
+      message.success("Cập nhật trạng thái active sản phẩm thành công!");
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    } catch (error) {
+      message.error("Lỗi khi cập nhật trạng thái active!");
+    }
+  };
+
   // Hàm để hiển thị chi tiết sản phẩm trong Modal
   const showModal = (product: Product) => {
     setSelectedProduct(product); // Lưu sản phẩm được chọn
@@ -260,17 +278,6 @@ const ProductManagerPage: React.FC = () => {
       key: "price",
       render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
     },
-    {
-      title: "Danh mục",
-      dataIndex: "category_id",
-      key: "category",
-      render: (categories: Array<Category>) => {
-        const categoryNames = categories
-          .map((category) => category.title)
-          .join(", ");
-        return <span>{categoryNames}</span>;
-      },
-    },
 
     {
       title: "Trạng Thái",
@@ -295,6 +302,37 @@ const ProductManagerPage: React.FC = () => {
             />
           </Tooltip>
         </div>
+      ),
+    },
+    {
+      title: "Danh mục",
+      dataIndex: "category_id",
+      key: "category",
+      render: (categories: Array<Category>) => {
+        const categoryNames = categories
+          .map((category) => category.title)
+          .join(", ");
+        return <span>{categoryNames}</span>;
+      },
+    },
+    {
+      title: "Kích hoạt",
+      dataIndex: "active",
+      key: "active",
+      render: (active: boolean, record: Product) => (
+        <Tooltip
+          title={active ? "Sản phẩm đang hoạt động" : "Sản phẩm tạm dừng"}
+        >
+          <Switch
+            checked={active}
+            onChange={(checked) => handleActiveChange(checked, record._id)}
+            checkedChildren={<PlayCircleOutlined className="text-green-500" />}
+            unCheckedChildren={<PauseCircleOutlined className="text-red-500" />}
+            className={`custom-switch ${
+              active ? "bg-green-500" : "bg-red-500"
+            } rounded-full`}
+          />
+        </Tooltip>
       ),
     },
     {
@@ -450,16 +488,17 @@ const ProductManagerPage: React.FC = () => {
           },
         }}
         onChange={handleTableChange}
-        scroll={{ x: "max-content", y: 400 }}
+        scroll={{ x: "max-content", y: 350 }}
       />
 
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
-        title="Chi tiết sản phẩm"
+       title={<Title level={3}>Chi tiết sản phẩm</Title>}
         open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
         width={800}
+        className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50"
       >
         {selectedProduct && (
           <div className="p-5 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">

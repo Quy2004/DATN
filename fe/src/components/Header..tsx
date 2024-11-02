@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
+import axios from "axios";
 
 const Header: React.FC = () => {
+	const [cart, setCart] = useState<any>([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
 		setIsModalOpen(!isModalOpen);
@@ -48,6 +50,21 @@ const Header: React.FC = () => {
 	const formatPrice = (price: number) => {
 		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
+	//Cart
+	const dataLocal = JSON.parse(localStorage.getItem('user') as string)?._id;
+    useEffect(() => {
+        const fecth = async () => {
+            if (dataLocal) {
+                const { data } = await axios.get(`http://localhost:8000/cart/${dataLocal}`)
+                console.log(data)
+                setCart(data?.cart?.products)
+            }
+        }
+        fecth()
+    }, [])
+
+	
+
 	return (
 		<>
 			<header className="absolute z-10">
@@ -121,7 +138,7 @@ const Header: React.FC = () => {
 									products.map((product: Product) => (
 										<Link to={`detail/${product._id}`} onClick={clearSearch}>
 											<div
-												key={product.id}
+												key={product._id}
 												className="flex items-center border-b-2 hover:bg-gray-200 h-[63px]"
 											>
 												<img
@@ -212,21 +229,23 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					<div className="flex *:mx-1 items-center border-b-2 pb-2">
+					
+					{cart?.map((item : any)=>{
+						<div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
 							<img
-								src=""
+								src=''
 								alt="Ảnh"
 								className="border rounded-lg p-1"
 							/>
 						</div>
 						<div className="w-3/5">
-							<h3 className="text-base font-semibold">Product</h3>
+							<h3 className="text-base font-semibold"></h3>
 							<span></span>
-							<p className="text-xs text-red-500 font-semibold">20.000 VNĐ</p>
+							<p className="text-xs text-red-500 font-semibold">{item?.product?.price} VNĐ</p>
 						</div>
 						<div>
-							<span>1</span>
+							<span></span>
 						</div>
 						<div className="1/5">
 							<button className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400">
@@ -247,6 +266,8 @@ const Header: React.FC = () => {
 							</button>
 						</div>
 					</div>
+					})}
+						
 					<div className="flex gap-2">
 						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
 							Checking

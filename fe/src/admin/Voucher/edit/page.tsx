@@ -7,14 +7,17 @@ import {
   Input,
   InputNumber,
   message,
+  Select,
   Spin
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
 import { Voucher } from "../../../types/voucher";
 import ReactQuill from "react-quill";
+import { Category } from "../../../types/category";
+import { Product } from "../../../types/product";
 
 
 
@@ -24,6 +27,7 @@ const VoucherUpdatePage = () => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const [form] = Form.useForm();
 	const queryClient = useQueryClient();
+	const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   // Truy vấn để lấy dữ liệu voucher hiện tại
   const { data: voucherData, isLoading: isvoucherLoading } = useQuery({
@@ -35,7 +39,25 @@ const VoucherUpdatePage = () => {
     enabled: !!id, // Chỉ chạy truy vấn nếu có id
   });
 
-  useEffect(() => {
+  // Kết nối đến bảng category
+const { data: categories, isLoading: isLoadingCategories } = useQuery({
+	queryKey: ["categories"],
+	queryFn: async () => {
+		const response = await instance.get(`/categories`);
+		return response.data;
+	},
+});
+
+// Kết nối đến bảng products
+const { data: products, isLoading: isLoadingProducts } = useQuery({
+	queryKey: ["products"],
+	queryFn: async () => {
+		const response = await instance.get(`/products`);
+		return response.data;
+	},
+});		
+
+useEffect(() => {
     if (voucherData) {
       form.setFieldsValue({
         name: voucherData.name,
@@ -46,7 +68,17 @@ const VoucherUpdatePage = () => {
         quantity: voucherData.quantity,
         minOrderDate: dayjs(voucherData.minOrderDate),
         maxOrderDate: dayjs(voucherData.maxOrderDate),
+		applicableCategories: voucherData.applicableCategories,
+		applicableProducts: voucherData.applicableProducts
       });
+
+      // Kiểm tra xem có categories và products không để tự động chọn loại
+      if (voucherData.applicableCategories.length > 0) {
+        setSelectedTypes(prev => [...new Set([...prev, "category"])]);
+      }
+      if (voucherData.applicableProducts.length > 0) {
+        setSelectedTypes(prev => [...new Set([...prev, "product"])]);
+      }
     }
   }, [voucherData, form]);
   
@@ -86,6 +118,12 @@ const VoucherUpdatePage = () => {
 			</div>
 		);
 	}
+	// Hàm xử lý chọn loại
+	const handleTypeSelect = (type: string) => {
+		setSelectedTypes(prev =>
+			prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+		);
+	};
 
 	return (
 		<>
@@ -97,7 +135,7 @@ const VoucherUpdatePage = () => {
 					</Link>
 				</Button>
 			</div>
-			<div className="max-w-3xl mx-auto">
+			<div className="max-w-3xl mx-auto overflow-y-auto max-h-[400px]">
 				{contextHolder}
 				<Form
 					form={form}
@@ -130,6 +168,73 @@ const VoucherUpdatePage = () => {
 							placeholder="Nhập tên voucher"
 						/>
 					</Form.Item>
+
+					{/* Button để chọn loại */}
+					<div className="mb-4 ml-[199px]">
+						<Button
+							type={selectedTypes.includes("category") ? "primary" : "default"}
+							onClick={() => handleTypeSelect("category")}
+							className="mr-2"
+						>
+							Chọn danh mục
+						</Button>
+						<Button
+							type={selectedTypes.includes("product") ? "primary" : "default"}
+							onClick={() => handleTypeSelect("product")}
+						>
+							Chọn sản phẩm
+						</Button>
+					</div>
+
+					{/* Select cho danh mục */}
+					{selectedTypes.includes("category") && ( 
+						<Form.Item
+							label="Danh mục"
+							name="applicableCategories" // Thay đổi thành category_ids
+							rules={[{ required: true, message: "Vui lòng chọn ít nhất một danh mục" }]}
+						>
+							<Select
+								placeholder="Chọn danh mục"
+								loading={isLoadingCategories}
+								disabled={isLoadingCategories}
+								mode="multiple" // Cho phép chọn nhiều danh mục
+							>
+								{categories?.data?.map((category: Category) => (
+									<Select.Option
+										key={category._id}
+										value={category._id}
+									>
+										{category.title}
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					)}
+
+					{/* Select cho sản phẩm */}
+					{selectedTypes.includes("product") && ( 
+						<Form.Item
+							label="Sản phẩm"
+							name="applicableProducts" // Thay đổi thành product_ids
+							rules={[{ required: true, message: "Vui lòng chọn ít nhất một sản phẩm" }]}
+						>
+							<Select
+								placeholder="Chọn sản phẩm"
+								loading={isLoadingProducts}
+								disabled={isLoadingProducts}
+								mode="multiple" // Cho phép chọn nhiều sản phẩm
+							>
+								{products?.data?.map((product: Product) => (
+									<Select.Option
+										key={product._id}
+										value={product._id}
+									>
+										{product.name}
+									</Select.Option>
+								))}
+							</Select>
+						</Form.Item>
+					)}
 
 					{/* Mô tả */}
 					<Form.Item
