@@ -4,57 +4,41 @@ class UserController {
 	// Hiện thị toàn bộ danh sách người dùng
 	async getAllUsers(req, res) {
 		try {
-			const { isDeleted, all, search, allUser, role, page = 1, limit = 10 } = req.query;
+			const { isDeleted = "false", search, role, page = 1, limit = 10 } = req.query;
 	
 			// Tạo điều kiện lọc
-			let query = {};
-	
-			if (all === "true") {
-				// Nếu `all=true`, lấy tất cả người dùng
-				query = {};
-			} else if (isDeleted === "true") {
-				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
-				query.isDeleted = true;
-			} else {
-				// Mặc định lấy các người dùng chưa bị xóa mềm
-				query.isDeleted = false;
-			}
+			let query = {
+				isDeleted: isDeleted === "true",
+			};
 	
 			// Thêm điều kiện tìm kiếm theo tên người dùng
-			if (search) {
-				query.userName = { $regex: search, $options: "i" }; // không phân biệt viết hoa hay viết thường
+			if (search && search.trim()) { // Kiểm tra nếu search không rỗng
+				query.userName = { $regex: search.trim(), $options: "i" }; // Tìm kiếm không phân biệt chữ hoa chữ thường
 			}
 	
-			if (role === "allUser") {
-				// Nếu `all=true`, lấy tất cả người dùng
-				query = {};
-			} else if (role === "admin") {
-				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
-				query.role = "admin";
-			} else if (role === "manager") {
-				// Nếu `isDeleted=true`, chỉ lấy các người dùng đã bị xóa mềm
-				query.role = "manager";
-			} else{
-				query.role = "user";
+			// Điều kiện cho role
+			if (role && role !== "allUser") {
+				query.role = role; // Nếu có role, chỉ lấy người dùng theo role
 			}
 	
-			// số lượng trên mỗi trang
+			// Số lượng trên mỗi trang
 			const pageLimit = parseInt(limit, 10) || 10;
 			const currentPage = parseInt(page, 10) || 1;
 			const skip = (currentPage - 1) * pageLimit;
 	
-			// thực hiện phân trang
+			// Thực hiện phân trang
 			const users = await User.find(query)
-				.sort({ createdAt: -1 }) // sắp xếp theo ngày tạo giảm dần
+				.sort({ createdAt: -1 }) // Sắp xếp theo ngày tạo giảm dần
 				.skip(skip)
 				.limit(pageLimit)
 				.exec();
 	
-
-				users.sort((a, b) => {
-					const roleOrder = { admin: 1, manager: 2, user: 3 }; // Admin trước, Manager sau, User cuối
-					return roleOrder[a.role] - roleOrder[b.role];
-				});	
+			// Sắp xếp người dùng theo vai trò
+			users.sort((a, b) => {
+				const roleOrder = { admin: 1, manager: 2, user: 3 }; // Admin trước, Manager sau, User cuối
+				return (roleOrder[a.role] || Infinity) - (roleOrder[b.role] || Infinity); // Đảm bảo rằng các vai trò không xác định được xếp ở cuối
+			});
+	
 			// Tổng số người dùng để tính tổng số trang
 			const totalItems = await User.countDocuments(query);
 	
@@ -71,6 +55,8 @@ class UserController {
 			res.status(400).json({ message: error.message });
 		}
 	}
+	
+	
 	
 	  
 	  
