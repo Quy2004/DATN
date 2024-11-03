@@ -21,22 +21,19 @@ export const addtoCart = async (req, res) => {
     
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
-      cart = new Cart({ userId, products: [{
-        product,
-        quantity
-      }] });
+      cart = new Cart({
+        userId,
+        products: [{ product: productId, quantity  }]
+      });
     } else {
-      
-      // for (let product of products) {
-        const existingProduct = cart.products.find(p => p?._id === productId);
-        console.log(cart.products);
-        
-        if (existingProduct) {
-          existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
-        } else {
-          cart.products.push(existingProduct); // Thêm sản phẩm mới vào giỏ hàng
-        }
-      // }
+      // Tìm sản phẩm trong giỏ hàng
+      const existingProduct = cart.products.find(p => p.product.toString() === productId);
+
+      if (existingProduct) {
+        existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
+      } else {
+        cart.products.push({ product: productId, quantity }); // Thêm sản phẩm mới vào giỏ hàng
+      }
     }
 
     // Tính tổng số lượng và tổng tiền
@@ -61,6 +58,51 @@ export const addtoCart = async (req, res) => {
     return res.status(200).json({
       message: "Products added/updated successfully",
       cart
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+export const getCart = async (req, res) => {
+  try {
+    const { userId } = req.params; // Lấy userId từ params
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    // Tìm giỏ hàng theo userId
+    let cart = await Cart.findOne({ userId }).populate({
+      path: "products.product",
+      model: "Product"
+    });
+
+    // Nếu giỏ hàng không tồn tại, tạo giỏ hàng mới và trả về giỏ hàng trống
+    if (!cart) {
+      cart = new Cart({
+        userId,
+        products: [],
+        total: 0,
+        totalprice: 0
+      });
+      await cart.save();
+      return res.status(200).json({
+        message: "Cart created successfully",
+        cart: cart.products,
+        totalQuantity: cart.total,
+        totalPrice: cart.totalprice
+      });
+    }
+
+    // Trả về giỏ hàng với danh sách sản phẩm và các thông tin chi tiết
+    return res.status(200).json({
+      message: "Cart retrieved successfully",
+      cart: cart.products,
+      totalQuantity: cart.total,
+      totalPrice: cart.totalprice
     });
   } catch (error) {
     console.error(error);

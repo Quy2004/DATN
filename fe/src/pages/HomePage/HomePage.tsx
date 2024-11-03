@@ -7,7 +7,7 @@ import { Product, ProductSize, ProductTopping } from "../../types/product";
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { Button, Drawer, Modal } from "flowbite-react";
+import { Drawer, Modal } from "flowbite-react";
 const HomePage: React.FC = () => {
   // slideShow
   const [currentIndex, setCurrentIndex] = useState<number>(0);

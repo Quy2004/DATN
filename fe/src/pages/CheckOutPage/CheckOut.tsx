@@ -1,6 +1,7 @@
 import { Drawer, Modal } from 'flowbite-react';
 import React, { useState } from 'react';
 
+
 const Checkout: React.FC = () => {
     const initialItems = [
         {
@@ -65,78 +66,24 @@ const Checkout: React.FC = () => {
                     <section className="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
                         <form action="#!" method="get">
                             <h6 className="text-lg font-semibold mb-2">Thông tin liên hệ</h6>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">E-mail</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                        <i className="fa fa-envelope"></i>
-                                    </span>
-                                    <input
-                                        type="email"
-                                        placeholder="Nhập email của bạn"
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    />
+                            {['E-mail', 'Điện thoại', 'Họ và tên', 'Địa chỉ'].map((field, index) => (
+                                <div className="mb-4" key={index}>
+                                    <label className="block text-sm font-medium mb-1">{field}</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                            <i className={`fa fa-${field === 'E-mail' ? 'envelope' : field === 'Điện thoại' ? 'phone' : field === 'Họ và tên' ? 'user-circle' : field === 'Địa chỉ' ? 'home' : 'building'}`}></i>
+                                        </span>
+                                        <input
+                                            type={field === 'E-mail' ? 'email' : field === 'Điện thoại' ? 'tel' : 'text'}
+                                            placeholder={field === 'E-mail' ? 'Nhập email của bạn' : field === 'Điện thoại' ? 'Nhập số điện thoại' : field === 'Họ và tên' ? 'Nhập họ và tên' : field === 'Địa chỉ' ? 'Nhập địa chỉ' : 'Nhập thành phố'}
+                                            className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Điện thoại</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                        <i className="fa fa-phone"></i>
-                                    </span>
-                                    <input
-                                        type="tel"
-                                        placeholder="Nhập số điện thoại"
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Họ và tên</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                        <i className="fa fa-user-circle"></i>
-                                    </span>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập họ và tên"
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Địa chỉ</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                        <i className="fa fa-home"></i>
-                                    </span>
-                                    <input
-                                        type="text"
-                                        placeholder="Nhập địa chỉ"
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Ghi chú</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                        <i className="fa fa-building"></i>
-                                    </span>
-                                    <textarea
-                                        placeholder="Nhập ghi chú khi đặt hàng"
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                    ></textarea>
-                                </div>
-                            </div>
-
+                            ))}
                             <div className="flex flex-col md:flex-row md:justify-between mb-4">
                             </div>
-                            <div className="">
+                            <div className=''>
                                 <h1 className='font-semibold'>Phương thức thanh toán:</h1>
                                 <form className='py-2 *:py-1' action="">
                                     <div className='flex items-center gap-2'>
@@ -161,14 +108,6 @@ const Checkout: React.FC = () => {
                                         />
                                         <label htmlFor="atm">Thẻ ATM nội địa/ Internet Banking</label>
                                     </div>
-
-                                    {/* Box Note cho phần ghi chú */}
-                                    {!paymentMethod && (
-                                        <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded-md shadow-lg my-4">
-                                            <p className='text-yellow-800 font-semibold'>Lưu ý:</p>
-                                            <p className='text-gray-700'>Vui lòng chọn phương thức thanh toán của bạn.</p>
-                                        </div>
-                                    )}
 
                                     {/* Hiển thị các tùy chọn khi chọn "Thẻ ATM" */}
                                     {paymentMethod === 'atm' && (
@@ -243,28 +182,39 @@ const Checkout: React.FC = () => {
                     </p>
                 </footer>
             </div>
+            {/* Banking */}
             <Drawer open={isOpen} onClose={handleClose} position="right">
                 <Drawer.Items>
                     <Modal show={isModalOpen} onClose={toggleModal}>
                         <Modal.Header className="relative h-0 top-2 text-black p-0 mr-2 border-none">
-                            <h2 className="text-lg font-semibold">Thông tin sản phẩm</h2>
+                            <h2 className="text-lg font-semibold"></h2>
                         </Modal.Header>
                         <Modal.Body className="bg-gray-100">
-                            <form onSubmit={handleSubmit}>
-                                <div className="flex gap-3">
-                                    {/* Cart-left */}
-                                    <div className="w-[170px]">
-                                        <img src="src/account/AuthPage/Bg-coffee.jpg" alt="Cà phê không phê" className="w-[160px] h-[160px] rounded-xl" />
+                            <div className='flex'>
+                                {/* Pay left */}
+                                <div className='w-[40%]'>
+                                    <h1>Thông tin đơn hàng</h1>
+                                    <h1>Mã đơn hàng</h1>
+                                    <p>abczyx1234567890</p>
+                                    <hr />
+                                    <h1>Mô tả</h1>
+                                    <p>Thanh toán đơn hàng abczyx1234567890</p>
+                                    <hr />
+                                    <h1>Số tiền</h1>
+                                    <p>100.000 VND</p>
+                                    <div>
+                                        <p>Đơn hàng sẽ hết hạn sai :</p>
+                                        <p>10 phút : 00 giây</p>
                                     </div>
-                                    {/* Cart-right */}
-                                    <div className="w-max flex-1">
-                                        <h1 className="text-lg font-medium">Cà phê không phê</h1>
-                                        <p className="text-sm text-[#ea8025] font-medium py-1">30.000 đ</p>
-                                        <i className="text-sm text-black">Không ngon không lấy tiền</i>
-                                    </div>
+                                    <form onSubmit={handleSubmit}>
+                                        <button type="button" onClick={toggleModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded">Hủy</button>
+                                    </form>
                                 </div>
-                                <button type="button" onClick={toggleModal} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Đóng</button>
-                            </form>
+                                {/* QR CODE */}
+                                <div className='flex-1 w-[60%]'>
+                                    <h1>QUÉT MÃ QR ĐỂ THANH TOÁN</h1>
+                                </div>
+                            </div>
                         </Modal.Body>
                     </Modal>
                 </Drawer.Items>
