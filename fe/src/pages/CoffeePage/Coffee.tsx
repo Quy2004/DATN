@@ -24,27 +24,28 @@ const CoffeePage: React.FC = () => {
             return response.data.data;
         },
     });
-    //Định nghĩa giá
+    
+    // Định nghĩa giá
     const formatPrice = (price: number) => {
         return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
     return (
-        <div className="containerAll mx-auto">
+        <div className="containerAll mx-auto px-4">
             <div className="mb-8">
                 <h1 className="pt-10 text-3xl font-semibold mb-3 mt-6">Cà phê</h1>
                 <p className="border-b-orange-400 w-24 border-b-[4px]"></p>
             </div>
-            <div className="row grid grid-cols-4 gap-5 text-left mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 text-left mb-12">
                 {productsData?.map((coffee: Product) => (
                     <div key={coffee._id} className="item">
                         <Link to={`/detail/${coffee._id}`} className="product_img">
-                            <img src={coffee.image} alt={coffee.name} />
+                            <img src={coffee.image} alt={coffee.name} className="w-full h-auto object-cover"/>
                         </Link>
                         <Link to="#">
-                            <h3 className="text-2xl">{coffee.name}</h3>
+                            <h3 className="text-2xl mt-2">{coffee.name}</h3>
                         </Link>
-                        <p>{formatPrice(coffee.price)} VNĐ</p>
+                        <p className="text-lg font-semibold">{formatPrice(coffee.price)} VNĐ</p>
                     </div>
                 ))}
             </div>
