@@ -162,7 +162,7 @@ const DetailPage = () => {
                                                             key={size.size_id._id}
                                                             onClick={() => handleSizeChange(size)}
                                                             className={`flex items-center justify-center rounded-lg h-10 text-sm shadow-md transition duration-200 px-2
-                                ${selectedSize?.size_id._id === size.size_id._id
+                                                            ${selectedSize?.size_id._id === size.size_id._id
                                                                     ? 'bg-[#ea8025] text-white border border-[#ea8025]'
                                                                     : 'bg-white text-black border border-[#ea8025] hover:bg-[#ea8025] hover:text-white'}`}
                                                             disabled={size.status === "unavailable"}
