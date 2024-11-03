@@ -18,6 +18,7 @@ class PostController {
       }
 
       const posts = await Post.find(query)
+        .populate("categoryPost", "title description")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
