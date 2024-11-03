@@ -12,7 +12,7 @@ const CategoryPostSchema = new Schema(
         type: String,
     },
     thumbnail: {
-        type: [String],
+        type: String,
     },
     isDeleted: {
       type: Boolean,
