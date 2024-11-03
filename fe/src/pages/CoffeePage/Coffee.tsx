@@ -36,7 +36,7 @@ const CoffeePage: React.FC = () => {
                 <h1 className="pt-10 text-3xl font-semibold mb-3 mt-6">Cà phê</h1>
                 <p className="border-b-orange-400 w-24 border-b-[4px]"></p>
             </div>
-            <div className="grid grid-cols-1 grid-rows-2 gap-5 md:grid-cols-2 lg:grid-cols-4 text-left mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 text-left mb-12">
                 {productsData?.map((coffee: Product) => (
                     <div key={coffee._id} className="item">
                         <Link to={`/detail/${coffee._id}`} className="product_img">
