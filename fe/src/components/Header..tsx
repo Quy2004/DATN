@@ -249,7 +249,7 @@ const Header: React.FC = () => {
 						<div className="w-3/5">
 							<h3 className="text-base font-semibold"></h3>
 							<span></span>
-							<p className="text-xs text-red-500 font-semibold">{item?.product?.price} VNĐ</p>
+							<p className="text-xs text-red-500 font-semibold">{item?.product?.price * item?.quantity} VNĐ</p>
 						</div>
 						<div>
 							<span>{item?.quantity}</span>
