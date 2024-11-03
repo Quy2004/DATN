@@ -7,6 +7,7 @@ import { Product, ProductSize, ProductTopping } from "../../types/product";
 import toast from "react-hot-toast";
 
 const DetailPage = () => {
+    const user = JSON.parse(localStorage.getItem("user") || '');
     const { id } = useParams<{ id: string }>();
     const [mainImage, setMainImage] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
@@ -90,22 +91,26 @@ const DetailPage = () => {
 
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>An error occurred: {(error as Error).message}</div>;
-
-    const addToCart = async (productId: string) => {
-        if (!productId) {
-            return toast.success("Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ");
-        }
-        try {
-            const { data } = await instance.post("/cart", {
-                productId: productId,
-                quantity: quantity, // Sử dụng số lượng đã chọn
-            });
-            toast.success(data.message || "Thêm thành công");
-        } catch (error) {
-            console.error("Failed to add to cart:", error);
-            toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
-        }
-    };
+//add To Cart
+const addToCart = async (productId: string) => {
+    if (!productId) {
+      return toast.success(
+        "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
+      );
+    }
+    try {
+      const { data } = await instance.post("/cart", {
+        userId: user._id,
+        productId: productId,
+        quantity: 1,
+      });
+      console.log("Data returned from API:", data);
+      toast.success(data.messsage || "Thêm thành công");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    }
+  };
 
     return (
         <>
