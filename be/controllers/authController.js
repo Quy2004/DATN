@@ -78,7 +78,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     // Tạo token đặt lại mật khẩu, có thời hạn 15 phút
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "khoa-bi-mat", { expiresIn: "15m" });
+    const resetToken = "reset_token_example";
 
     // Lưu token vào tài khoản người dùng để xác minh trong resetPassword
     user.resetToken = resetToken;
@@ -92,6 +92,32 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+// // Đặt lại mật khẩu
+// export const resetPassword = async (req, res) => {
+//   const { token, newPassword } = req.body;
 
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "khoa-bi-mat");
+//     const user = await User.findOne({ _id: decoded.id, resetToken: token, resetTokenExpires: { $gt: Date.now() } });
+
+//     if (!user) {
+//       return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+//     }
+
+//     const hashPassword = await bcryptjs.hash(newPassword, 10);
+//     user.password = hashPassword;
+//     user.resetToken = undefined;
+//     user.resetTokenExpires = undefined;
+//     await user.save();
+
+//     res.status(StatusCodes.OK).json({ message: "Đặt lại mật khẩu thành công!" });
+//   } catch (error) {
+//     console.error(error);
+//     if (error.name === 'TokenExpiredError') {
+//       return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token đã hết hạn' });
+//     }
+//     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
+//   }
+// };
 
 
