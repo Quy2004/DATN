@@ -5,6 +5,8 @@ const productsRouter = express.Router();
 const productsController = new ProductController();
 
 productsRouter.get("/", productsController.getAllProducts);
+productsRouter.get("/tea", productsController.getTeaProducts);
+productsRouter.get("/coffe", productsController.getCoffeProducts);
 productsRouter.get("/:id", productsController.getProductDetail);
 productsRouter.post("/", productsController.createProduct);
 productsRouter.put("/:id", productsController.updateProduct);
@@ -14,5 +16,9 @@ productsRouter.patch("/:id/restore", productsController.restoreProduct);
 productsRouter.patch(
   "/:id/update-status",
   productsController.updateStatusProduct
+);
+productsRouter.patch(
+  "/:id/update-active",
+  productsController.updateActiveProduct
 );
 export default productsRouter;

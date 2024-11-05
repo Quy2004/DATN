@@ -61,11 +61,15 @@ const ProductAddPage: React.FC = () => {
   });
 
   const { data: toppings, isLoading: isLoadingToppings } = useQuery({
-    queryKey: ["toppings"],
+    queryKey: ["toppings", selectedCategoryId], // Thêm selectedCategoryId vào queryKey
     queryFn: async () => {
-      const response = await instance.get(`/toppings`);
+      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      const response = await instance.get(
+        `/toppings?category=${selectedCategoryId}`
+      ); // Gọi API với selectedCategoryId
       return response.data;
     },
+    enabled: !!selectedCategoryId, // Chỉ gọi query khi có selectedCategoryId
   });
 
   // Upload Ảnh Cloudinary
@@ -111,7 +115,6 @@ const ProductAddPage: React.FC = () => {
         })
       ),
       description: values.description,
-      stock: values.stock,
       discount: values.discount,
       status: values.status,
     };
@@ -168,7 +171,7 @@ const ProductAddPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
         <Form
           form={form}
           name="basic"
@@ -332,11 +335,17 @@ const ProductAddPage: React.FC = () => {
                           disabled={isLoadingSizes}
                           className="w-full"
                         >
-                          {sizes?.data.map((size: Size) => (
-                            <Option key={size._id} value={size._id}>
-                              {size.name}
-                            </Option>
-                          ))}
+                          {sizes?.data
+                            .filter(
+                              (size: Size) =>
+                                size.status === "available" &&
+                                size.isDeleted === false
+                            )
+                            .map((size: Size) => (
+                              <Option key={size._id} value={size._id}>
+                                {size.name}
+                              </Option>
+                            ))}
                         </Select>
                       </Form.Item>
 
@@ -476,17 +485,6 @@ const ProductAddPage: React.FC = () => {
               className="Input-antd text-sm placeholder-gray-400"
               placeholder="Nhập giảm giá"
             />
-          </Form.Item>
-
-          <Form.Item
-            label="Trạng thái"
-            name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-          >
-            <Select placeholder="Chọn trạng thái">
-              <Option value="available">Có sẵn</Option>
-              <Option value="unavailable">Hết hàng</Option>
-            </Select>
           </Form.Item>
 
           <Form.Item>

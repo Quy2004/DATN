@@ -12,6 +12,10 @@ import {
   FaRulerCombined,
   FaIceCream,
   FaTags,
+  FaEdit,
+  FaFileAlt,
+  FaThList,
+  FaFolderOpen,
 } from "react-icons/fa"; // Import icons
 import { Button } from "antd";
 import { BackwardFilled } from "@ant-design/icons"; // Import icons
@@ -60,7 +64,12 @@ const AdminLayout = () => {
     { name: "Quản lí bình luận", link: "comment", icon: <FaComments /> },
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
     { name: "Quản lí banner", link: "banner", icon: <FaImage /> },
-    { name: "Quản lí danh mục post", link: "CategoryPost", icon: <FaImage /> },
+    {
+      name: "Quản lí danh mục post",
+      link: "CategoryPost",
+      icon: <FaFolderOpen />,
+    },
+    { name: "Quản lí bài viết", link: "post", icon: <FaEdit /> },
   ];
 
   // Determine breadcrumb based on current route
@@ -83,8 +92,10 @@ const AdminLayout = () => {
       return "Quản lý tài khoản ";
     } else if (location.pathname.includes("banner")) {
       return "Quản lý banner";
-    }else if (location.pathname.includes("CategoryPost")) {
+    } else if (location.pathname.includes("CategoryPost")) {
       return "Quản lý danh mục post";
+    } else if (location.pathname.includes("post")) {
+      return "Quản lý bài viết";
     } else {
       return "Thống kê "; // Default breadcrumb
     }
@@ -92,11 +103,11 @@ const AdminLayout = () => {
 
   return (
     <>
-      <div className="flex w-full">
-        <aside className="sidebar p-[20px] w-[250px] h-vh bg-[#33418E]">
-          <div className="logo mb-[50px] w-full *:mx-auto text-center">
+      <div className="flex w-full min-h-screen">
+        <aside className="fixed top-0 left-0 p-[20px] w-[20%] h-full bg-[#33418E] overflow-y-auto">
+          <div className="logo mb-[50px] w-full text-center">
             <img
-              className="w-[90x] h-[90px] rounded-[50%]"
+              className="w-[110px] h-[90px] rounded-full mx-auto"
               src={logo_Cozy}
               alt="The Coffee House"
             />
@@ -130,7 +141,7 @@ const AdminLayout = () => {
           </ul>
         </aside>
 
-        <main className="main-content w-full flex-1 p-6 bg-gray-100">
+        <main className="fixed top-0 left-0 main-content ml-[20%] w-[80%]  p-6 bg-gray-100 overflow-y-auto">
           <div className="flex justify-end">
             <Button type="primary">
               <Link to="/">

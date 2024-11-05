@@ -4,8 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
+import axios from "axios";
 
 const Header: React.FC = () => {
+	const user = JSON.parse(localStorage.getItem("user") || '');
+	const [cart, setCart] = useState<any>([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
 		setIsModalOpen(!isModalOpen);
@@ -40,14 +43,33 @@ const Header: React.FC = () => {
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
 	};
-// Hàm để xóa searchTerm
+	// Hàm để xóa searchTerm
 	const clearSearch = () => {
 		setSearchTerm("");
 	};
 	// Định dạng price 
 	const formatPrice = (price: number) => {
 		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+	};
+	//cart
+	const fetchCart = async () => {
+		try {
+		  const { data } = await instance.get(`/cart/${user._id}`);
+		  console.log(data);
+		   // Gọi API từ backend
+		  setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
+		  // setLoading(false); // Tắt trạng thái loading
+		} catch (error) {
+		  console.error("Lỗi khi lấy sản phẩm:", error);
+		  // setLoading(false); // Tắt trạng thái loading trong trường hợp lỗi
+		}
 	  };
+	  useEffect(() => {
+		  fetchCart();
+	  }, []);
+
+	
+
 	return (
 		<>
 			<header className="absolute z-10">
@@ -109,14 +131,19 @@ const Header: React.FC = () => {
 									value={searchTerm}
 									onChange={e => handleSearch(e.target.value)}
 								/>
+								<span className="text-white absolute end-1 bottom-0.5  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-3xl text-sm px-2 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+									<svg className="w-4 h-4 text-[#000] dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+										<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+									</svg>
+								</span>
 							</div>
 
 							{searchTerm && (<div className="max-h-[191px] w-[250px] absolute bg-gray-100 overflow-y-auto px-2 rounded-lg">
-									{products?.length ? (
-										products.map((product: Product) => (
-											<Link to={`detail/${product._id}`} onClick={clearSearch}>
-                                                <div
-												key={product.id}
+								{products?.length ? (
+									products.map((product: Product) => (
+										<Link to={`detail/${product._id}`} onClick={clearSearch}>
+											<div
+												key={product._id}
 												className="flex items-center border-b-2 hover:bg-gray-200 h-[63px]"
 											>
 												<img
@@ -131,12 +158,12 @@ const Header: React.FC = () => {
 													<p className="text-gray-700 text-[10px]">{formatPrice(product.price)} VNĐ</p>
 												</div>
 											</div>
-                                            </Link>
-										))
-									) : (
-										<p>Không tìm thấy</p>
-									)}
-								</div>
+										</Link>
+									))
+								) : (
+									<p>Không tìm thấy</p>
+								)}
+							</div>
 							)}
 						</div>
 
@@ -190,7 +217,7 @@ const Header: React.FC = () => {
 											/>
 										</svg>
 										<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white">
-											0
+											{cart?.length}
 										</span>
 									</button>
 								</div>
@@ -205,23 +232,27 @@ const Header: React.FC = () => {
 				position="right"
 				className=""
 			>
-        <Drawer.Header title="Cart" />
+				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					<div className="flex *:mx-1 items-center border-b-2 pb-2">
+					
+					{cart?.map((item : any)=>{
+						console.log(cart);
+						
+						return <div className="flex *:mx-1 items-center border-b-2 pb-2">
 						<div className="w-1/5">
 							<img
-								src=""
+								src={item?.product?.image}
 								alt="Ảnh"
 								className="border rounded-lg p-1"
 							/>
 						</div>
 						<div className="w-3/5">
-							<h3 className="text-base font-semibold">Product</h3>
+							<h3 className="text-base font-semibold"></h3>
 							<span></span>
-							<p className="text-xs text-red-500 font-semibold">20.000 VNĐ</p>
+							<p className="text-xs text-red-500 font-semibold">{item?.product?.price * item?.quantity} VNĐ</p>
 						</div>
 						<div>
-							<span>1</span>
+							<span>{item?.quantity}</span>
 						</div>
 						<div className="1/5">
 							<button className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400">
@@ -242,6 +273,8 @@ const Header: React.FC = () => {
 							</button>
 						</div>
 					</div>
+					})}
+						
 					<div className="flex gap-2">
 						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
 							Checking

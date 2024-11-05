@@ -14,10 +14,11 @@ import {
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Search from "antd/es/input/Search";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { User } from "../../types/user";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -25,8 +26,8 @@ const { Option } = Select;
 const ClientAdmin = () => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const queryClient = useQueryClient();
-	const [filterStatus, setFilterStatus] = useState("active");
-	const [searchTerm, setSearchTerm] = useState("");
+	const [isDelete, setIsDelete] = useState(false);
+	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -35,39 +36,42 @@ const ClientAdmin = () => {
 	const [pageSize, setPageSize] = useState(10); // Số lượng mục trên mỗi trang
 
 	const navigate = useNavigate();
-	const location = useLocation();
 
-	const params = new URLSearchParams(location.search);
-	// Hàm cập nhật URL khi có thay đổi bộ lọc và phân trang
-	const updateUrlParams = () => {
-		const searchParams = new URLSearchParams();
-		if (searchTerm) searchParams.set("search", searchTerm);
-		searchParams.set("filterStatus", filterStatus);
-		searchParams.set("filterRole", filterRole); // Thêm điều kiện vai trò
-		searchParams.set("page", currentPage.toString());
-		searchParams.set("limit", pageSize.toString());
-		navigate({ search: searchParams.toString() });
-	};
+	const updateUrlParams = useCallback(() => {
+		const params = new URLSearchParams();
+		if (searchTerm) params.set("search", searchTerm);
+		params.set("filterRole", filterRole); // Thêm điều kiện vai trò
+		
+		if (isDelete) {
+			params.set("isDelete", "true");
+		} else {
+			params.delete("isDelete");
+		}
+		params.set("page", currentPage.toString());
+		params.set("limit", pageSize.toString());
+		navigate({ search: params.toString() }, { replace: true });
+	}, [filterRole, searchTerm, currentPage, pageSize, isDelete, navigate]);
+
 
 	useEffect(() => {
 		updateUrlParams();
-	}, [filterStatus, filterRole, searchTerm, currentPage, pageSize]);
+	}, [ filterRole, searchTerm, currentPage, pageSize]);
 
 	const { data, isLoading, isError, error } = useQuery({
 		queryKey: [
 			"user",
-			filterStatus,
+			isDelete,
 			filterRole,
 			searchTerm,
 			currentPage,
 			pageSize,
+			updateUrlParams,
 		], // Cập nhật key
 		queryFn: async () => {
 			try {
+				const trashParam = isDelete ? `&isDeleted=true` : "";
 				const response = await instance.get(
-					`/users?isDeleted=${filterStatus === "deleted"}&all=${
-						filterStatus === "all"
-					}&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}`, // Thêm điều kiện vai trò
+					`/users?&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}${trashParam}`, // Thêm điều kiện vai trò
 				);
 				return response.data;
 			} catch (error) {
@@ -160,10 +164,10 @@ const ClientAdmin = () => {
 	};
 
 	// Xử lý thay đổi trạng thái bộ lọc
-	const handleFilterChange = (value: string) => {
-		setFilterStatus(value);
-		setCurrentPage(1);
-	};
+	// const handleFilterChange = (value: string) => {
+	// 	setFilterStatus(value);
+	// 	setCurrentPage(1);
+	// };
 	const handleRoleFilterChange = (value: string) => {
 		setFilterRole(value);
 		setCurrentPage(1);
@@ -327,15 +331,13 @@ const ClientAdmin = () => {
 						allowClear
 						style={{ width: 300 }}
 					/>
-					<Select
-						value={filterStatus}
-						style={{ width: 200 }}
-						onChange={handleFilterChange}
+					<Button
+						type="primary"
+						icon={<DeleteOutlined />}
+						onClick={() => setIsDelete(!isDelete)}
 					>
-						<Option value="all">Tất cả user</Option>
-						<Option value="active">User hoạt động</Option>
-						<Option value="deleted">User đã bị khóa</Option>
-					</Select>
+						{isDelete ? "" : ""}
+					</Button>
 					<Select
 						value={filterRole}
 						style={{ width: 200 }}
@@ -359,6 +361,9 @@ const ClientAdmin = () => {
 					pageSizeOptions: ["10", "20", "50", "100"],
 				}}
 				onChange={handleTableChange}
+				
+				scroll={{ y: 300 }} // Chỉ cần chiều cao
+				style={{ tableLayout: "fixed"}} // Giữ chiều rộng ổn định
 			/>
 
 			<Modal

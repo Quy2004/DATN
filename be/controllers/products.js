@@ -1,4 +1,6 @@
+import slugify from "slugify";
 import Product from "../models/ProductModel.js";
+import Category from "../models/CategoryModel.js";
 
 class ProductController {
   async getAllProducts(req, res) {
@@ -12,6 +14,7 @@ class ProductController {
         size,
         topping,
         isDeleted,
+        active,
       } = req.query;
 
       // Tạo query để tìm kiếm, lọc theo các tiêu chí
@@ -42,10 +45,13 @@ class ProductController {
       if (topping) {
         query["product_toppings.topping_id"] = topping;
       }
-
+      if (active !== undefined) {
+        query.active = active === "true";
+      }
       const options = {
         page: parseInt(page),
         limit: parseInt(limit),
+        sort: { createdAt: -1 },
         populate: [
           { path: "category_id", select: "title" },
           { path: "product_sizes.size_id", select: "name" },
@@ -76,6 +82,62 @@ class ProductController {
     }
   }
 
+  async getTeaProducts(req, res) {
+    try {
+      // Tìm danh mục có tên là "Trà"
+      const category = await Category.findOne({ title: "Trà" });
+      if (!category) {
+        return res.status(404).json({ message: "Danh mục 'Trà' không tồn tại" });
+      }
+  
+      // Tìm các sản phẩm thuộc danh mục "Trà"
+      const products = await Product.find({ 
+        category_id: category._id, 
+        isDeleted: false,
+        status: "available"
+      }).populate([
+        { path: "category_id", select: "title" },
+        { path: "product_sizes.size_id", select: "name" },
+        { path: "product_toppings.topping_id", select: "nameTopping" },
+      ]);
+  
+      res.status(200).json({
+        message: "Lấy sản phẩm thuộc danh mục 'Trà' thành công",
+        data: products,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async getCoffeProducts(req, res) {
+    try {
+      // Tìm danh mục có tên là "Coffe"
+      const category = await Category.findOne({ title: "Coffe" });
+      if (!category) {
+        return res.status(404).json({ message: "Danh mục 'Coffe' không tồn tại" });
+      }
+  
+      // Tìm các sản phẩm thuộc danh mục "Coffe"
+      const products = await Product.find({ 
+        category_id: category._id, 
+        isDeleted: false,
+        status: "available"
+      }).populate([
+        { path: "category_id", select: "title" },
+        { path: "product_sizes.size_id", select: "name" },
+        { path: "product_toppings.topping_id", select: "nameTopping" },
+      ]);
+  
+      res.status(200).json({
+        message: "Lấy sản phẩm thuộc danh mục 'Coffe' thành công",
+        data: products,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   async getProductDetail(req, res) {
     try {
       const product = await Product.findById(req.params.id)
@@ -98,14 +160,15 @@ class ProductController {
   // Thêm sản phẩm mới
   async createProduct(req, res) {
     try {
-      const { price, discount = 0 } = req.body;
+      const { price, discount = 0, active = true } = req.body;
 
       // Tính toán giá sale_price
       const sale_price = price - (price * discount) / 100;
 
       const product = await Product.create({
         ...req.body,
-        sale_price: sale_price.toFixed(2), // Làm tròn đến 2 chữ số thập phân
+        sale_price: sale_price.toFixed(2),
+        active,
       });
 
       res.status(201).json({
@@ -120,16 +183,21 @@ class ProductController {
   // Cập nhật sản phẩm
   async updateProduct(req, res) {
     try {
-      const { price, discount = 0 } = req.body;
+      const { name, price, discount = 0, active } = req.body;
 
       // Tính toán giá sale_price
       const sale_price = price - (price * discount) / 100;
+      const slug = name
+        ? slugify(name, { lower: true, strict: true })
+        : undefined;
 
       const product = await Product.findByIdAndUpdate(
         req.params.id,
         {
           ...req.body,
           sale_price: sale_price.toFixed(2), // Làm tròn đến 2 chữ số thập phân
+          active,
+          slug,
         },
         { new: true }
       );
@@ -226,6 +294,36 @@ class ProductController {
 
       res.status(200).json({
         message: "Cập nhật trạng thái sản phẩm thành công",
+        data: product,
+      });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+  async updateActiveProduct(req, res) {
+    try {
+      const { active } = req.body;
+
+      // Kiểm tra xem trạng thái có hợp lệ không
+      if (typeof active !== "boolean") {
+        return res
+          .status(400)
+          .json({ message: "Trạng thái active không hợp lệ" });
+      }
+
+      // Tìm sản phẩm và cập nhật trạng thái active
+      const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        { active },
+        { new: true }
+      );
+
+      if (!product || product.isDeleted) {
+        return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+      }
+
+      res.status(200).json({
+        message: "Cập nhật trạng thái active sản phẩm thành công",
         data: product,
       });
     } catch (error) {

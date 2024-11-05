@@ -9,6 +9,7 @@ class ToppingController {
         limit,
         search,
         statusTopping,
+        category,
         isDeleted,
         sortBy,
         order,
@@ -20,7 +21,9 @@ class ToppingController {
       if (search) {
         query.nameTopping = { $regex: search, $options: "i" }; // Không phân biệt hoa thường
       }
-
+      if (category) {
+        query.category_id = category; // Chỉ lấy size thuộc về danh mục được chỉ định
+      }
       // Lọc theo trạng thái (available/unavailable)
       if (statusTopping) {
         query.statusTopping = statusTopping;
@@ -41,7 +44,8 @@ class ToppingController {
 
       // Phân trang
       const toppings = await Topping.find(query)
-        .sort(sort)
+        .populate("category_id", "title")
+        .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(parseInt(limit));
 
@@ -77,6 +81,8 @@ class ToppingController {
   // Tạo mới một topping
   async createTopping(req, res) {
     try {
+      const { nameTopping, priceTopping, statusTopping, category_id } =
+        req.body;
       // Kiểm tra xem topping đã tồn tại hay chưa
       const existingTopping = await Topping.findOne({
         nameTopping: req.body.nameTopping,
@@ -87,20 +93,17 @@ class ToppingController {
         return res.status(400).json({ message: "Tên topping đã tồn tại!" });
       }
 
-      // Kiểm tra nếu priceTopping là số hợp lệ và lớn hơn 0
-      const { priceTopping, statusTopping } = req.body;
-
       if (!priceTopping || isNaN(priceTopping) || priceTopping <= 0) {
         return res.status(400).json({ message: "Giá topping không hợp lệ!" });
       }
 
       // Tạo mới topping
       const topping = await Topping.create({
-        nameTopping: req.body.nameTopping,
+        nameTopping,
         priceTopping,
         statusTopping,
+        category_id,
       });
-
       res
         .status(201)
         .json({ message: "Tạo topping thành công!!!", data: topping });

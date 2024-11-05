@@ -31,7 +31,9 @@ const ProductEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [mainImageFileList, setMainImageFileList] = useState<UploadFile[]>([]);
   const [thumbnailFileList, setThumbnailFileList] = useState<UploadFile[]>([]);
-
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -41,19 +43,27 @@ const ProductEditPage: React.FC = () => {
   });
 
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
-    queryKey: ["sizes"],
+    queryKey: ["sizes", selectedCategoryId], // Thêm selectedCategoryId làm phần của key
     queryFn: async () => {
-      const response = await instance.get(`/sizes`);
+      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      const response = await instance.get(
+        `/sizes?category=${selectedCategoryId}`
+      );
       return response.data;
     },
+    enabled: !!selectedCategoryId, // Chỉ enable query khi có selectedCategoryId
   });
 
   const { data: toppings, isLoading: isLoadingToppings } = useQuery({
-    queryKey: ["toppings"],
+    queryKey: ["toppings", selectedCategoryId], // Thêm selectedCategoryId vào queryKey
     queryFn: async () => {
-      const response = await instance.get(`/toppings`);
+      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      const response = await instance.get(
+        `/toppings?category=${selectedCategoryId}`
+      ); // Gọi API với selectedCategoryId
       return response.data;
     },
+    enabled: !!selectedCategoryId, // Chỉ gọi query khi có selectedCategoryId
   });
 
   // Fetch dữ liệu sản phẩm hiện tại
@@ -88,6 +98,8 @@ const ProductEditPage: React.FC = () => {
   };
   useEffect(() => {
     if (products) {
+      const categoryId = products.category_id[0]?._id;
+      setSelectedCategoryId(categoryId);
       form.setFieldsValue({
         name: products.name,
         price: products.price,
@@ -107,22 +119,23 @@ const ProductEditPage: React.FC = () => {
           })
         ),
       });
-
+      setImage(products.image);
+      setThumbnails(products.thumbnail);
       setMainImageFileList([
         {
           uid: "-1",
-          url: products.image,
-          name: "Ảnh chính",
+          name: "main_image.jpg",
           status: "done",
+          url: products.image,
         },
       ]);
 
       setThumbnailFileList(
         products.thumbnail.map((thumb: string, index: number) => ({
-          uid: `${index}`,
-          url: thumb,
-          name: `Ảnh phụ ${index + 1}`,
+          uid: index.toString(),
+          name: `thumbnail_${index + 1}.jpg`,
           status: "done",
+          url: thumb,
         }))
       );
     }
@@ -166,8 +179,45 @@ const ProductEditPage: React.FC = () => {
       ),
   });
 
+  const handleMainImageChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setMainImageFileList(fileList);
+  };
+
+  const handleThumbnailChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setThumbnailFileList(fileList);
+  };
+  // Thêm vào phần onRemove cho ảnh chính
+  const handleRemoveMainImage = () => {
+    setImage("");
+    setMainImageFileList([]);
+    message.info("Ảnh đã được xóa. Vui lòng upload ảnh mới.");
+  };
+
+  // Thêm vào phần onRemove cho ảnh phụ
+  const handleRemoveThumbnail = (file: UploadFile) => {
+    const updatedThumbnails = thumbnails.filter((thumb) => thumb !== file.url);
+    setThumbnails(updatedThumbnails);
+    setThumbnailFileList((prev) =>
+      prev.filter((item) => item.uid !== file.uid)
+    );
+  };
+  // Handle category change
+  const handleCategoryChange = (value: number | null) => {
+    setSelectedCategoryId(value);
+
+    // Reset size and topping fields when category changes
+    form.setFieldsValue({
+      product_sizes: [{ size_id: undefined }],
+      product_toppings: [{ topping_id: undefined }],
+    });
+  };
+
   // Submit form với mutation
   const onFinish = (values: ProductFormValues) => {
+    if (!image && mainImageFileList.length === 0) {
+      message.error("Vui lòng chọn ảnh chính trước khi cập nhật!");
+      return;
+    }
     mutation.mutate(values);
   };
 
@@ -200,7 +250,7 @@ const ProductEditPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
         <Form
           form={form}
           name="basic"
@@ -230,7 +280,7 @@ const ProductEditPage: React.FC = () => {
             name="category_id"
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
-            <Select placeholder="Chọn danh mục">
+            <Select placeholder="Chọn danh mục" onChange={handleCategoryChange}>
               {categories?.data?.map((category: Category) => (
                 <Option key={category._id} value={category._id}>
                   {category.title}
@@ -284,11 +334,12 @@ const ProductEditPage: React.FC = () => {
                   uploadImage(file, true);
                   return false;
                 }}
-                onChange={({ fileList }) => setMainImageFileList(fileList)}
+                onChange={handleMainImageChange}
+                onRemove={handleRemoveMainImage}
                 maxCount={1}
                 className="upload-main-image"
               >
-                {mainImageFileList.length === 0 && (
+                {mainImageFileList.length < 1 && (
                   <Button icon={<FileImageOutlined />}></Button>
                 )}
               </Upload>
@@ -306,7 +357,8 @@ const ProductEditPage: React.FC = () => {
                   uploadImage(file, false);
                   return false;
                 }}
-                onChange={({ fileList }) => setThumbnailFileList(fileList)}
+                onChange={handleThumbnailChange}
+                onRemove={handleRemoveThumbnail}
                 className="upload-thumbnail-images"
               >
                 {thumbnailFileList.length < 4 && (
@@ -361,11 +413,17 @@ const ProductEditPage: React.FC = () => {
                           disabled={isLoadingSizes}
                           className="w-full"
                         >
-                          {sizes?.data.map((size: Size) => (
-                            <Option key={size._id} value={size._id}>
-                              {size.name}
-                            </Option>
-                          ))}
+                          {sizes?.data
+                            .filter(
+                              (size: Size) =>
+                                size.status === "available" &&
+                                size.isDeleted === false
+                            )
+                            .map((size: Size) => (
+                              <Option key={size._id} value={size._id}>
+                                {size.name}
+                              </Option>
+                            ))}
                         </Select>
                       </Form.Item>
 
@@ -436,11 +494,17 @@ const ProductEditPage: React.FC = () => {
                           disabled={isLoadingToppings}
                           className="w-full"
                         >
-                          {toppings?.data.map((topping: Topping) => (
-                            <Option key={topping._id} value={topping._id}>
-                              {topping.nameTopping}
-                            </Option>
-                          ))}
+                          {toppings?.data
+                            .filter(
+                              (topping: Topping) =>
+                                topping.statusTopping === "available" &&
+                                topping.isDeleted === false
+                            )
+                            .map((topping: Topping) => (
+                              <Option key={topping._id} value={topping._id}>
+                                {topping.nameTopping}
+                              </Option>
+                            ))}
                         </Select>
                       </Form.Item>
 
@@ -513,16 +577,6 @@ const ProductEditPage: React.FC = () => {
           </Form.Item>
 
           {/* Trạng thái */}
-          <Form.Item
-            label="Trạng thái"
-            name="status"
-            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
-          >
-            <Select placeholder="Chọn trạng thái">
-              <Option value="available">Có sẵn</Option>
-              <Option value="unavailable">Hết hàng</Option>
-            </Select>
-          </Form.Item>
 
           <Form.Item>
             <div className="flex justify-center mx-80">
