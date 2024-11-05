@@ -1,24 +1,30 @@
 import mongoose from "mongoose";
 
-const orderDetailSchema = new mongoose.Schema({
-  order_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
-    required: true,
+const orderDetailSchema = new mongoose.Schema(
+  {
+    order_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    product_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    },
+    price: { type: Number, required: true },
+    image: {
+      // Thêm trường image
+      type: String, // Có thể sử dụng kiểu String cho URL hình ảnh
+    },
   },
-  product_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-  price: { type: Number, required: true },
-  image: { // Thêm trường image
-    type: String, // Có thể sử dụng kiểu String cho URL hình ảnh
-  },
-}, { timestamps: true });
+  { timestamps: true,
+    
+    versionKey: false }
+);
 
 export default mongoose.model("OrderDetail", orderDetailSchema);
