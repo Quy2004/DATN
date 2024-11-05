@@ -266,8 +266,8 @@ const ProductManagerPage: React.FC = () => {
         <Image
           src={image}
           alt="Product"
-          width={100}
-          height={100}
+          width={50}
+          height={50}
           className="object-cover"
         />
       ),
@@ -493,7 +493,11 @@ const ProductManagerPage: React.FC = () => {
 
       {/* Modal hiển thị chi tiết sản phẩm */}
       <Modal
-       title={<Title level={3}>Chi tiết sản phẩm</Title>}
+        title={
+          <Title level={3}>
+            Chi tiết sản phẩm: {selectedProduct ? selectedProduct.name : ""}
+          </Title>
+        }
         open={isModalVisible}
         onCancel={handleCloseModal}
         footer={null}
@@ -547,16 +551,20 @@ const ProductManagerPage: React.FC = () => {
               <Descriptions.Item label="Ảnh phụ" span={2}>
                 <div className="overflow-hidden flex flex-wrap gap-2">
                   <Image.PreviewGroup>
-                    {selectedProduct.thumbnail.map((thumbnail, index) => (
-                      <Image
-                        key={index}
-                        src={thumbnail}
-                        alt={`Ảnh phụ ${index + 1}`}
-                        width={80}
-                        height={80}
-                        className="object-cover"
-                      />
-                    ))}
+                    {selectedProduct.thumbnail.length > 0 ? (
+                      selectedProduct.thumbnail.map((thumbnail, index) => (
+                        <Image
+                          key={index}
+                          src={thumbnail}
+                          alt={`Ảnh phụ ${index + 1}`}
+                          width={80}
+                          height={80}
+                          className="object-cover"
+                        />
+                      ))
+                    ) : (
+                      <p className="text-gray-500">Không có ảnh phụ</p>
+                    )}
                   </Image.PreviewGroup>
                 </div>
               </Descriptions.Item>
@@ -584,7 +592,7 @@ const ProductManagerPage: React.FC = () => {
                   {selectedProduct.product_sizes
                     .map(
                       (size: ProductSize) =>
-                        `${size.size_id.name} - ${
+                        `${size.size_id?.name} - ${
                           size.status === "available" ? "Có sẵn" : "Hết hàng"
                         }`
                     )
