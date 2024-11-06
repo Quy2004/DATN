@@ -51,6 +51,7 @@ import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
 import CheckOut from "../pages/CheckOutPage/CheckOut";
 import VoucherPage from "../admin/Voucher/Voucher";
 import PostManagerPage from "../admin/Post/page";
+import CartPage from "../pages/CartPage/Cartpage";
 
 const Router = () => {
   return (
@@ -65,6 +66,7 @@ const Router = () => {
           </Route>
           <Route path="detail/:id" element={<DetailPage />} />
           <Route path="checkout" element={<CheckOut />} />
+          <Route path="cart" element={<CartPage />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
             <Route path="coffeeholic" element={<CoffeHolicTab />} />
