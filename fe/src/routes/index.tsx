@@ -52,6 +52,8 @@ import CheckOut from "../pages/CheckOutPage/CheckOut";
 import VoucherPage from "../admin/Voucher/Voucher";
 import PostManagerPage from "../admin/Post/page";
 import CartPage from "../pages/CartPage/Cartpage";
+import PostAddPage from "../admin/Post/add/page";
+import PostUpdatePage from "../admin/Post/edit/page";
 
 const Router = () => {
   return (
@@ -114,6 +116,8 @@ const Router = () => {
           />
 
           <Route path="post" element={<PostManagerPage />} />
+          <Route path="post/add" element={<PostAddPage />} />
+          <Route path="post/:id/update" element={<PostUpdatePage />} />
         </Route>
       </Routes>
     </div>

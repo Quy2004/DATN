@@ -33,7 +33,7 @@ const ToppingManagerPage = () => {
   const [searchText, setSearchText] = useState("");
   const [filteredStatus] = useState<string | null>(null);
   const [showDeleted, setShowDeleted] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory] = useState<string | null>(null);
 
   const {
     data: toppings,
@@ -190,7 +190,7 @@ const ToppingManagerPage = () => {
       dataIndex: "categoryTitle",
       key: "categoryTitle",
       filters:
-        categories?.data.map((category: Category) => ({
+        categories?.data?.map((category: Category) => ({
           text: category.title,
           value: category.title,
         })) || [],

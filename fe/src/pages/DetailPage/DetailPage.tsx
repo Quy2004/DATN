@@ -45,6 +45,7 @@ const DetailPage = () => {
     }, []);
 
     const handleSizeChange = (size: ProductSize) => {
+        console.log(size);
         setSelectedSize(size); // Cập nhật kích thước đã chọn
     };
 

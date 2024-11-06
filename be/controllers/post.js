@@ -81,42 +81,46 @@ class PostController {
   async updatePost(req, res) {
     try {
       const { id } = req.params;
-      const { title } = req.body;
+      const { title, categoryPost, excerpt, imagePost, galleryPost, content } =
+        req.body;
 
-      // Kiểm tra xem bài viết có tồn tại hay không
+      // Kiểm tra xem bài viết có tồn tại không
       const post = await Post.findOne({ _id: id, isDeleted: false });
       if (!post) {
         return res.status(404).json({ error: "Bài viết không tồn tại." });
       }
 
-      // Kiểm tra xem title có trùng với bất kỳ bài viết nào khác
-      if (title) {
+      // Kiểm tra tiêu đề trùng lặp nếu title được thay đổi
+      if (title && title !== post.title) {
         const existingPost = await Post.findOne({
           title: title,
           _id: { $ne: id },
           isDeleted: false,
         });
-
         if (existingPost) {
           return res
             .status(400)
             .json({ error: "Tiêu đề bài viết đã tồn tại." });
         }
 
-        // Cập nhật tiêu đề và slug
+        // Cập nhật tiêu đề và tạo slug mới
         post.title = title;
         post.slug = slugify(title, { lower: true, strict: true });
       }
 
-      // Cập nhật bài viết với req.body và các trường đã thay đổi
-      const updatedPost = await Post.findByIdAndUpdate(id, post, {
-        new: true,
-        runValidators: true,
-      });
+      // Cập nhật các trường khác nếu có thay đổi
+      if (categoryPost) post.categoryPost = categoryPost;
+      if (excerpt) post.excerpt = excerpt;
+      if (imagePost) post.imagePost = imagePost;
+      if (galleryPost) post.galleryPost = galleryPost;
+      if (content) post.content = content;
+
+      // Lưu các thay đổi vào database
+      await post.save();
 
       res.status(200).json({
         message: "Cập nhật bài viết thành công!",
-        data: updatedPost,
+        data: post,
       });
     } catch (error) {
       res.status(500).json({ error: "Lỗi khi cập nhật bài viết" });
