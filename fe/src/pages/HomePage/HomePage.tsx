@@ -61,17 +61,24 @@ const HomePage: React.FC = () => {
   const formatPrice = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
+  const inFormatPrice = (basePrice: number, sizePrice: number, quantity: number) => {
+    const totalPrice = (basePrice + sizePrice) * quantity;
+    return totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<ProductTopping[]>([]);
   const toggleModal = (product: Product) => {
+    console.log(product);
     setSelectedProduct(product);
     setIsModalOpen(!isModalOpen);
   };
   const handleSizeChange = (size: ProductSize) => {
-    setSelectedSize(size); // Cập nhật size đã chọn
+    console.log("Selected Size:", size); // In ra kích thước đã chọn
+    console.log(size);
+    setSelectedSize(size); // Cập nhật kích thước đã chọn
   };
 
   const handleToppingChange = (topping: ProductTopping) => {
@@ -105,27 +112,28 @@ const HomePage: React.FC = () => {
     }
   };
   //add To Cart
-const addToCart = async (productId: string) => {
-  if (!productId) {
-    return toast.success(
-      "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
-    );
-  }
-  try {
-    const { data } = await instance.post("/cart", {
-      userId: user._id,
-      productId: productId,
-      quantity: 1,
-    });
-    console.log("Data returned from API:", data);
-    toast.success(data.messsage || "Thêm thành công");
-  } catch (error) {
-    console.error("Failed to add to cart:", error);
-    toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
-  }
-};
-
+  const addToCart = async (productId: string) => {
+    if (!productId) {
+      return toast.success(
+        "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
+      );
+    }
+    try {
+      const { data } = await instance.post("/cart", {
+        userId: user._id,
+        productId: productId,
+        quantity: 1,
+      });
+      console.log("Data returned from API:", data);
+      toast.success(data.messsage || "Thêm thành công");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    }
+  };
+console.log(products);
   return (
+    
     <>
       <div >
         <img src={images[currentIndex]} alt="" className="w-max" />
@@ -324,7 +332,7 @@ const addToCart = async (productId: string) => {
                         </div>
                       </form>
                       <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
-                        +30.000 đ
+                        {inFormatPrice(selectedProduct.price, selectedSize?.size_id.priceSize || 0, quantity)} VNĐ
                       </button>
                     </div>
                   </div>
@@ -333,19 +341,23 @@ const addToCart = async (productId: string) => {
                 <div className="my-3">
                   <h2 className="font-medium px-6">Chọn size</h2>
                   <form className="flex justify-between bg-white shadow-xl my-1 rounded-md">
-                    {selectedProduct.product_sizes.map((size) => (
-                      <div key={size.size_id._id} className="flex items-center gap-2 px-6 py-2">
-                        <input
-                          type="radio"
-                          name="size"
-                          checked={selectedSize === size}
-                          onChange={() => handleSizeChange(size)}
-                          disabled={size.status === "unavailable"}
-                          className="text-[#ea8025] border-[#ea8025] border-2"
-                        />
-                        <label htmlFor="">{size.size_id.name} {size.priceSize && `(+${size.priceSize} đ)`}</label>
-                      </div>
-                    ))}
+                    {selectedProduct.product_sizes.map((size) => {
+                      console.log(size);
+                      return (
+                        <div className="flex items-center gap-2 px-6 py-2">
+                          <input key={size.size_id._id}
+                            type="radio"
+                            name="size"
+                            checked={selectedSize === size}
+                            onChange={() => handleSizeChange(size)}
+                            disabled={size.status === "unavailable"}
+                            className="text-[#ea8025] border-[#ea8025] border-2"
+                          />
+                          <label htmlFor="">{size.size_id.name}</label>
+                        </div>
+                      )
+                    }
+                    )}
                   </form>
                 </div>
                 {/* Topping Selection */}
@@ -369,11 +381,11 @@ const addToCart = async (productId: string) => {
                   </form>
                 </div>
                 <div className="flex mt-4">
-                  <button 
-                  onClick={() => {
-                    console.log("Button clicked", selectedProduct?._id);
-                    addToCart(selectedProduct?._id);
-                }}
+                  <button
+                    onClick={() => {
+                      console.log("Button clicked", selectedProduct?._id);
+                      addToCart(selectedProduct?._id);
+                    }}
                     className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
                   >
                     <span className="relative z-10 transition duration-300 group-hover:text-white"><p className="text-base">Thêm giỏ hàng</p></span>
