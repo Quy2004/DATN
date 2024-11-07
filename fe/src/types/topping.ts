@@ -7,4 +7,5 @@ export interface Topping {
     statusTopping: string;
     isDeleted: boolean;
     category_id: Category;
+    categoryTitle: string
 }

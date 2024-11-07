@@ -109,7 +109,7 @@ const ProductEditPage: React.FC = () => {
         description: products.description,
         status: products.status,
         product_sizes: products?.product_sizes.map((size: ProductSize) => ({
-          size_id: size.size_id._id,
+          size_id: size.size_id?._id,
           status: size.status,
         })),
         product_toppings: products?.product_toppings.map(
@@ -238,7 +238,9 @@ const ProductEditPage: React.FC = () => {
     <div>
       {contextHolder}
       <div className="flex items-center justify-between mb-5">
-        <Title level={3}>Cập nhật sản phẩm</Title>
+        <Title level={3}>
+          Cập nhật sản phẩm: {products ? products.name : ""}
+        </Title>
 
         <Link to="/admin/product/" style={{ color: "white" }}>
           <Button
@@ -412,6 +414,22 @@ const ProductEditPage: React.FC = () => {
                           loading={isLoadingSizes}
                           disabled={isLoadingSizes}
                           className="w-full"
+                          onChange={(value) => {
+                            // Xử lý khi kích thước bị xóa
+                            const selectedSize = sizes?.data.find(
+                              (size: Size) => size._id === value
+                            );
+                            if (selectedSize?.isDeleted) {
+                              form.setFieldsValue({
+                                product_sizes: fields.map((item) =>
+                                  item.name === field.name
+                                    ? { size_id: null }
+                                    : item
+                                ),
+                              });
+                              return;
+                            }
+                          }}
                         >
                           {sizes?.data
                             .filter(
@@ -463,19 +481,20 @@ const ProductEditPage: React.FC = () => {
                         name={[field.name, "topping_id"]}
                         label="Topping"
                         rules={[
-                          { required: true, message: "Chọn topping" },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              if (!value) {
-                                return Promise.reject(
-                                  new Error("Vui lòng chọn một topping")
-                                );
-                              }
-                              const toppingValues = getFieldValue(
-                                "product_toppings"
-                              ).map((item: ProductTopping) => item.topping_id);
+                          {
+                            validator: (_, value) => {
+                              const toppingValues = fields
+                                .map((item) =>
+                                  form.getFieldValue([
+                                    "product_toppings",
+                                    item.name,
+                                    "topping_id",
+                                  ])
+                                )
+                                .filter((v) => v);
+
                               if (
-                                toppingValues.filter((v: string) => v === value)
+                                toppingValues.filter((v) => v === value)
                                   .length > 1
                               ) {
                                 return Promise.reject(
@@ -484,7 +503,7 @@ const ProductEditPage: React.FC = () => {
                               }
                               return Promise.resolve();
                             },
-                          }),
+                          },
                         ]}
                         className="flex-1 mb-0"
                       >
@@ -493,6 +512,22 @@ const ProductEditPage: React.FC = () => {
                           loading={isLoadingToppings}
                           disabled={isLoadingToppings}
                           className="w-full"
+                          onChange={(value) => {
+                            // Xử lý khi topping bị xóa
+                            const selectedTopping = toppings?.data.find(
+                              (topping: Topping) => topping._id === value
+                            );
+                            if (selectedTopping?.isDeleted) {
+                              form.setFieldsValue({
+                                product_toppings: fields.map((item) =>
+                                  item.name === field.name
+                                    ? { topping_id: null }
+                                    : item
+                                ),
+                              });
+                              return;
+                            }
+                          }}
                         >
                           {toppings?.data
                             .filter(
@@ -551,7 +586,6 @@ const ProductEditPage: React.FC = () => {
             name="discount"
             initialValue={0}
             rules={[
-              { required: true, message: "Vui lòng nhập giảm giá" },
               {
                 validator(_, value) {
                   const numericValue = Number(value);
