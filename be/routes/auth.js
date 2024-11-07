@@ -15,7 +15,6 @@ authRouter.post('/forgot-password', forgotPassword);
 // Đặt lại mật khẩu
 authRouter.post('/reset-password', resetPassword);
 
-//update user
-router.put('/user/update/:userId', updateUser);
+
 
 export default authRouter;
