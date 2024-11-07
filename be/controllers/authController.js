@@ -120,4 +120,31 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+// cập nhật user
+export const updateUser = async (req, res) => {
+  const { userId } = req.params;  // Lấy ID người dùng từ tham số route
+  const { userName, email, avatars } = req.body; // Dữ liệu cần cập nhật
+
+  try {
+    // Tìm và cập nhật thông tin người dùng
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { userName, email, avatars },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: "Cập nhật thông tin thành công",
+      user: { ...updatedUser.toObject(), password: undefined },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
+  }
+};
+
 
