@@ -1,6 +1,5 @@
 
 import { Link } from 'react-router-dom';
-import '../ChuyenNha.css'
 const BlogTab: React.FC = () => {
     return (
         <>
