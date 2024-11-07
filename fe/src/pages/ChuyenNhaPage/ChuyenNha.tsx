@@ -1,5 +1,4 @@
 import { Link, Outlet } from "react-router-dom"
-import "./ChuyenNha.css"
 import { useState } from "react";
 
 const ChuyenNhaPage: React.FC = () => {
