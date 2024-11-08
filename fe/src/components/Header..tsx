@@ -56,7 +56,7 @@ const Header: React.FC = () => {
 		try {
 		  const { data } = await instance.get(`/cart/${user._id}`);
 		  console.log('CART ->', data);
-		   // Gọi API từ backend
+		   // Gọi API từ backend 
 		  setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
 		  // setLoading(false); // Tắt trạng thái loading
 		} catch (error) {
