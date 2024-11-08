@@ -5,8 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Category } from "../../types/category";
 
 const CoffeePage: React.FC = () => {
-    const coffeeCategoryId = "671a469f72e2def28dc8b8be"; // ID danh mục cà phê
-
     // Tìm danh mục
     const { data: categoriesData } = useQuery<Category[]>({
         queryKey: ["categories"],
@@ -18,9 +16,9 @@ const CoffeePage: React.FC = () => {
 
     // Tìm sản phẩm có ID danh mục cụ thể cho cà phê
     const { data: productsData } = useQuery<Product[]>({
-        queryKey: ["products", coffeeCategoryId],
+        queryKey: ["products"],
         queryFn: async () => {
-            const response = await instance.get(`/products?category=${coffeeCategoryId}`);
+            const response = await instance.get(`/products/coffee`);
             return response.data.data;
         },
     });

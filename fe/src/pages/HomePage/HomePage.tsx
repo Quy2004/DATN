@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import Homes from "../../components/Homes";
-import "./HomePage.css"
 import React, { useState, useEffect } from 'react';
 import instance from "../../services/api";
 import { Product, ProductSize, ProductTopping } from "../../types/product";
@@ -188,7 +187,7 @@ console.log(products);
           {products.length > 3 ? (
             <Slider {...settings}>
               {products.map((product: Product, index) => (
-                <div className="flex md:mx-0">
+                <div className="flex md:mx-0 mt-10">
                   <div key={`${product._id}-${index}`} className="item mx-2" >
                     <div className="my-4">
                       <Link to={`detail/${product._id}`} className="overflow-hidden rounded-lg shadow-lg">
