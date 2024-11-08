@@ -66,18 +66,38 @@ export const addtoCart = async (req, res) => {
 };
 
 
+
 export const getCart = async (req, res) => {
+
+ export const getCart = async (req, res) => {
+
   try {
-    const { userId } = req.params; // Lấy userId từ params
+    const { userId } = req.params;
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required." });
     }
 
-    // Tìm giỏ hàng theo userId
+    // Tìm giỏ hàng theo userId và populate chi tiết sản phẩm, size và topping
     let cart = await Cart.findOne({ userId }).populate({
       path: "products.product",
+
       model: "Product"
+
+      model: "Product",
+      populate: [
+        {
+          path: "product_sizes.size_id", // Populate size_id để lấy tên size
+          model: "Size",
+          select: "name" // Lấy trường name của size
+        },
+        {
+          path: "product_toppings.topping_id", // Populate topping_id để lấy topping
+          model: "Topping",
+          select: "nameTopping" // Lấy trường name của topping
+        }
+      ]
+
     });
 
     // Nếu giỏ hàng không tồn tại, tạo giỏ hàng mới và trả về giỏ hàng trống
