@@ -1,6 +1,5 @@
 
 import { Link } from 'react-router-dom';
-import '../ChuyenNha.css'
 const TeaHolicTab: React.FC = () => {
     return (
         <>

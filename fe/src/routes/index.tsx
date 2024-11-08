@@ -54,6 +54,7 @@ import PostManagerPage from "../admin/Post/page";
 import CartPage from "../pages/CartPage/Cartpage";
 import PostAddPage from "../admin/Post/add/page";
 import PostUpdatePage from "../admin/Post/edit/page";
+import ResetPassword from "../account/forgotPassword/resetPassword";
 
 const Router = () => {
   return (
@@ -78,6 +79,7 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
