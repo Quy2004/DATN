@@ -15,6 +15,7 @@ const CartItem: React.FC<{
               const { data } = await instance.get(`/products/${item?._id}`);
               
               setProduct(data.data); // Lưu sản phẩm vào state
+              console.log("object", data.data)
             } catch (error) {
               console.error("Lỗi khi lấy sản phẩm:", error);
               toast.error("Không thể tải sản phẩm.");
@@ -40,6 +41,8 @@ const CartItem: React.FC<{
 
     console.log(priceSize,toppingSize,item?.sale_price,quantity)
 
+    //Delete Cart
+    
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
       <div className="w-1/5">
@@ -64,6 +67,7 @@ const CartItem: React.FC<{
             strokeWidth="1.5"
             stroke="currentColor"
             className="size-6"
+            
           >
             <path
               strokeLinecap="round"
