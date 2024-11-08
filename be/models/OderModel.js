@@ -17,10 +17,23 @@ const orderSchema = new mongoose.Schema(
       ref: "users",
       required: true,
     },
-    address_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-      required: true,
+    customerInfo: {
+      name: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
     },
     totalPrice: {
       type: mongoose.Schema.Types.Decimal128,
@@ -43,10 +56,14 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "OrderDetail", 
   }],
-    payment_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Payment",
-      required: false,
+    // payment_id: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Payment",
+    //   required: false,
+    // },
+    paymentMethod: {
+      type: String,
+      enum: ["bank transfer", "cash on delivery"],
     },
     orderNumber: {
       type: String,

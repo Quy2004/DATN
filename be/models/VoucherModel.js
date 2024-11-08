@@ -92,19 +92,16 @@ async function checkExpiredVouchers() {
             { maxOrderDate: { $lte: new Date() }, isDeleted: false },
             { status: "unactive" }
         );
-        console.log(`Đã cập nhật ${expiredResult.modifiedCount} voucher thành isDeleted: true`);
 
         const activeResult = await Voucher.updateMany(
             { minOrderDate: { $lte: new Date() }, maxOrderDate: { $gt: new Date() }, isDeleted: false },
             { status: "active" }
         );
-        console.log(`Đã cập nhật ${activeResult.modifiedCount} voucher thành active`);
 
         const inactiveResult = await Voucher.updateMany(
             { maxOrderDate: { $lte: new Date() }, status: "active", isDeleted: false },
             { status: "unactive" }
         );
-        console.log(`Đã cập nhật ${inactiveResult.modifiedCount} voucher thành unactive`);
 
     } catch (error) {
         console.error("Lỗi khi cập nhật voucher:", error);
@@ -116,7 +113,7 @@ checkExpiredVouchers();
 
 // Lên lịch chạy hàm checkExpiredVouchers mỗi phút
 cron.schedule('* * * * *', () => {
-    console.log('Kiểm tra các voucher hết hạn...');
+    // console.log('Kiểm tra các voucher hết hạn...');
     checkExpiredVouchers();
 });
 
