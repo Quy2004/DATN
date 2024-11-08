@@ -52,9 +52,11 @@ const DetailPage = () => {
 
 
     const handleToppingChange = (topping: ProductTopping) => {
-        setSelectedToppings((prev) =>
-            prev.includes(topping) ? prev.filter((top) => top !== topping) : [...prev, topping]
-        );
+      setSelectedToppings((prev) =>
+        prev.includes(topping)
+          ? prev.filter((top) => top !== topping)
+          : [...prev, topping]
+      );
     };
 
     const { data: product, isLoading, error } = useQuery<Product>({

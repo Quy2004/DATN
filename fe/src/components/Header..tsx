@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
-import axios from "axios";
+
 
 const Header: React.FC = () => {
 	const user = JSON.parse(localStorage.getItem("user") || '');
@@ -248,7 +248,7 @@ const Header: React.FC = () => {
 							</div>
 							<div className="w-3/5">
 								<h3 className="text-base font-semibold"></h3>
-								<span></span>
+								<span>{item?.product?.name}</span>
 								<p className="text-xs text-red-500 font-semibold">{item?.product?.price * item?.quantity} VNĐ</p>
 							</div>
 							<div>
