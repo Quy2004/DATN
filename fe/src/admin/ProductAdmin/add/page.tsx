@@ -41,13 +41,6 @@ const ProductAddPage: React.FC = () => {
     },
   });
 
-  // const { data: sizes, isLoading: isLoadingSizes } = useQuery({
-  //   queryKey: ["sizes"],
-  //   queryFn: async () => {
-  //     const response = await instance.get(`/sizes`);
-  //     return response.data;
-  //   },
-  // });
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
     queryKey: ["sizes", selectedCategoryId], // Thêm selectedCategoryId làm phần của key
     queryFn: async () => {
@@ -304,7 +297,6 @@ const ProductAddPage: React.FC = () => {
                         name={[field.name, "size_id"]}
                         label="Size"
                         rules={[
-                          { required: true, message: "Chọn size" },
                           ({ getFieldValue }) => ({
                             validator(_, value) {
                               if (!value) {
@@ -385,19 +377,20 @@ const ProductAddPage: React.FC = () => {
                         name={[field.name, "topping_id"]}
                         label="Topping"
                         rules={[
-                          { required: true, message: "Chọn topping" },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              if (!value) {
-                                return Promise.reject(
-                                  new Error("Vui lòng chọn một topping")
-                                );
-                              }
-                              const toppingValues = getFieldValue(
-                                "product_toppings"
-                              ).map((item: ProductTopping) => item.topping_id);
+                          {
+                            validator: (_, value) => {
+                              const toppingValues = fields
+                                .map((item) =>
+                                  form.getFieldValue([
+                                    "product_toppings",
+                                    item.name,
+                                    "topping_id",
+                                  ])
+                                )
+                                .filter((v) => v);
+
                               if (
-                                toppingValues.filter((v: string) => v === value)
+                                toppingValues.filter((v) => v === value)
                                   .length > 1
                               ) {
                                 return Promise.reject(
@@ -406,7 +399,7 @@ const ProductAddPage: React.FC = () => {
                               }
                               return Promise.resolve();
                             },
-                          }),
+                          },
                         ]}
                         className="flex-1 mb-0"
                       >
@@ -415,6 +408,22 @@ const ProductAddPage: React.FC = () => {
                           loading={isLoadingToppings}
                           disabled={isLoadingToppings}
                           className="w-full"
+                          onChange={(value) => {
+                            // Xử lý khi topping bị xóa
+                            const selectedTopping = toppings?.data.find(
+                              (topping: Topping) => topping._id === value
+                            );
+                            if (selectedTopping?.isDeleted) {
+                              form.setFieldsValue({
+                                product_toppings: fields.map((item) =>
+                                  item.name === field.name
+                                    ? { topping_id: null }
+                                    : item
+                                ),
+                              });
+                              return;
+                            }
+                          }}
                         >
                           {toppings?.data
                             .filter(
@@ -462,7 +471,6 @@ const ProductAddPage: React.FC = () => {
             name="discount"
             initialValue={0}
             rules={[
-              { required: true, message: "Vui lòng nhập giảm giá" },
               {
                 validator(_, value) {
                   const numericValue = Number(value);

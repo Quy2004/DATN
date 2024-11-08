@@ -51,6 +51,10 @@ import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
 import CheckOut from "../pages/CheckOutPage/CheckOut";
 import VoucherPage from "../admin/Voucher/Voucher";
 import PostManagerPage from "../admin/Post/page";
+import CartPage from "../pages/CartPage/Cartpage";
+import PostAddPage from "../admin/Post/add/page";
+import PostUpdatePage from "../admin/Post/edit/page";
+import ResetPassword from "../account/forgotPassword/resetPassword";
 
 const Router = () => {
   return (
@@ -65,6 +69,7 @@ const Router = () => {
           </Route>
           <Route path="detail/:id" element={<DetailPage />} />
           <Route path="checkout" element={<CheckOut />} />
+          <Route path="cart" element={<CartPage />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
             <Route path="coffeeholic" element={<CoffeHolicTab />} />
@@ -74,6 +79,7 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
@@ -112,6 +118,8 @@ const Router = () => {
           />
 
           <Route path="post" element={<PostManagerPage />} />
+          <Route path="post/add" element={<PostAddPage />} />
+          <Route path="post/:id/update" element={<PostUpdatePage />} />
         </Route>
       </Routes>
     </div>
