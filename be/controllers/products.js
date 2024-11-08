@@ -113,9 +113,9 @@ class ProductController {
   async getCoffeProducts(req, res) {
     try {
       // Tìm danh mục có tên là "Coffe"
-      const category = await Category.findOne({ title: "Coffe" });
+      const category = await Category.findOne({ title: "Cà phê" });
       if (!category) {
-        return res.status(404).json({ message: "Danh mục 'Coffe' không tồn tại" });
+        return res.status(404).json({ message: "Danh mục 'Cà phê' không tồn tại" });
       }
   
       // Tìm các sản phẩm thuộc danh mục "Coffe"
