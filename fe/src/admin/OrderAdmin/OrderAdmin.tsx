@@ -25,16 +25,22 @@ const OrderManagerPage = () => {
     queryFn: async () => {
       try {
         const response = await instance.get("orders");
-        return response.data;
+        return response.data.data;
       } catch (error) {
         throw new Error("Lỗi khi tải danh sách đơn hàng");
       }
     },
     staleTime: 60000,
   });
-
+  console.log(orders);
   console.log(selectedOrder);
-
+ const [pagination, setPagination] = useState({
+   current: 1,
+   pageSize: 10,
+ });
+   const handlePaginationChange = (page: number, pageSize: number) => {
+     setPagination({ current: page, pageSize });
+   };
   const showModal = (order: Order) => {
     setSelectedOrder(order);
     setIsModalVisible(true);
@@ -82,6 +88,89 @@ const OrderManagerPage = () => {
         return "Không xác định";
     }
   };
+  const handleStatusChange = async (
+    newStatus: string,
+    currentStatus: string,
+    orderId: string,
+    updateOrderStatusMutation: any,
+    messageApi: any
+  ) => {
+    // Danh sách các trạng thái không thể quay lại
+    const cannotRevertStatuses = [
+      "confirmed",
+      "preparing",
+      "shipping",
+      "delivered",
+      "completed",
+    ];
+
+    // Quy tắc chuyển đổi trạng thái
+    switch (newStatus) {
+      case "pending":
+        if (cannotRevertStatuses.includes(currentStatus)) {
+          messageApi.warning(
+            "Không thể quay lại trạng thái 'Đang chờ xác nhận'"
+          );
+          return;
+        }
+        break;
+      case "confirmed":
+        if (currentStatus === "pending") {
+          break;
+        }
+        messageApi.warning(
+          "Chỉ có thể chuyển từ 'Đang chờ xác nhận' sang 'Đã xác nhận'."
+        );
+        return;
+      case "preparing":
+        if (currentStatus !== "confirmed") {
+          messageApi.warning(
+            "Chỉ có thể chuyển từ 'Đã xác nhận' sang 'Đang chuẩn bị'."
+          );
+          return;
+        }
+        break;
+      case "shipping":
+        if (currentStatus !== "preparing") {
+          messageApi.warning(
+            "Chỉ có thể chuyển từ 'Đang chuẩn bị' sang 'Đang giao hàng'."
+          );
+          return;
+        }
+        break;
+      case "delivered":
+        if (currentStatus !== "shipping") {
+          messageApi.warning(
+            "Chỉ có thể chuyển từ 'Đang giao hàng' sang 'Đã giao hàng'."
+          );
+          return;
+        }
+        break;
+      case "completed":
+        if (currentStatus !== "delivered") {
+          messageApi.warning(
+            "Chỉ có thể chuyển từ 'Đã giao hàng' sang 'Đã hoàn thành'."
+          );
+          return;
+        }
+        break;
+      case "canceled":
+        if (["completed", "delivered"].includes(currentStatus)) {
+          messageApi.warning("Không thể hủy đơn hàng ở trạng thái này.");
+          return;
+        }
+        break;
+      default:
+        messageApi.error("Trạng thái không hợp lệ.");
+        return;
+    }
+
+    // Nếu tất cả điều kiện hợp lệ, tiến hành cập nhật trạng thái
+    updateOrderStatusMutation.mutate({
+      orderId,
+      newStatus,
+    });
+  };
 
   const formatPrice = (price: PriceType) => {
     const amount =
@@ -110,9 +199,12 @@ const OrderManagerPage = () => {
     },
     {
       title: "Tên Khách Hàng",
-      dataIndex: "user_id",
-      key: "user_id",
-      render: (user: Order["user_id"]) => user?.userName || "N/A",
+      dataIndex: "customerInfo",
+      key: "name",
+      render: (customerInfo: Order["customerInfo"]) => {
+        const customerName = customerInfo?.name || "N/A";
+        return customerName;
+      },
     },
     {
       title: "Tổng Giá",
@@ -122,10 +214,8 @@ const OrderManagerPage = () => {
     },
     {
       title: "Phương Thức Thanh Toán",
-      dataIndex: "payment_id",
-      key: "payment_id",
-      render: (payment: Order["payment_id"]) =>
-        payment?.method || "Chưa xác định",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
     },
     {
       title: "Trạng Thái",
@@ -134,11 +224,15 @@ const OrderManagerPage = () => {
       render: (status: Order["orderStatus"], record: Order) => (
         <Select
           defaultValue={status}
+          disabled={status === "canceled"} // Vô hiệu hóa Select nếu trạng thái là "canceled"
           onChange={(newStatus) => {
-            updateOrderStatusMutation.mutate({
-              orderId: record._id,
+            handleStatusChange(
               newStatus,
-            });
+              status,
+              record._id,
+              updateOrderStatusMutation,
+              messageApi
+            );
           }}
           className="w-[150px] rounded-md"
         >
@@ -214,7 +308,18 @@ const OrderManagerPage = () => {
     <>
       {contextHolder}
       <Title level={3}>Danh sách đơn hàng</Title>
-      <Table columns={columns} dataSource={orders} rowKey="orderNumber" />
+      <Table
+        columns={columns}
+        dataSource={orders}
+        rowKey="orderNumber"
+        scroll={{ x: "max-content", y: 350 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          onChange: handlePaginationChange,
+          total: orders?.length, // Assuming your backend returns the total number of records
+        }}
+      />
 
       <Modal
         title={<h2 className="text-xl font-bold">Chi tiết đơn hàng</h2>}
@@ -238,8 +343,8 @@ const OrderManagerPage = () => {
                 {new Date(selectedOrder.updatedAt).toLocaleString("vi-VN")}
               </span>
             </p>
-            <p>Tên khách hàng: {selectedOrder.user_id.userName}</p>
-            <p>Email: {selectedOrder.user_id.email}</p>
+            <p>Tên khách hàng: {selectedOrder.customerInfo?.name || "N/A"} </p>
+            <p>Email: {selectedOrder.customerInfo?.email}</p>
             <p>Tổng giá: {formatPrice(selectedOrder.totalPrice)}</p>
             <p>Trạng thái: {getStatus(selectedOrder.orderStatus)}</p>
 

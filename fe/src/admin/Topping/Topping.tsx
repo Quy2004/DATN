@@ -143,7 +143,11 @@ const ToppingManagerPage = () => {
       statusTopping: item.statusTopping,
       priceTopping: item.priceTopping,
       isDeleted: item.isDeleted,
-      categoryTitle: item.category_id.title,
+      categoryTitle: Array.isArray(item.category_id)
+        ? item.category_id
+            .map((category: Category) => category.title)
+            .join(", ")
+        : item.category_id?.title || "",
     }));
 
   const columns: ColumnsType<Topping> = [
