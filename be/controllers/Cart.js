@@ -1,13 +1,13 @@
-import Cart from '../models/Cart.js';        
+import Cart from '../models/Cart.js';
 import Product from '../models/ProductModel';
 
 
 // Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
 export const addtoCart = async (req, res) => {
   try {
-    const { userId, productId ,quantity} = req.body;
-    
-    
+    const { userId, productId, quantity } = req.body;
+
+
     if (!userId) {
       return res.status(400).json({ message: "User ID  are required." });
     }
@@ -16,14 +16,14 @@ export const addtoCart = async (req, res) => {
     }
 
     // Kiểm tra nếu giỏ hàng tồn tại
-    let cart = await Cart.findOne({ userId});
-    var product = await Product.findOne({_id: productId})
-    
+    let cart = await Cart.findOne({ userId });
+    var product = await Product.findOne({ _id: productId })
+
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
       cart = new Cart({
         userId,
-        products: [{ product: productId, quantity  }]
+        products: [{ product: productId, quantity }]
       });
     } else {
       // Tìm sản phẩm trong giỏ hàng
@@ -41,12 +41,12 @@ export const addtoCart = async (req, res) => {
     let totalprice = 0;
 
     // for (let item of cart.products) {
-      const productDetails = await Product.findById(productId);
-      if (!productDetails) {
-        return res.status(404).json({ message: `Product with ID ${productId} not found` });
-      }
-      totalQuantity += quantity;
-      totalprice += productDetails.price * quantity;
+    const productDetails = await Product.findById(productId);
+    if (!productDetails) {
+      return res.status(404).json({ message: `Product with ID ${productId} not found` });
+    }
+    totalQuantity += quantity;
+    totalprice += productDetails.price * quantity;
     // }
 
     cart.total = totalQuantity;
@@ -65,11 +65,7 @@ export const addtoCart = async (req, res) => {
   }
 };
 
-
-
 export const getCart = async (req, res) => {
-
- export const getCart = async (req, res) => {
 
   try {
     const { userId } = req.params;
@@ -81,9 +77,6 @@ export const getCart = async (req, res) => {
     // Tìm giỏ hàng theo userId và populate chi tiết sản phẩm, size và topping
     let cart = await Cart.findOne({ userId }).populate({
       path: "products.product",
-
-      model: "Product"
-
       model: "Product",
       populate: [
         {
