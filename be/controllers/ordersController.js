@@ -1,7 +1,8 @@
 import Order from "../models/OderModel.js";
 import Cart from "../models/Cart.js";
-import { createOrderDetail } from "./OrderDetail"; // Import hàm từ file orderDetailController.js
+import { createOrderDetail } from "./OrderDetail.js";
 
+// Get all orders with populated data
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -10,132 +11,177 @@ export const getAllOrders = async (req, res) => {
         populate: {
           path: "product_id",
           model: "Product",
-          select:
-            "name category_id price sale_price discount image thumbnail product_sizes product_toppings status",
-        },
+          select: "name category_id price sale_price discount image thumbnail product_sizes product_toppings status"
+        }
       })
-
       .populate({
         path: "user_id",
-        select: "userName email",
-      });
+        select: "userName email"
+      })
+      .populate("address_id");
 
-    if (!orders.length) {
-      return res.status(404).json({ message: "Không có đơn hàng nào." });
+    if (!orders?.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng nào"
+      });
     }
 
-    return res.status(200).json(orders);
+    return res.status(200).json({
+      success: true,
+      data: orders
+    });
   } catch (error) {
     return res.status(500).json({
-      message: "Có lỗi xảy ra, vui lòng thử lại.",
-      error: error.message,
+      success: false,
+      message: "Lỗi khi lấy danh sách đơn hàng",
+      error: error.message
     });
   }
 };
 
-// Hàm tạo đơn hàng
- export const createOrder = async (req, res) => {
+// Create new order
+export const createOrder = async (req, res) => {
   try {
-    const { userId, addressId, payment_id, note = "" } = req.body;
-    const cart = await Cart.findOne({ userId }).populate("products.product");
+    const { userId, addressId, paymentMethod, note } = req.body;
 
-    if (!cart || !cart.products.length) {
-      return res.status(400).json({ message: "Giỏ hàng rỗng." });
+    // Validate required fields
+    if (!userId || !addressId || !paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu thông tin bắt buộc"
+      });
     }
 
-    const totalPrice = cart.totalprice || 0; // Kiểm tra tồn tại của `totalprice`
+    // Get cart and validate
+    const cart = await Cart.findOne({ userId }).populate("products.product");
+    
+    if (!cart?.products?.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Giỏ hàng trống"
+      });
+    }
+
+    // Create order
     const order = new Order({
       user_id: userId,
       address_id: addressId,
-      totalPrice: totalPrice,
-      payment_id: payment_id || null,
-      orderDetail_id: [],
-      orderNumber: "",
-      note: note,
-      status: "Đang xử lý",
+      totalPrice: cart.totalprice || 0,
+      paymentMethod,
+      note: note || "",
+      orderStatus: "pending",
+      orderDetail_id: []
     });
 
     await order.save();
 
-    const orderDetailsPromises = cart.products.map(async (item) => {
-      if (!item.product || !item.product._id || !item.product.price || !item.product.image) {
-        throw new Error("Thông tin sản phẩm không đầy đủ.");
+    // Create order details
+    const orderDetailPromises = cart.products.map(async (item) => {
+      if (!item.product?._id || !item.product?.price) {
+        throw new Error("Thông tin sản phẩm không hợp lệ");
       }
-      const orderDetail = await createOrderDetail(
-        order._id,
-        item.product._id,
-        item.quantity,
-        item.product.price,
-        item.product.image
-      );
+
+      const orderDetail = await createOrderDetail({
+        orderId: order._id,
+        productId: item.product._id,
+        quantity: item.quantity,
+        price: item.product.price,
+        image: item.product.image
+      });
+
       return orderDetail._id;
     });
 
-    const orderDetailIds = await Promise.all(orderDetailsPromises);
+    const orderDetailIds = await Promise.all(orderDetailPromises);
     order.orderDetail_id = orderDetailIds;
     await order.save();
 
+    // Clear cart after order created
     await Cart.findOneAndDelete({ userId });
-    return res.status(201).json({ message: "Đơn hàng đã được tạo thành công.", order });
+
+    return res.status(201).json({
+      success: true,
+      message: "Tạo đơn hàng thành công",
+      data: order
+    });
+
   } catch (error) {
-    console.error("Lỗi tạo đơn hàng:", error);
     return res.status(500).json({
-      message: "Có lỗi xảy ra, vui lòng thử lại.",
-      error: error.message,
+      success: false,
+      message: "Lỗi khi tạo đơn hàng",
+      error: error.message
     });
   }
 };
-; // Lấy danh sách đơn hàng của người dùng
+
+// Get orders by user ID
 export const getOrders = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const orders = await Order.find({ user_id: userId }).populate({
-      path: "orderDetail_id", // populate orderDetail_id
-      populate: {
-        path: "product_id", // populate thêm product_id trong OrderDetail
-        model: "Product",
-      },
-    });
-
-    if (!orders.length) {
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "UserId là bắt buộc"
+      });
     }
 
-    return res.status(200).json(orders);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Có lỗi xảy ra, vui lòng thử lại.",
-        error: error.message,
+    const orders = await Order.find({ user_id: userId })
+      .populate({
+        path: "orderDetail_id",
+        populate: {
+          path: "product_id",
+          model: "Product"
+        }
+      })
+      .populate("address_id");
+
+    if (!orders?.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng nào"
       });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: orders
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy đơn hàng",
+      error: error.message
+    });
   }
 };
 
-// Cập nhật trạng thái đơn hàng
+// Update order status
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    // Cập nhật danh sách các trạng thái hợp lệ
+    // Validate order status
     const validStatuses = [
       "pending",
-      "confirmed",
+      "confirmed", 
       "preparing",
       "shipping",
       "delivered",
       "completed",
-      "canceled",
+      "canceled"
     ];
 
-    // Kiểm tra trạng thái hợp lệ
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Trạng thái không hợp lệ." });
+      return res.status(400).json({
+        success: false,
+        message: "Trạng thái đơn hàng không hợp lệ"
+      });
     }
 
-    // Cập nhật đúng trường `orderStatus`
     const order = await Order.findByIdAndUpdate(
       orderId,
       { orderStatus: status },
@@ -143,18 +189,23 @@ export const updateOrderStatus = async (req, res) => {
     );
 
     if (!order) {
-      return res.status(404).json({ message: "Đơn hàng không tìm thấy." });
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng"
+      });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Cập nhật trạng thái đơn hàng thành công.", order });
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật trạng thái thành công",
+      data: order
+    });
+
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Có lỗi xảy ra, vui lòng thử lại.",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi cập nhật trạng thái",
+      error: error.message
+    });
   }
 };
