@@ -18,7 +18,7 @@ export const getAllOrders = async (req, res) => {
         path: "user_id",
         select: "userName email"
       })
-      .populate("address_id");
+     
 
     if (!orders?.length) {
       return res.status(404).json({

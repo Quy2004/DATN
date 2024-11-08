@@ -9,28 +9,40 @@ import {
   Alert,
   Modal,
   Descriptions,
+  Input,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { Link } from "react-router-dom";
 import { Post } from "../../types/post";
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleFilled,
+  SearchOutlined,
+  UndoOutlined,
+} from "@ant-design/icons";
 import Title from "antd/es/typography/Title";
 
 const PostManagerPage = () => {
   const queryClient = useQueryClient();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const {
     data: posts,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", showDeleted],
     queryFn: async () => {
       try {
-        const response = await instance.get("posts");
+        const response = await instance.get("posts", {
+          params: {
+            isDeleted: showDeleted,
+          },
+        });
         return response.data;
       } catch (error) {
         throw new Error("Lỗi khi tải danh sách bài viết");
@@ -89,18 +101,28 @@ const PostManagerPage = () => {
       categoryPost: post.categoryPost || { title: "Không xác định" },
     });
   };
-  const dataSource = posts?.data?.map((post: Post, index: number) => ({
-    _id: post._id,
-    key: index + 1,
-    title: post.title,
-    categoryPost: post.categoryPost.title,
-    excerpt: post.excerpt,
-    content: post.content,
-    imagePost: post.imagePost,
-    galleryPost: post.galleryPost,
-    isDeleted: post.isDeleted,
-    createdAt: new Date(post.createdAt),
-  }));
+  const handleToggleDeleted = () => {
+    setShowDeleted((prev) => !prev);
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+  };
+  const dataSource = posts?.data
+    ?.filter(
+      (item: Post) =>
+        showDeleted === Boolean(item.isDeleted) &&
+        item.title.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .map((post: Post, index: number) => ({
+      _id: post._id,
+      key: index + 1,
+      title: post.title,
+      categoryPost: post.categoryPost.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      imagePost: post.imagePost,
+      galleryPost: post.galleryPost,
+      isDeleted: post.isDeleted,
+      createdAt: new Date(post.createdAt),
+    }));
 
   const columns = [
     {
@@ -115,6 +137,16 @@ const PostManagerPage = () => {
           {text}
         </p>
       ),
+      filterDropdown: () => (
+        <Input
+          className="Input-antd text-sm placeholder-gray-400 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Tìm kiếm"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 200 }}
+        />
+      ),
+      filterIcon: <SearchOutlined className="text-blue-500" />,
     },
     {
       title: "Ảnh",
@@ -135,35 +167,54 @@ const PostManagerPage = () => {
       key: "action",
       render: (_: string, post: Post) => (
         <Space size="middle">
-          <Popconfirm
-            title="Xóa"
-            description="Bạn có chắc chắn muốn xóa bài viết này không?"
-            onConfirm={() => softDeleteMutation.mutate(post._id)}
-            okText="Có"
-            cancelText="Không"
-            disabled={post.isDeleted}
-          >
-            <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-              Xóa
-            </Button>
-          </Popconfirm>
-
-          <Popconfirm
-            title="Xóa vĩnh viễn"
-            description="Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này không?"
-            onConfirm={() => hardDeleteMutation.mutate(post._id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
-              <DeleteOutlined /> Xóa vĩnh viễn
-            </Button>
-          </Popconfirm>
-          <Link to={`/admin/post/${post._id}/update`}>
-            <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
-              Cập nhật
-            </Button>
-          </Link>
+          {post.isDeleted ? (
+            <Space>
+              <Popconfirm
+                title="Khôi phục"
+                description="Bạn chắc chắn muốn khôi phục bài viết này không?"
+                onConfirm={() => restorePost.mutate(post._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                  <UndoOutlined className="h-4 w-4" />
+                  Khôi phục
+                </Button>
+              </Popconfirm>{" "}
+              <Popconfirm
+                title="Xóa vĩnh viễn"
+                description="Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này không?"
+                onConfirm={() => hardDeleteMutation.mutate(post._id)}
+                okText="Có"
+                cancelText="Không"
+              >
+                <Button className="bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-300">
+                  <DeleteOutlined /> Xóa vĩnh viễn
+                </Button>
+              </Popconfirm>
+            </Space>
+          ) : (
+            <Space>
+              {" "}
+              <Popconfirm
+                title="Xóa"
+                description="Bạn có chắc chắn muốn xóa bài viết này không?"
+                onConfirm={() => softDeleteMutation.mutate(post._id)}
+                okText="Có"
+                cancelText="Không"
+                disabled={post.isDeleted}
+              >
+                <Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
+                  Xóa
+                </Button>
+              </Popconfirm>
+              <Link to={`/admin/post/${post._id}/update`}>
+                <Button className="bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300">
+                  Cập nhật
+                </Button>
+              </Link>
+            </Space>
+          )}
         </Space>
       ),
     },
@@ -187,16 +238,28 @@ const PostManagerPage = () => {
     <div>
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách bài viết</Title>
-
-        <Link to="/admin/post/add" className="flex items-center space-x-2">
+        <Space>
           <Button
-            type="primary"
-            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            onClick={handleToggleDeleted}
+            className={`flex items-center gap-2 ${
+              showDeleted
+                ? "bg-blue-500 hover:bg-blue-600"
+                : "bg-gray-500 hover:bg-gray-600"
+            } text-white`}
           >
-            <PlusCircleFilled />
-            <span>Thêm bài viết</span>
+            <DeleteOutlined className="h-4 w-4" />
+            {showDeleted ? "Quay lại" : "Thùng rác"}
           </Button>
-        </Link>
+          <Link to="/admin/post/add" className="flex items-center space-x-2">
+            <Button
+              type="primary"
+              className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            >
+              <PlusCircleFilled />
+              <span>Thêm bài viết</span>
+            </Button>
+          </Link>
+        </Space>
       </div>
       <Modal
         className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50"
@@ -290,7 +353,7 @@ const PostManagerPage = () => {
           showTotal: (total) => `Tổng ${total} bài viết`,
         }}
         className="bg-white rounded-lg shadow-sm"
-        scroll={{ x: true }}
+        scroll={{ x: "max-content", y: 350 }}
       />
       {isError && <p>Lỗi khi tải dữ liệu bài viết</p>}
     </div>

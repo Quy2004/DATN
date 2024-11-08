@@ -153,11 +153,11 @@ const ProductManagerPage: React.FC = () => {
       try {
         return await instance.patch(`/products/${_id}/soft-delete`);
       } catch (error) {
-        throw new Error("Xóa mềm sản phẩm thất bại");
+        throw new Error("Xóa sản phẩm thất bại");
       }
     },
     onSuccess: () => {
-      messageApi.success("Xóa mềm sản phẩm thành công");
+      messageApi.success("Xóa sản phẩm thành công");
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (error) => {
@@ -170,11 +170,11 @@ const ProductManagerPage: React.FC = () => {
       try {
         return await instance.delete(`/products/${_id}/hard-delete`);
       } catch (error) {
-        throw new Error("Xóa cứng sản phẩm thất bại");
+        throw new Error("Xóa vĩnh viễn sản phẩm thất bại");
       }
     },
     onSuccess: () => {
-      messageApi.success("Xóa cứng sản phẩm thành công");
+      messageApi.success("Xóa vĩnh viễn sản phẩm thành công");
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (error) => {
