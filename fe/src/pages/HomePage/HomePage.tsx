@@ -70,13 +70,10 @@ const HomePage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<ProductTopping[]>([]);
   const toggleModal = (product: Product) => {
-    console.log(product);
     setSelectedProduct(product);
     setIsModalOpen(!isModalOpen);
   };
   const handleSizeChange = (size: ProductSize) => {
-    console.log("Selected Size:", size); // In ra kích thước đã chọn
-    console.log(size);
     setSelectedSize(size); // Cập nhật kích thước đã chọn
   };
 
@@ -130,7 +127,6 @@ const HomePage: React.FC = () => {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
     }
   };
-console.log(products);
   return (
     
     <>
@@ -183,11 +179,12 @@ console.log(products);
               ))}
             </div>
           </div>
+          <div className="my-10"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
               {products.map((product: Product, index) => (
-                <div className="flex md:mx-0 mt-10">
+                <div className="flex md:mx-0">
                   <div key={`${product._id}-${index}`} className="item mx-2" >
                     <div className="my-4">
                       <Link to={`detail/${product._id}`} className="overflow-hidden rounded-lg shadow-lg">

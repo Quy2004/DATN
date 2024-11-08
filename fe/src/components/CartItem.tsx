@@ -37,9 +37,6 @@ const CartItem: React.FC<{
         },
         0
     );
-
-    console.log(priceSize,toppingSize,item?.sale_price,quantity)
-
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
       <div className="w-1/5">
