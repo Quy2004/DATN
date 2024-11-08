@@ -108,6 +108,7 @@ export const addtoCart = async (req, res) => {
       await cart.save();
       return res.status(200).json({
         message: "Cart created successfully",
+        cart_id: cart._id,
         cart: cart.products,
         totalQuantity: cart.total,
         totalPrice: cart.totalprice
@@ -117,6 +118,7 @@ export const addtoCart = async (req, res) => {
     // Trả về giỏ hàng với danh sách sản phẩm và các thông tin chi tiết
     return res.status(200).json({
       message: "Cart retrieved successfully",
+      cart_id: cart._id,
       cart: cart.products,
       totalQuantity: cart.total,
       totalPrice: cart.totalprice
