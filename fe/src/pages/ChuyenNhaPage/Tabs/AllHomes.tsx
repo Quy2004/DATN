@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import '../ChuyenNha.css'
 const AllHomes: React.FC = () => {
     const scrollToTop = () => {
         window.scrollTo({

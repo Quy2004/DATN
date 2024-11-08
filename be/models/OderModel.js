@@ -43,10 +43,14 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "OrderDetail", 
   }],
-    payment_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Payment",
-      required: false,
+    // payment_id: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Payment",
+    //   required: false,
+    // },
+    paymentMethod: {
+      type: String,
+      enum: ["bank transfer", "cash on delivery"],
     },
     orderNumber: {
       type: String,
