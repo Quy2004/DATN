@@ -43,10 +43,10 @@ export const getAllOrders = async (req, res) => {
 // Create new order
 export const createOrder = async (req, res) => {
   try {
-    const { userId, addressId, paymentMethod, note } = req.body;
+    const { userId,customerInfo, paymentMethod, note } = req.body;
 
     // Validate required fields
-    if (!userId || !addressId || !paymentMethod) {
+    if (!userId || !customerInfo || !paymentMethod) {
       return res.status(400).json({
         success: false,
         message: "Thiếu thông tin bắt buộc"
@@ -66,7 +66,7 @@ export const createOrder = async (req, res) => {
     // Create order
     const order = new Order({
       user_id: userId,
-      address_id: addressId,
+      customerInfo,
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
@@ -81,6 +81,7 @@ export const createOrder = async (req, res) => {
       if (!item.product?._id || !item.product?.price) {
         throw new Error("Thông tin sản phẩm không hợp lệ");
       }
+      console.log(item.product._i)
 
       const orderDetail = await createOrderDetail({
         orderId: order._id,

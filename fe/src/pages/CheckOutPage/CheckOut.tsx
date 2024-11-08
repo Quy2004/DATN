@@ -1,9 +1,10 @@
+
 import { Drawer, Modal } from "flowbite-react";
 import React, { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form"
 import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
-import { Topping } from "../../types/topping";
-import { ProductTopping } from "../../types/product";
+
 
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
@@ -23,7 +24,8 @@ const Checkout: React.FC = () => {
   });
 
 
-  const [paymentMethod, setPaymentMethod] = useState<string>(""); // Trạng thái để theo dõi phương thức thanh toán
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  console.log(paymentMethod) // Trạng thái để theo dõi phương thức thanh toán
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -44,11 +46,35 @@ const Checkout: React.FC = () => {
   ) => {
     setPaymentMethod(event.target.value);
   };
+interface Form{
+  name:string ,
+  address: string,
+  phone: string,
+  email:string
+  note:string
+}
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault(); // Ngăn chặn reload trang
-    console.log("Form submitted");
-  };
+const {handleSubmit, register}=useForm<Form>(
+
+)
+console.log(typeof paymentMethod )
+const onSubmit = async  (data:Form) => {
+const oderData = {
+  userId,
+  customerInfo:data,
+  paymentMethod:paymentMethod,
+  note:""
+
+}
+console.log(oderData);
+const dataOder = await instance.post("orders",oderData);
+console.log(dataOder)
+}
+
+  // const handleSubmit = (event: React.FormEvent) => {
+  //   event.preventDefault(); // Ngăn chặn reload trang
+  //   console.log("Form submitted");
+  // };
 
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
@@ -64,54 +90,12 @@ const Checkout: React.FC = () => {
         <main className="flex flex-col md:flex-row gap-8 w-full max-w-5xl">
           {/* Checkout Form */}
           <section className="w-full md:w-1/2 bg-white rounded-lg shadow-md p-6">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <h6 className="text-lg font-semibold mb-4">Thông tin liên hệ</h6>
-              {["E-mail", "Điện thoại", "Họ và tên", "Địa chỉ"].map(
-                (field, index) => (
-                  <div className="mb-4" key={index}>
-                    <label className="block text-sm font-medium mb-1">
-                      {field}
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <i
-                          className={`fa ${
-                            field === "E-mail"
-                              ? "fa-envelope"
-                              : field === "Điện thoại"
-                              ? "fa-phone"
-                              : field === "Họ và tên"
-                              ? "fa-user-circle"
-                              : field === "Địa chỉ"
-                              ? "fa-home"
-                              : "fa-building"
-                          }`}
-                        ></i>
-                      </span>
-                      <input
-                        type={
-                          field === "E-mail"
-                            ? "email"
-                            : field === "Điện thoại"
-                            ? "tel"
-                            : "text"
-                        }
-                        placeholder={
-                          field === "E-mail"
-                            ? "Nhập email của bạn"
-                            : field === "Điện thoại"
-                            ? "Nhập số điện thoại"
-                            : field === "Họ và tên"
-                            ? "Nhập họ và tên"
-                            : "Nhập địa chỉ"
-                        }
-                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-                        required
-                      />
-                    </div>
-                  </div>
-                )
-              )}
+             <input type="text" {...register('name')}/>
+             <input type="text" {...register('address')}/>
+             <input type="text" {...register('phone')}/>
+             <input type="text" {...register('email')}/>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
@@ -128,6 +112,7 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
 
+              {/* Phương thức thanh toán */}
              {/* Phương thức thanh toán */}
              <div className="mb-4">
                 <h1 className="font-semibold">Phương thức thanh toán:</h1>
@@ -137,7 +122,7 @@ const Checkout: React.FC = () => {
                       type="radio"
                       id="atm"
                       name="paymentMethod"
-                      value="atm"
+                      value="bank transfer"
                       onChange={handlePaymentMethodChange}
                       className="mr-2"
                     />
@@ -151,7 +136,7 @@ const Checkout: React.FC = () => {
                     type="radio"
                     id="cod"
                     name="paymentMethod"
-                    value="cod"
+                    value="cash on delivery"
                     onChange={handlePaymentMethodChange}
                     className="mr-2"
                   />
@@ -232,7 +217,7 @@ const Checkout: React.FC = () => {
           <section className="w-full md:w-1/2 bg-gray-50 rounded-lg shadow-md p-6">
   <h6 className="text-lg font-semibold mb-4">Sản phẩm của bạn</h6>
   <div className="flex flex-col space-y-4 mb-6">
-    {carts.map((item:any) => (
+    {carts.map((item) => (
       <div
         key={item._id}
         className="flex flex-col md:flex-row items-center p-4 bg-white rounded-lg shadow-sm"
@@ -259,7 +244,7 @@ const Checkout: React.FC = () => {
   <div className="flex items-center space-x-2"> {/* Dùng flex để giữ mọi thứ trên cùng một dòng */}
     <label className="text-sm">Size:</label>
     <div className="flex space-x-2">
-      {item.product.product_sizes.map((size:any, index:any) => (
+      {item.product.product_sizes.map((size, index) => (
         <span key={size._id}>
           {size.size_id.name}
           {index < item.product.product_sizes.length - 1 && ", "} {/* Thêm dấu phẩy giữa các kích thước */}
@@ -273,7 +258,7 @@ const Checkout: React.FC = () => {
   <div className="flex items-center space-x-2"> {/* Dùng flex để giữ mọi thứ trên cùng một dòng */}
     <label className="text-sm">Topping:</label>
     <div className="flex space-x-2">
-      {item.product.product_toppings.map((topping:any, index:any) => (
+      {item.product.product_toppings.map((topping, index) => (
         <span key={topping._id}>
           {topping.topping_id.nameTopping}
           {index < item.product.product_toppings.length - 1 && ", "} {/* Thêm dấu phẩy giữa các topping */}
