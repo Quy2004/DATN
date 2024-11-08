@@ -53,18 +53,30 @@ export const addtoCart = async (req, res) => {
   }
 };
 
-export const getCart = async (req, res) => {
+ export const getCart = async (req, res) => {
   try {
-    const { userId } = req.params; // Lấy userId từ params
+    const { userId } = req.params;
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required." });
     }
 
-    // Tìm giỏ hàng theo userId
+    // Tìm giỏ hàng theo userId và populate chi tiết sản phẩm, size và topping
     let cart = await Cart.findOne({ userId }).populate({
       path: "products.product",
       model: "Product",
+      populate: [
+        {
+          path: "product_sizes.size_id", // Populate size_id để lấy tên size
+          model: "Size",
+          select: "name" // Lấy trường name của size
+        },
+        {
+          path: "product_toppings.topping_id", // Populate topping_id để lấy topping
+          model: "Topping",
+          select: "nameTopping" // Lấy trường name của topping
+        }
+      ]
     });
 
     // Nếu giỏ hàng không tồn tại, tạo giỏ hàng mới và trả về giỏ hàng trống
@@ -73,14 +85,14 @@ export const getCart = async (req, res) => {
         userId,
         products: [],
         total: 0,
-        totalprice: 0,
+        totalprice: 0
       });
       await cart.save();
       return res.status(200).json({
         message: "Cart created successfully",
         cart: cart.products,
         totalQuantity: cart.total,
-        totalPrice: cart.totalprice,
+        totalPrice: cart.totalprice
       });
     }
 
@@ -89,12 +101,10 @@ export const getCart = async (req, res) => {
       message: "Cart retrieved successfully",
       cart: cart.products,
       totalQuantity: cart.total,
-      totalPrice: cart.totalprice,
+      totalPrice: cart.totalprice
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };

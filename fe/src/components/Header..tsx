@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button, Drawer, Modal } from "flowbite-react";
+import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
-import axios from "axios";
 import CartItem from "./CartItem";
 
 const Header: React.FC = () => {
