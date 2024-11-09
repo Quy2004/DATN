@@ -1,10 +1,18 @@
 import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, InputNumber, message, Select, Spin } from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Spin,
+} from "antd";
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
-import { Option } from "antd/es/mentions";
+
 import { Category } from "../../../types/category";
 
 type FieldType = {
@@ -110,17 +118,16 @@ const ToppingUpdatePage = () => {
             name="category_id"
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
-            <Select
-              placeholder="Chọn danh mục"
-              loading={isLoadingCategories}
+            <Checkbox.Group
+              style={{ width: "100%" }}
               disabled={isLoadingCategories}
             >
               {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
+                <Checkbox key={category._id} value={category._id}>
                   {category.title}
-                </Option>
+                </Checkbox>
               ))}
-            </Select>
+            </Checkbox.Group>
           </Form.Item>
 
           <Form.Item<FieldType>
