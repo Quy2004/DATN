@@ -17,10 +17,23 @@ const orderSchema = new mongoose.Schema(
       ref: "users",
       required: true,
     },
-    address_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-      required: true,
+    customerInfo: {
+      name: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
     },
     totalPrice: {
       type: mongoose.Schema.Types.Decimal128,

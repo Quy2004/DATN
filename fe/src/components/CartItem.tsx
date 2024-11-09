@@ -4,9 +4,10 @@ import instance from "../services/api";
 import toast from "react-hot-toast";
 
 const CartItem: React.FC<{
+  idcart:number,
   item?: any;
   quantity:number
-}> = ({ item,quantity }) => {
+}> = ({ idcart,item,quantity }) => {
     const [product, setProduct] = useState<Product>()
 
     useEffect(() => {
@@ -15,6 +16,7 @@ const CartItem: React.FC<{
               const { data } = await instance.get(`/products/${item?._id}`);
               
               setProduct(data.data); // Lưu sản phẩm vào state
+              console.log("object", data.data)
             } catch (error) {
               console.error("Lỗi khi lấy sản phẩm:", error);
               toast.error("Không thể tải sản phẩm.");
@@ -23,9 +25,12 @@ const CartItem: React.FC<{
           };
           fetchProduct();
         },[item])
-      
+      console.log(product)
 
-
+const handleDelete = async (id:number) => {
+  const data = await instance.patch(`/cart/${idcart}/product/${id}`)
+  console.log(data)
+}
   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
     return (total += current?.size_id?.priceSize);
   }, 0);
@@ -38,8 +43,8 @@ const CartItem: React.FC<{
         0
     );
 
-    console.log(priceSize,toppingSize,item?.sale_price,quantity)
-
+    //Delete Cart
+    
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
       <div className="w-1/5">
@@ -64,6 +69,7 @@ const CartItem: React.FC<{
             strokeWidth="1.5"
             stroke="currentColor"
             className="size-6"
+            onClick={() => handleDelete(item?._id)}
           >
             <path
               strokeLinecap="round"

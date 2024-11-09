@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button, Drawer, Modal } from "flowbite-react";
+import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
-import axios from "axios";
 import CartItem from "./CartItem";
 
 const Header: React.FC = () => {
 	const user = JSON.parse(localStorage.getItem("user") || '');
 	const [cart, setCart] = useState<any>([]);
+	const [idCart,setIdCart] = useState<number>()
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
 		setIsModalOpen(!isModalOpen);
@@ -57,6 +57,7 @@ const Header: React.FC = () => {
 		try {
 		  const { data } = await instance.get(`/cart/${user._id}`);
 		  console.log('CART ->', data);
+		  setIdCart(data.cart_id)
 		   // Gọi API từ backend 
 		  setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
 		  // setLoading(false); // Tắt trạng thái loading
@@ -69,7 +70,7 @@ const Header: React.FC = () => {
 		  fetchCart();
 	  }, []);
 
-	  console.log(cart)
+	  console.log(idCart)
 	
 
 	return (
@@ -238,14 +239,15 @@ const Header: React.FC = () => {
 				<Drawer.Items>
 					
 					{cart?.map((item : any)=>(
-						<CartItem item={item?.product} quantity={item.quantity
+						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity
 						} />
 					))}
 						
 					<div className="flex gap-2">
+						<Link to={'cart'}>
 						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
 							Checking
-						</Button>
+						</Button></Link>
 						<Button
 							onClick={toggleModal}
 							className="inline-flex w-full rounded-lg bg-cyan-700 px-4 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"

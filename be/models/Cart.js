@@ -4,7 +4,21 @@ const Schema = mongoose.Schema;
 
 const cartItem = new Schema({
     product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
-    quantity: { type: Number, required: true, min: 1 }
+    quantity: { type: Number, required: true, min: 1 },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    product_toppings: [
+      {
+        topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
+      },
+    ],
+    product_sizes: [
+      {
+        size_id: { type: mongoose.Schema.Types.ObjectId, ref: "Size" }
+      },
+    ],
 });
 
 const cartSchema = new Schema({
@@ -12,7 +26,9 @@ const cartSchema = new Schema({
     products: [cartItem],
     totalprice: { type: Number, default: 0 },
     
+    
 },
+
 {
   timestamps: true,
   versionKey: false,
