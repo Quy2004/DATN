@@ -5,6 +5,8 @@ const productsRouter = express.Router();
 const productsController = new ProductController();
 
 productsRouter.get("/", productsController.getAllProducts);
+productsRouter.get("/tea", productsController.getTeaProducts);
+productsRouter.get("/coffee", productsController.getCoffeProducts);
 productsRouter.get("/:id", productsController.getProductDetail);
 productsRouter.post("/", productsController.createProduct);
 productsRouter.put("/:id", productsController.updateProduct);

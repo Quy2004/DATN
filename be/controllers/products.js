@@ -1,5 +1,6 @@
 import slugify from "slugify";
 import Product from "../models/ProductModel.js";
+import Category from "../models/CategoryModel.js";
 
 class ProductController {
   async getAllProducts(req, res) {
@@ -53,7 +54,7 @@ class ProductController {
         sort: { createdAt: -1 },
         populate: [
           { path: "category_id", select: "title" },
-          { path: "product_sizes.size_id", select: "name" },
+          { path: "product_sizes.size_id", select: "name priceSize" },
           { path: "product_toppings.topping_id", select: "nameTopping" },
         ],
         lean: true,
@@ -78,6 +79,62 @@ class ProductController {
       });
     } catch (error) {
       res.status(400).json({ message: error.message });
+    }
+  }
+
+  async getTeaProducts(req, res) {
+    try {
+      // Tìm danh mục có tên là "Trà"
+      const category = await Category.findOne({ title: "Trà" });
+      if (!category) {
+        return res.status(404).json({ message: "Danh mục 'Trà' không tồn tại" });
+      }
+  
+      // Tìm các sản phẩm thuộc danh mục "Trà"
+      const products = await Product.find({ 
+        category_id: category._id, 
+        isDeleted: false,
+        status: "available"
+      }).populate([
+        { path: "category_id", select: "title" },
+        { path: "product_sizes.size_id", select: "name" },
+        { path: "product_toppings.topping_id", select: "nameTopping" },
+      ]);
+  
+      res.status(200).json({
+        message: "Lấy sản phẩm thuộc danh mục 'Trà' thành công",
+        data: products,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async getCoffeProducts(req, res) {
+    try {
+      // Tìm danh mục có tên là "Coffe"
+      const category = await Category.findOne({ title: "Cà phê" });
+      if (!category) {
+        return res.status(404).json({ message: "Danh mục 'Cà phê' không tồn tại" });
+      }
+  
+      // Tìm các sản phẩm thuộc danh mục "Coffe"
+      const products = await Product.find({ 
+        category_id: category._id, 
+        isDeleted: false,
+        status: "available"
+      }).populate([
+        { path: "category_id", select: "title" },
+        { path: "product_sizes.size_id", select: "name" },
+        { path: "product_toppings.topping_id", select: "nameTopping" },
+      ]);
+  
+      res.status(200).json({
+        message: "Lấy sản phẩm thuộc danh mục 'Coffe' thành công",
+        data: products,
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   }
 

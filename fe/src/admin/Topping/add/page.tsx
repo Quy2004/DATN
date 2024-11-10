@@ -1,6 +1,6 @@
 import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Form, FormProps, Input, message, Select } from "antd";
+import { Button, Checkbox, Form, FormProps, Input, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
@@ -92,17 +92,16 @@ const ToppingAddPage = () => {
             name="category_id"
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
-            <Select
-              placeholder="Chọn danh mục"
-              loading={isLoadingCategories}
+            <Checkbox.Group
+              style={{ width: "100%" }}
               disabled={isLoadingCategories}
             >
               {categories?.data?.map((category: Category) => (
-                <Select.Option key={category._id} value={category._id}>
+                <Checkbox key={category._id} value={category._id}>
                   {category.title}
-                </Select.Option>
+                </Checkbox>
               ))}
-            </Select>
+            </Checkbox.Group>
           </Form.Item>
 
           <Form.Item<FieldType>

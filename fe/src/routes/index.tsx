@@ -6,7 +6,7 @@ import TeaPage from "../pages/TeaPage/TeaPage";
 import CoffeePage from "../pages/CoffeePage/Coffee";
 import MenuPage from "../pages/MenuPage/MenuPage";
 import AllSideBar from "../pages/MenuPage/SideBar/AllSide";
-import TeaSideBar from "../pages/MenuPage/SideBar/TeaSideBar";
+import TeaSideBar from "../pages/MenuPage/SideBar/ProductById";
 import ChuyenNhaPage from "../pages/ChuyenNhaPage/ChuyenNha";
 import AllHomes from "../pages/ChuyenNhaPage/Tabs/AllHomes";
 import CoffeHolicTab from "../pages/ChuyenNhaPage/Tabs/CoffeeHome";
@@ -42,7 +42,7 @@ import instance from "../services/api";
 import AuthPage from "../account/AuthPage/AuthPage";
 
 import BannerManagerPage from "../admin/Banner/Banner";
-import BannerAddPage from '../admin/Banner/add/page';
+import BannerAddPage from "../admin/Banner/add/page";
 import BannerUpdatePage from "../admin/Banner/edit/page";
 import CategoryPostManagerPage from "../admin/CategoryPost/page";
 import DetailPage from "../pages/DetailPage/DetailPage";
@@ -50,14 +50,13 @@ import CategoryPostAddPage from "../admin/CategoryPost/add/page";
 import CategoryPostupdatePage from "../admin/CategoryPost/edit/page";
 import CheckOut from "../pages/CheckOutPage/CheckOut";
 import VoucherPage from "../admin/Voucher/Voucher";
+import PostManagerPage from "../admin/Post/page";
 import CartPage from "../pages/CartPage/Cartpage";
-
-
-
-
+import PostAddPage from "../admin/Post/add/page";
+import PostUpdatePage from "../admin/Post/edit/page";
+import ResetPassword from "../account/forgotPassword/resetPassword";
 
 const Router = () => {
-
   return (
     <div>
       <Routes>
@@ -66,12 +65,11 @@ const Router = () => {
           <Route path="tea" element={<TeaPage />} />
           <Route path="coffee" element={<CoffeePage />} />
           <Route path="menu" element={<MenuPage />}>
-            <Route path="" element={<AllSideBar />} />
-            <Route path="teaside" element={<TeaSideBar />} />
+            {/* <Route path="" element={<AllSideBar />} />*/}
           </Route>
           <Route path="detail/:id" element={<DetailPage />} />
-          <Route path="checkout" element={<CheckOut/>}/>
-          <Route path="cart" element={<CartPage/>}/>
+          <Route path="checkout" element={<CheckOut />} />
+          <Route path="cart" element={<CartPage />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
             <Route path="coffeeholic" element={<CoffeHolicTab />} />
@@ -81,6 +79,7 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
@@ -113,7 +112,14 @@ const Router = () => {
 
           <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
           <Route path="CategoryPost/add" element={<CategoryPostAddPage />} />
-          <Route path="CategoryPost/:id/update" element={<CategoryPostupdatePage />} />
+          <Route
+            path="CategoryPost/:id/update"
+            element={<CategoryPostupdatePage />}
+          />
+
+          <Route path="post" element={<PostManagerPage />} />
+          <Route path="post/add" element={<PostAddPage />} />
+          <Route path="post/:id/update" element={<PostUpdatePage />} />
         </Route>
       </Routes>
     </div>

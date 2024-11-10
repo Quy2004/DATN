@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import Homes from "../../components/Homes";
-import "./HomePage.css"
 import React, { useState, useEffect } from 'react';
 import instance from "../../services/api";
 import { Product, ProductSize, ProductTopping } from "../../types/product";
@@ -8,7 +7,9 @@ import Slider from "react-slick"
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { Drawer, Modal } from "flowbite-react";
+import toast from "react-hot-toast";
 const HomePage: React.FC = () => {
+  const user = JSON.parse(localStorage.getItem("user") || '');
   // slideShow
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const images: string[] = [
@@ -59,6 +60,10 @@ const HomePage: React.FC = () => {
   const formatPrice = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
+  const inFormatPrice = (basePrice: number, sizePrice: number, quantity: number) => {
+    const totalPrice = (basePrice + sizePrice) * quantity;
+    return totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +74,7 @@ const HomePage: React.FC = () => {
     setIsModalOpen(!isModalOpen);
   };
   const handleSizeChange = (size: ProductSize) => {
-    setSelectedSize(size); // Cập nhật size đã chọn
+    setSelectedSize(size); // Cập nhật kích thước đã chọn
   };
 
   const handleToppingChange = (topping: ProductTopping) => {
@@ -82,10 +87,6 @@ const HomePage: React.FC = () => {
       alert("Vui lòng chọn size cho sản phẩm.");
       return;
     }
-
-    console.log("Sản phẩm:", selectedProduct);
-    console.log("Size đã chọn:", selectedSize);
-    console.log("Topping đã chọn:", selectedToppings);
     // Logic thêm sản phẩm vào giỏ hàng...
     setIsModalOpen(false);
   };
@@ -102,8 +103,26 @@ const HomePage: React.FC = () => {
       setQuantity(prevQuantity => prevQuantity - 1);
     }
   };
-
+  //add To Cart
+  const addToCart = async (productId: string) => {
+    if (!productId) {
+      return toast.success(
+        "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
+      );
+    }
+    try {
+      const { data } = await instance.post("/cart", {
+        userId: user._id,
+        productId: productId,
+        quantity: 1,
+      });
+      toast.success(data.messsage || "Thêm thành công");
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    }
+  };
   return (
+
     <>
       <div >
         <img src={images[currentIndex]} alt="" className="w-max" />
@@ -116,14 +135,31 @@ const HomePage: React.FC = () => {
             <div className="cow_right col-span-2 flex gap-6 h-[330px]">
               {products.slice(0, 2).map((product: Product) => (
                 <div className="item" key={product._id}>
-                  <div className="product_img">
-                    <Link to={`detail/${product._id}`}>
-                      <img src={`${product.image}`} alt="" className="" />
-                    </Link>
+                  <div className="relative product_img group place-items-center">
+                    <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
+                    {
+                      product.status === 'available' ? (
+                        <button key={product._id} onClick={() => toggleModal(product)}
+                          className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                          left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                          </svg> Mua ngay
+                        </button>
+                      ) : (
+                        <button
+                          className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                          </svg> Hết Hàng
+                        </button>
+                      )
+                    }
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="">
-                      <Link to="#">
+                      <Link to={`detail/${product._id}`}>
                         <h3 className="">{product.name}</h3>
                       </Link>
                       <p>{formatPrice(product.price)} VNĐ </p>
@@ -134,66 +170,55 @@ const HomePage: React.FC = () => {
                       </i>
                     </div>
                   </div>
-                  <div className="w-[255px] mt-5">
-                    {
-                      product.status === 'available' ? (
-                        <div className="w-[260px] mt-5">
-                          <button key={product._id} onClick={() => toggleModal(product)} className="relative inline-flex w-full items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-base font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-[#ea8025] to-orange-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
-                            <span className="relative flex items-center justify-center gap-4 w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                              <h2>Mua ngay</h2>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                              </svg>
-                            </span>
-                          </button>
-                        </div>
-                      ) : ''
-                    }
-                  </div>
                 </div>
               ))}
             </div>
           </div>
+          <div className="my-4"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
-              {products.map((product: Product, index) => (
+              {products.slice(0,10).map((product: Product, index) => (
                 <div className="flex md:mx-0">
                   <div key={`${product._id}-${index}`} className="item mx-2" >
                     <div className="my-4">
-                      <Link to={`detail/${product._id}`} className="overflow-hidden rounded-lg shadow-lg">
+                      <div className="relative group w-[300px] mb-2 rounded-xl place-items-center">
                         <img src={`${product.image}`} alt="" className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2" />
-                      </Link>
+                        {
+                          product.status === 'available' ? (
+                            <button key={product._id} onClick={() => toggleModal(product)}
+                              className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                              </svg> Mua ngay
+                            </button>
+                          ) : (
+                            <button
+                              className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                              </svg> Hết Hàng
+                            </button>
+                          )
+                        }
+                      </div>
                       <div>
                         <div className="flex items-center justify-between">
                           <div className="">
-                            <Link to="#">
+                            <Link to={`detail/${product._id}`}>
                               <h3 className="">{product.name}</h3>
                             </Link>
                             <p>{formatPrice(product.price)} VNĐ </p>
                           </div>
                           <div className="">
-                            <i className='text-sm'>
+                            <i className='text-sm mr-2'>
                               {product.status === 'available' ? '' : <span className="text-red-500">Hết hàng</span>}
                             </i>
                           </div>
                         </div>
-                        <div className="w-[260px] mt-5">
-                          {
-                            product.status === 'available' ? (
-                              <div className="w-[260px] mt-5">
-                                <button key={product._id} onClick={() => toggleModal(product)} className="relative inline-flex w-full items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-base font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-[#ea8025] to-orange-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800">
-                                  <span className="relative flex items-center justify-center gap-4 w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                                    <h2>Mua ngay</h2>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                                    </svg>
-                                  </span>
-                                </button>
-                              </div>
-                            ) : ''
-                          }
-                        </div>
+
                       </div>
                     </div>
                   </div>
@@ -212,7 +237,7 @@ const HomePage: React.FC = () => {
                     <div>
                       <div className="flex items-center justify-between">
                         <div className="">
-                          <Link to="#">
+                          <Link to={`detail/${product._id}`}>
                             <h3 className="">{product.name}</h3>
                           </Link>
                           <p>{formatPrice(product.price)} SVNĐ </p>
@@ -302,7 +327,7 @@ const HomePage: React.FC = () => {
                         </div>
                       </form>
                       <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
-                        +30.000 đ
+                        {inFormatPrice(selectedProduct.price, selectedSize?.size_id.priceSize || 0, quantity)} VNĐ
                       </button>
                     </div>
                   </div>
@@ -311,19 +336,22 @@ const HomePage: React.FC = () => {
                 <div className="my-3">
                   <h2 className="font-medium px-6">Chọn size</h2>
                   <form className="flex justify-between bg-white shadow-xl my-1 rounded-md">
-                    {selectedProduct.product_sizes.map((size) => (
-                      <div key={size.size_id._id} className="flex items-center gap-2 px-6 py-2">
-                        <input
-                          type="radio"
-                          name="size"
-                          checked={selectedSize === size}
-                          onChange={() => handleSizeChange(size)}
-                          disabled={size.status === "unavailable"}
-                          className="text-[#ea8025] border-[#ea8025] border-2"
-                        />
-                        <label htmlFor="">{size.size_id.name} {size.priceSize && `(+${size.priceSize} đ)`}</label>
-                      </div>
-                    ))}
+                    {selectedProduct.product_sizes.map((size) => {
+                      return (
+                        <div className="flex items-center gap-2 px-6 py-2">
+                          <input key={size.size_id._id}
+                            type="radio"
+                            name="size"
+                            checked={selectedSize === size}
+                            onChange={() => handleSizeChange(size)}
+                            disabled={size.status === "unavailable"}
+                            className="text-[#ea8025] border-[#ea8025] border-2"
+                          />
+                          <label htmlFor="">{size.size_id.name}</label>
+                        </div>
+                      )
+                    }
+                    )}
                   </form>
                 </div>
                 {/* Topping Selection */}
@@ -348,6 +376,9 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="flex mt-4">
                   <button
+                    onClick={() => {
+                      addToCart(selectedProduct?._id);
+                    }}
                     className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
                   >
                     <span className="relative z-10 transition duration-300 group-hover:text-white"><p className="text-base">Thêm giỏ hàng</p></span>

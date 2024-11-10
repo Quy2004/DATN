@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
                                 <iframe
                                     width="300"
                                     height="150"
-                                    src="https://www.youtube.com/embed/OE57pr7sPE4?si=sw5v14SPVBwUzOXI"
+                                    src="https://www.youtube.com/embed/zEWSSod0zTY?si=likpXujK9JxLrOVl" 
                                     title="YouTube video player"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
 
