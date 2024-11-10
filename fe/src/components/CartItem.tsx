@@ -16,7 +16,6 @@ const CartItem: React.FC<{
               const { data } = await instance.get(`/products/${item?._id}`);
               
               setProduct(data.data); // Lưu sản phẩm vào state
-              console.log("object", data.data)
             } catch (error) {
               console.error("Lỗi khi lấy sản phẩm:", error);
               toast.error("Không thể tải sản phẩm.");
@@ -25,11 +24,9 @@ const CartItem: React.FC<{
           };
           fetchProduct();
         },[item])
-      console.log(product)
 
 const handleDelete = async (id:number) => {
   const data = await instance.patch(`/cart/${idcart}/product/${id}`)
-  console.log(data)
 }
   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
     return (total += current?.size_id?.priceSize);
