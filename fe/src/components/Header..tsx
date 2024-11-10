@@ -56,7 +56,6 @@ const Header: React.FC = () => {
 	const fetchCart = async () => {
 		try {
 		  const { data } = await instance.get(`/cart/${user._id}`);
-		  console.log('CART ->', data);
 		  setIdCart(data.cart_id)
 		   // Gọi API từ backend 
 		  setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
@@ -69,9 +68,6 @@ const Header: React.FC = () => {
 	  useEffect(() => {
 		  fetchCart();
 	  }, []);
-
-	  console.log(idCart)
-	
 
 	return (
 		<>
