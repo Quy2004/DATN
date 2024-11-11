@@ -190,7 +190,7 @@ const ProductAddPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
+      <div className="w-full mx-auto max-h-[450px] overflow-y-auto">
         <Form
           form={form}
           name="basic"
