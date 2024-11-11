@@ -22,7 +22,7 @@ export const register = async (req, res) => {
     const hashPassword = await bcryptjs.hash(password, 10);
 
     // Gán avatar mặc định nếu không có
-    const defaultAvatar = [{ url: "be/image/avt.jpg" }];
+    const defaultAvatar = [{ url: " " }];
     const userAvatars = avatars && avatars.length > 0 ? avatars : defaultAvatar;
 
     // Tạo người dùng mới
