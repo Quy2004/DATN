@@ -418,6 +418,7 @@ const SizeManagerPage: React.FC = () => {
 						<Descriptions
 							bordered
 							column={2}
+							className="bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 						>
 							<Descriptions.Item
 								label="Tên size"
@@ -427,11 +428,7 @@ const SizeManagerPage: React.FC = () => {
 									{selectedSize.name}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Giá size"
 								span={2}
