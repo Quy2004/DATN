@@ -23,7 +23,7 @@ const VoucherAddPage = () => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const navigate = useNavigate();
 	const [form] = Form.useForm();
-	const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+	const [selectedTypes, setSelectedTypes] = useState<string>("");
 
 	// Mutation để thêm voucher
 	const { mutate } = useMutation({
@@ -68,9 +68,14 @@ const VoucherAddPage = () => {
 
 	// Hàm xử lý chọn loại
 	const handleTypeSelect = (type: string) => {
-		setSelectedTypes(prev =>
-			prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type],
-		);
+		// Nếu đã chọn loại, có thể bỏ chọn lại
+		setSelectedTypes(selectedTypes === type ? "" : type);
+
+		// Clear dữ liệu trong các input khi không chọn loại
+		form.setFieldsValue({
+			applicableCategories: [], // Xóa dữ liệu trong Select danh mục
+			applicableProducts: [], // Xóa dữ liệu trong Select sản phẩm
+		});
 	};
 
 	// Hàm tạo mã ngẫu nhiên
@@ -126,6 +131,10 @@ const VoucherAddPage = () => {
 					<Form.Item<Voucher>
 						label="Mã voucher"
 						name="code"
+						rules={[
+							{ required: true, message: "Vui lòng nhập mã voucher!" }, // Kiểm tra không để trống
+							{ len: 8, message: "Mã voucher phải có chính xác 8 ký tự!" }, // Kiểm tra đúng 8 ký tự
+						]}
 					>
 						<Input
 							className="Input-antd text-sm placeholder-gray-400"
@@ -134,21 +143,28 @@ const VoucherAddPage = () => {
 					</Form.Item>
 
 					{/* Button để chọn loại */}
-					<div className="mb-4 ml-[199px]">
-						<Button
-							type={selectedTypes.includes("category") ? "primary" : "default"}
-							onClick={() => handleTypeSelect("category")}
-							className="mr-2"
-						>
-							Chọn danh mục
-						</Button>
-						<Button
-							type={selectedTypes.includes("product") ? "primary" : "default"}
-							onClick={() => handleTypeSelect("product")}
-						>
-							Chọn sản phẩm
-						</Button>
-					</div>
+
+					{/* Form.Item cho Áp dụng cho */}
+					<Form.Item
+						label="Áp dụng cho:"
+						className="mb-4 "
+					>
+						<div>
+							<Button
+								type={selectedTypes === "category" ? "primary" : "default"}
+								onClick={() => handleTypeSelect("category")}
+								className="mr-2"
+							>
+								Áp dụng cho danh mục
+							</Button>
+							<Button
+								type={selectedTypes === "product" ? "primary" : "default"}
+								onClick={() => handleTypeSelect("product")}
+							>
+								Áp dụng cho sản phẩm
+							</Button>
+						</div>
+					</Form.Item>
 
 					{/* Select cho danh mục */}
 					{selectedTypes.includes("category") && (
