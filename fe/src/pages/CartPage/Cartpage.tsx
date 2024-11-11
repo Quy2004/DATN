@@ -27,6 +27,14 @@ const CartPage = () => {
         fetchCart();
     }, []);
 
+     // Định dạng tiền Việt
+     const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
     return (
         <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
             <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
@@ -55,7 +63,7 @@ const CartPage = () => {
                                         />
                                         <button type="button"></button>
                                         <div className="text-end md:order-4 md:w-32">
-                                            <p className="text-base font-bold text-gray-900 dark:text-white">${item?.product?.price * item?.quantity}</p>
+                                            <p className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(item?.product?.price * item?.quantity)}</p>
                                         </div>
                                     </div>
                                     <div className="w-full min-w-0 flex-1 space-y-3 md:order-2 md:max-w-md">
@@ -85,7 +93,7 @@ const CartPage = () => {
                             <div className="space-y-4">
                                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
                                     <dt className="text-base font-bold text-gray-900 dark:text-white">Tổng giá</dt>
-                                    <dd className="text-base font-bold text-gray-900 dark:text-white">{totalPrice}VNĐ</dd>
+                                    <dd className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(totalPrice)}</dd>
                                 </dl>
                             </div>
                             <Link to="#" className="flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white bg-[#ea8025] hover:bg-[#ff8e37] border-2">Tiến hành thanh toán</Link>
