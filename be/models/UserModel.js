@@ -11,7 +11,6 @@ const UserSchema = new Schema(
     },
     avatars: {
       type: [Object],
-      default: "be/image/avt.jpg"
     },
     userName:{
         type: String,
@@ -28,7 +27,7 @@ const UserSchema = new Schema(
     },
     role: {
         type: String,
-        enum: ["user", "manager", "admin"],
+        enum: ["user", "admin"],
         default: "user",
     }
   },
