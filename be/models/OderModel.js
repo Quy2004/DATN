@@ -44,7 +44,6 @@ const orderSchema = new mongoose.Schema(
     enum: [
       "pending",         // Chờ xác nhận
       "confirmed",       // Đã xác nhận
-      "preparing",       // Đang chuẩn bị
       "shipping",        // Đang giao hàng
       "delivered",       // Đã giao hàng
       "completed",       // Đã hoàn thành
