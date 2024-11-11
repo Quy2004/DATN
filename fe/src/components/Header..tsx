@@ -5,11 +5,12 @@ import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
+import { useClickOutside } from "./ClickOutSide";
 
 const Header: React.FC = () => {
 	const user = JSON.parse(localStorage.getItem("user") || '');
 	const [cart, setCart] = useState<any>([]);
-	const [idCart,setIdCart] = useState<number>()
+	const [idCart, setIdCart] = useState<number>()
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const toggleModal = () => {
 		setIsModalOpen(!isModalOpen);
@@ -55,19 +56,33 @@ const Header: React.FC = () => {
 	//cart
 	const fetchCart = async () => {
 		try {
-		  const { data } = await instance.get(`/cart/${user._id}`);
-		  setIdCart(data.cart_id)
-		   // Gọi API từ backend 
-		  setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
-		  // setLoading(false); // Tắt trạng thái loading
+			const { data } = await instance.get(`/cart/${user._id}`);
+			setIdCart(data.cart_id)
+			// Gọi API từ backend 
+			setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
+			// setLoading(false); // Tắt trạng thái loading
 		} catch (error) {
-		  console.error("Lỗi khi lấy sản phẩm:", error);
-		  // setLoading(false); // Tắt trạng thái loading trong trường hợp lỗi
+			console.error("Lỗi khi lấy sản phẩm:", error);
+			// setLoading(false); // Tắt trạng thái loading trong trường hợp lỗi
 		}
-	  };
-	  useEffect(() => {
-		  fetchCart();
-	  }, []);
+	};
+	useEffect(() => {
+		fetchCart();
+	}, []);
+	// const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [userName, setUserName] = useState('');
+	useEffect(() => {
+		const storedUser = localStorage.getItem("user");
+		if (storedUser) {
+			const user = JSON.parse(storedUser);
+			setUserName(user.userName); // Lấy `userName` từ `localStorage`
+		}
+	}, []);
+	const { isDropdownOpen, setIsDropdownOpen, dropdownRef } = useClickOutside(false);
+
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
+	};
 
 	return (
 		<>
@@ -171,31 +186,80 @@ const Header: React.FC = () => {
 							className="hidden md:block"
 						>
 							<div
-								className="flex  text-sm font-semibold"
+								className="flex items-center text-sm font-semibold"
 								id="main-menu"
 							>
-								<div className="px-4">
-									<Link
-										to={"/login"}
-										type="button"
-										className="*:hover:text-[#ea8025] px-6 "
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={1.5}
-											stroke="currentColor"
-											className="size-6"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-											/>
-										</svg>
-									</Link>
-								</div>
+								{/* User */}
+								{
+									userName ? (
+										<div ref={dropdownRef}
+											className="flex items-center gap-x-1 relative">
+											<button
+												id="dropdownDefaultButton"
+												onClick={toggleDropdown}
+												className="text-[#000] font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center "
+												type="button"
+											>
+												<h3>{userName}</h3>
+											</button>
+											{isDropdownOpen && (
+												<div className="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-48 dark:bg-gray-700 absolute top-full mt-4">
+													<ul className="py-2 text-sm text-gray-600 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+														<li>
+															<Link to="account-update" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																Cập nhật tài khoản
+															</Link>
+														</li>
+
+														<li>
+															<Link to="tracking" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																Theo dôi đơn hàng
+															</Link>
+														</li>
+														<li>
+															<Link to="oder-histo" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																<h3>
+																	Xem lịch sử mua hàng
+																</h3>
+															</Link>
+														</li>
+														<li>
+															<button className="w-max px-4 py-2 ">
+																<h3 className="font-bold">
+																	Đăng xuất
+																</h3>
+															</button>
+														</li>
+													</ul>
+												</div>
+											)}
+										</div>
+									) : (
+										<div className="px-4">
+											<Link
+												to={"/login"}
+												type="button"
+												className="*:hover:text-[#ea8025] px-6 "
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													strokeWidth={1.5}
+													stroke="currentColor"
+													className="size-6"
+												>
+													<path
+														strokeLinecap="round"
+														strokeLinejoin="round"
+														d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+													/>
+												</svg>
+											</Link>
+										</div>
+									)
+								}
+								{/* Cart */}
 								<div className="px-4">
 									<button
 										className="relative top-[30%] h-[24px] *:hover:text-[#ea8025] *:hover:opacity-80"
@@ -233,17 +297,17 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					
-					{cart?.map((item : any)=>(
+
+					{cart?.map((item: any) => (
 						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity
 						} />
 					))}
-						
+
 					<div className="flex gap-2">
 						<Link to={'cart'}>
-						<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
-							Checking
-						</Button></Link>
+							<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
+								Checking
+							</Button></Link>
 						<Button
 							onClick={toggleModal}
 							className="inline-flex w-full rounded-lg bg-cyan-700 px-4 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
@@ -251,71 +315,6 @@ const Header: React.FC = () => {
 							Thanh Toán
 						</Button>
 					</div>
-					{/* <Modal show={isModalOpen} onClose={toggleModal}>
-                        <Modal.Header>
-                            <h1 className="text-2xl">
-                                Thanh Toán
-                            </h1>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <form className="space-y-4" action="#">
-                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                    <div className="col-span-2 ">
-                                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Address
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="address"
-                                            id="text"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        />
-                                    </div>
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            id="text"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        />
-                                    </div>
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Phone
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name="pirce"
-                                            id="number"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-4 p-2 rounded-lg border-2 ">
-                                    <img src="../src/assets/images/shirt.png" alt="Anh san pham" className="w-[70px] h-[70px] col-span-1" />
-                                    <p className="col-span-2">T-Shirt</p>
-                                    <span><b className="col-span-1">100.000</b> VND</span>
-                                </div>
-                            </form>
-                            <div className="my-3">
-                                <p className="font-medium">Phương thức thanh toán :</p>
-                                <div className="my-1">
-                                    <input type="radio" name="default-radio" id="" />
-                                    <label htmlFor="" className="ms-2 text-gray-900 dark:text-gray-300">Thanh toán khi nhân hàng</label>
-                                </div>
-                                <div className="mb-4">
-                                    <input type="radio" name="default-radio" id="" />
-                                    <label htmlFor="" className="ms-2  text-gray-900 dark:text-gray-300">Thanh toán qua momo</label>
-                                </div>
-                            </div>
-                            <Button type="submit" fullSized>
-                                Thanh Toán
-                            </Button>
-                        </Modal.Body>
-                    </Modal> */}
 				</Drawer.Items>
 			</Drawer>
 		</>
