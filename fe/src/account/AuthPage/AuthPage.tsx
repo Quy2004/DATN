@@ -77,6 +77,7 @@ const AuthPage = () => {
 
             setTimeout(() => {
                 navigate("/"); 
+                window.location.reload();
             }, 1500);
         } catch (error) {
             toast.error("Email hoặc mật khẩu không chính xác.", { duration: 3000 });
