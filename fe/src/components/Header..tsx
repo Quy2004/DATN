@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
+import { useClickOutside } from "./ClickOutSide";
 
 const Header: React.FC = () => {
 	const user = JSON.parse(localStorage.getItem("user") || '');
@@ -77,7 +78,7 @@ const Header: React.FC = () => {
 			setUserName(user.userName); // Lấy `userName` từ `localStorage`
 		}
 	}, []);
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const { isDropdownOpen, setIsDropdownOpen, dropdownRef } = useClickOutside(false);
 
 	const toggleDropdown = () => {
 		setIsDropdownOpen(!isDropdownOpen);
@@ -191,7 +192,8 @@ const Header: React.FC = () => {
 								{/* User */}
 								{
 									userName ? (
-										<div className="flex items-center gap-x-1 relative">
+										<div ref={dropdownRef}
+											className="flex items-center gap-x-1 relative">
 											<button
 												id="dropdownDefaultButton"
 												onClick={toggleDropdown}
@@ -215,7 +217,7 @@ const Header: React.FC = () => {
 															</Link>
 														</li>
 														<li>
-															<Link to="oder-history" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+															<Link to="oder-histo" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
 																<h3>
 																	Xem lịch sử mua hàng
 																</h3>
