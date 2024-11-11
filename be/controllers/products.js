@@ -54,7 +54,7 @@ class ProductController {
         sort: { createdAt: -1 },
         populate: [
           { path: "category_id", select: "title" },
-          { path: "product_sizes.size_id", select: "name" },
+          { path: "product_sizes.size_id", select: "name priceSize" },
           { path: "product_toppings.topping_id", select: "nameTopping" },
         ],
         lean: true,

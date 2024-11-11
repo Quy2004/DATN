@@ -17,10 +17,23 @@ const orderSchema = new mongoose.Schema(
       ref: "users",
       required: true,
     },
-    address_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-      required: true,
+    customerInfo: {
+      name: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
     },
     totalPrice: {
       type: mongoose.Schema.Types.Decimal128,
@@ -31,7 +44,6 @@ const orderSchema = new mongoose.Schema(
     enum: [
       "pending",         // Chờ xác nhận
       "confirmed",       // Đã xác nhận
-      "preparing",       // Đang chuẩn bị
       "shipping",        // Đang giao hàng
       "delivered",       // Đã giao hàng
       "completed",       // Đã hoàn thành

@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { User } from "../../types/user";
 import { DeleteOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -120,10 +121,29 @@ const ClientAdmin = () => {
 	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
+				// Kiểm tra số lượng người dùng có vai trò admin
+				const adminCount = await instance.get("/users?role=admin");
+				if (adminCount.data.length <= 1) {
+					throw new Error("Không thể xóa quyền quản lý vì chỉ còn 1 quản lý");
+				}
+			
+				// Nếu điều kiện trên không vi phạm, tiếp tục gửi yêu cầu PATCH
 				return await instance.patch(`/users/${_id}/user`);
-			} catch (error) {
-				throw new Error("Cập nhật vai trò user thất bại");
+			} catch (error: unknown) {
+				// Kiểm tra xem lỗi có phải là một lỗi Axios (có thuộc tính `response`)
+				if (axios.isAxiosError(error)) {
+					// Kiểm tra xem lỗi Axios có chứa dữ liệu response với message hay không
+					if (error.response && error.response.data && error.response.data.message) {
+						throw new Error(error.response.data.message);  // Lấy thông báo lỗi từ backend
+					}
+				}
+				
+				// Nếu không phải lỗi Axios hoặc không có thông báo lỗi, ném lỗi chung
+				throw new Error("Cập nhật vai trò user thất bại: " + (error instanceof Error ? error.message : 'Lỗi không xác định'));
 			}
+			
+			
+			
 		},
 		onSuccess: () => {
 			messageApi.success("Cập nhật vai trò user thành công");
@@ -138,13 +158,13 @@ const ClientAdmin = () => {
 	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/users/${_id}/manager`);
+				return await instance.patch(`/users/${_id}/admin`);
 			} catch (error) {
-				throw new Error("Cập nhật vai trò manager thất bại");
+				throw new Error("Cập nhật vai trò quản lý thất bại");
 			}
 		},
 		onSuccess: () => {
-			messageApi.success("Cập nhật vai trò manager thành công");
+			messageApi.success("Cập nhật vai trò quản lý thành công");
 			queryClient.invalidateQueries({ queryKey: ["user"] });
 		},
 		onError: error => {
@@ -156,7 +176,7 @@ const ClientAdmin = () => {
 	const handleRoleChange = (_id: string, newRole: string) => {
 		if (newRole === "user") {
 			mutationUpdateUserRole.mutate({ _id });
-		} else if (newRole === "manager") {
+		} else if (newRole === "admin") {
 			mutationUpdateManagerRole.mutate({ _id });
 		} else {
 			messageApi.error("Vai trò không hợp lệ");
@@ -200,6 +220,7 @@ const ClientAdmin = () => {
 			title: "STT",
 			dataIndex: "key",
 			key: "key",
+			width: 60,
 		},
 		{
 			title: "Tên user",
@@ -218,6 +239,7 @@ const ClientAdmin = () => {
 			title: "Email",
 			dataIndex: "email",
 			key: "email",
+			width: 250,
 		},
 		{
 			title: "Hình ảnh",
@@ -243,7 +265,7 @@ const ClientAdmin = () => {
 					style={{ width: 150 }}
 				>
 					<Option value="admin">Admin</Option>
-					<Option value="manager">Manager</Option>
+					{/* <Option value="manager">Manager</Option> */}
 					<Option value="user">User</Option>
 				</Select>
 			),
@@ -345,7 +367,7 @@ const ClientAdmin = () => {
 					>
 						<Option value="allUser">Tất cả vai trò</Option>
 						<Option value="admin">Quản lý</Option>
-						<Option value="manager">Nhân viên</Option>
+						{/* <Option value="manager">Nhân viên</Option> */}
 						<Option value="user">Người dùng</Option>
 					</Select>
 				</div>
@@ -429,8 +451,8 @@ const ClientAdmin = () => {
 										? "Admin"
 										: selectedUser.role === "user"
 										? "Người dùng"
-										: selectedUser.role === "manager"
-										? "Nhân viên"
+										// : selectedUser.role === "manager"
+										// ? "Nhân viên"
 										: "Không xác định"}
 								</span>
 							</Descriptions.Item>
