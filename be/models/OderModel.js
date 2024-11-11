@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 
-// Hàm để sinh orderNumber
+// Hàm để sinh orderNumber bao gồm cả chữ và số
 const generateOrderNumber = () => {
   const timestamp = Date.now().toString();
-  const random = Math.floor(Math.random() * 1000)
+  const randomLetters = Math.random().toString(36).substring(2, 5).toUpperCase(); // Tạo 3 chữ cái ngẫu nhiên
+  const randomNumbers = Math.floor(Math.random() * 1000)
     .toString()
-    .padStart(3, "0");
-  return `${timestamp}-${random}`;
+    .padStart(3, "0"); // Tạo 3 chữ số ngẫu nhiên
+  return `${randomLetters}-${timestamp}-${randomNumbers}`;
 };
 
 // Khai báo orderSchema
@@ -39,27 +40,22 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Decimal128,
       required: true,
     },
-   orderStatus: {
-    type: String,
-    enum: [
-      "pending",         // Chờ xác nhận
-      "confirmed",       // Đã xác nhận
-      "shipping",        // Đang giao hàng
-      "delivered",       // Đã giao hàng
-      "completed",       // Đã hoàn thành
-      "canceled",        // Đã hủy
-    ],
-    default: "pending",
-},
+    orderStatus: {
+      type: String,
+      enum: [
+        "pending",         // Chờ xác nhận
+        "confirmed",       // Đã xác nhận
+        "shipping",        // Đang giao hàng
+        "delivered",       // Đã giao hàng
+        "completed",       // Đã hoàn thành
+        "canceled",        // Đã hủy
+      ],
+      default: "pending",
+    },
     orderDetail_id: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "OrderDetail", 
-  }],
-    // payment_id: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Payment",
-    //   required: false,
-    // },
+    }],
     paymentMethod: {
       type: String,
       enum: ["bank transfer", "cash on delivery"],
@@ -70,7 +66,6 @@ const orderSchema = new mongoose.Schema(
       unique: true,
     },
     note: {
-      // Thêm trường note
       type: String,
       required: false, 
     },
