@@ -20,6 +20,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Voucher } from "../../types/voucher";
+import { Category } from "../../types/category";
+import { Product } from "../../types/product";
 
 const { Title } = Typography;
 
@@ -150,8 +152,78 @@ const VoucherPage = () => {
 		setSelectedVoucher(null);
 	};
 
+	// Lấy danh sách danh mục từ API
+	const { data: categoriesData } = useQuery({
+		queryKey: ["categories"],
+		queryFn: async () => {
+			const response = await instance.get("/categories"); // Gọi API lấy danh mục
+			console.log("API cate: ", response.data);
+			return response.data.data; // Đảm bảo lấy đúng dữ liệu từ response
+		},
+	});
+
+	// Tìm tên danh mục dựa trên categoryId
+	const getCategoryName = (categoryId: any): any => {
+		console.log("Looking for category with ID: ", categoryId);
+
+		// Kiểm tra nếu categoriesData là mảng hợp lệ và có dữ liệu
+		if (
+			!categoriesData ||
+			!Array.isArray(categoriesData) ||
+			categoriesData.length === 0
+		) {
+			return "Không xác định";
+		}
+
+		// Tìm kiếm danh mục tương ứng với categoryId
+		const foundCategory = categoriesData.find(
+			(category: Category) => category._id === categoryId,
+		);
+
+		console.log("Found category: ", foundCategory); // Để debug kết quả
+
+		// Trả về tên danh mục hoặc "Không xác định" nếu không tìm thấy
+		return foundCategory ? foundCategory.title : "Không xác định";
+	};
+
+	// Lấy danh sách sản phẩm từ API
+	const { data: productsData } = useQuery({
+		queryKey: ["products"],
+		queryFn: async () => {
+			const response = await instance.get("/products"); // Gọi API lấy danh sách sản phẩm
+			console.log("API Response: ", response.data);
+			return response.data.data;
+		},
+	});
+
+	const getProductName = (productId: any): any => {
+		console.log("Looking for product with ID: ", productId);
+
+		if (
+			!productsData ||
+			!Array.isArray(productsData) ||
+			productsData.length === 0
+		) {
+			return "Không xác định";
+		}
+
+		const foundProduct = productsData.find(
+			(product: Product) => product._id === productId,
+		);
+
+		console.log("Found product: ", foundProduct); // Để debug kết quả
+
+		return foundProduct ? foundProduct.name : "Không xác định";
+	};
+
 	// Đinh nghĩa table
 	const columns = [
+		{
+			title: "STT",
+			dataIndex: "key",
+			key: "key",
+			width: 60,
+		},
 		{
 			title: "Tên",
 			dataIndex: "name",
@@ -167,10 +239,10 @@ const VoucherPage = () => {
 			),
 		},
 		{
-			title: "Phần trăm giảm giá",
+			title: "Phần trăm (%)",
 			dataIndex: "discountPercentage",
 			key: "discountPercentage",
-			width: 100,
+			width: 125,
 		},
 		{
 			title: "Số lượng",
@@ -196,7 +268,8 @@ const VoucherPage = () => {
 			title: "Trạng thái",
 			dataIndex: "status",
 			key: "status",
-			
+			width: 120,
+
 			render: (status: any) => {
 				switch (status) {
 					case "upcoming":
@@ -267,7 +340,7 @@ const VoucherPage = () => {
 	];
 
 	const dataSource = data?.data?.map((item: any, index: number) => ({
-		// key: index + 1,
+		key: index + 1,
 		name: item.name,
 		code: item.code,
 		description: item.description,
@@ -351,7 +424,7 @@ const VoucherPage = () => {
 				}}
 				onChange={handleTableChange}
 				scroll={{ y: 300 }} // Chỉ cần chiều cao
-				style={{ tableLayout: "fixed"}} // Giữ chiều rộng ổn định
+				style={{ tableLayout: "fixed" }} // Giữ chiều rộng ổn định
 			/>
 
 			<Modal
@@ -367,6 +440,7 @@ const VoucherPage = () => {
 						<Descriptions
 							bordered
 							column={2}
+							className="bg-gray-50 rounded-lg shadow-sm border border-gray-200"
 						>
 							<Descriptions.Item
 								label="Tên size"
@@ -376,12 +450,9 @@ const VoucherPage = () => {
 									{selectedVoucher.name}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Mã code"
 								span={2}
@@ -390,40 +461,65 @@ const VoucherPage = () => {
 									{selectedVoucher.code}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Mô tả"
 								span={2}
 							>
-								<span className="font-semibold  text-gray-900">
+								<span className="font-semibold text-gray-900">
 									{selectedVoucher.description}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
-								label="Phần trăm giảm giá"
+								label="Áp dụng cho"
+								span={2}
+							>
+								<span className="font-semibold text-gray-900">
+									{
+										// Kiểm tra nếu cả hai mảng đều có dữ liệu
+										selectedVoucher.applicableProducts.length > 0 &&
+										selectedVoucher.applicableCategories.length > 0
+											? `Sản phẩm: ${selectedVoucher.applicableProducts
+													.map(productId => getProductName(productId)) // Truyền productId (string) vào
+													.join(
+														", ",
+													)}, Danh mục: ${selectedVoucher.applicableCategories
+													.map(categoryId => getCategoryName(categoryId)) // Truyền categoryId (string) vào
+													.join(", ")}`
+											: // Nếu chỉ có sản phẩm
+											selectedVoucher.applicableProducts.length > 0
+											? `Sản phẩm: ${selectedVoucher.applicableProducts
+													.map(productId => getProductName(productId)) // Truyền productId (string) vào
+													.join(", ")}`
+											: // Nếu chỉ có danh mục
+											selectedVoucher.applicableCategories.length > 0
+											? `Danh mục: ${selectedVoucher.applicableCategories
+													.map(categoryId => getCategoryName(categoryId)) // Truyền categoryId (string) vào
+													.join(", ")}`
+											: // Nếu cả hai đều không có dữ liệu
+											  "Tất cả"
+									}
+								</span>
+							</Descriptions.Item>
+						
+
+						
+							<Descriptions.Item
+								label="Phần trăm(%)"
 								span={2}
 							>
 								<span className="font-semibold  text-gray-900">
 									{selectedVoucher.discountPercentage} %
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Giảm giá tối đa"
 								span={2}
@@ -432,12 +528,9 @@ const VoucherPage = () => {
 									{selectedVoucher.maxDiscount}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Số lượng"
 								span={2}
@@ -446,12 +539,9 @@ const VoucherPage = () => {
 									{selectedVoucher.quantity}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Ngày bắt đầu"
 								span={2}
@@ -472,12 +562,9 @@ const VoucherPage = () => {
 										: "Không có dữ liệu"}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Ngày kết thúc"
 								span={2}
@@ -498,12 +585,9 @@ const VoucherPage = () => {
 										: "Không có dữ liệu"}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+						
 
-						<Descriptions
-							bordered
-							column={2}
-						>
+						
 							<Descriptions.Item
 								label="Trạng thái"
 								span={2}
@@ -523,7 +607,7 @@ const VoucherPage = () => {
 									})()}
 								</span>
 							</Descriptions.Item>
-						</Descriptions>
+							</Descriptions>
 					</div>
 				)}
 			</Modal>

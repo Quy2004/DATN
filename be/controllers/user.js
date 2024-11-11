@@ -132,16 +132,34 @@ class UserController {
 	}
 
 	// cấp quyền quản lí cho nhân viên 
-	async managerUser(req, res) {
+	// async managerUser(req, res) {
+	// 	try {
+	// 		const { id } = req.params;
+	// 		const user = await User.findById(id);
+	// 		if (!user || user.role == "manager") {
+	// 			res
+	// 				.status(400)
+	// 				.json({ message: "Người dùng đã là quản lí" });
+	// 		}
+	// 		user.role = "manager";
+	// 		await user.save();
+	// 		res.status(200).json({ message: "Người dùng đã được thêm thành quản lí" });
+	// 	} catch (error) {
+	// 		res.status(404).json({ message: error.message });
+	// 	}
+	// }
+
+
+	async adminUser(req, res) {
 		try {
 			const { id } = req.params;
 			const user = await User.findById(id);
-			if (!user || user.role == "manager") {
+			if (!user || user.role == "admin") {
 				res
 					.status(400)
 					.json({ message: "Người dùng đã là quản lí" });
 			}
-			user.role = "manager";
+			user.role = "admin";
 			await user.save();
 			res.status(200).json({ message: "Người dùng đã được thêm thành quản lí" });
 		} catch (error) {
@@ -153,19 +171,30 @@ class UserController {
 	async customerUser(req, res) {
 		try {
 			const { id } = req.params;
+			
+			// Kiểm tra người dùng cần thay đổi quyền
 			const user = await User.findById(id);
-			if (!user || user.role == "user") {
-				res
-					.status(400)
-					.json({ message: "Người dùng đã không phải là quản lí" });
+			if (!user || user.role !== "admin") {
+				return res.status(400).json({ message: "Người dùng không phải là quản lý" });
 			}
+	
+			// Kiểm tra số lượng người dùng có vai trò 'admin'
+			const adminCount = await User.countDocuments({ role: "admin" });
+			if (adminCount <= 1) {
+				return res.status(400).json({ message: "Không thể xóa quyền quản lý vì chỉ còn 1 quản lý" });
+			}
+	
+			// Cập nhật quyền của người dùng thành 'user'
 			user.role = "user";
 			await user.save();
-			res.status(200).json({ message: "Người dùng đã bị xóa quyền quản lí thành quản lí" });
+			
+			res.status(200).json({ message: "Người dùng đã bị xóa quyền quản lý thành quản lý" });
 		} catch (error) {
 			res.status(404).json({ message: error.message });
 		}
 	}
+	
+	
 
 }
 
