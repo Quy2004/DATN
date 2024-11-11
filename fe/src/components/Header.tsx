@@ -1,18 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
 import { useClickOutside } from "./ClickOutSide";
-import toast from "react-hot-toast";
 
 const Header: React.FC = () => {
-	const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser!) : {};
-
-  
+	const user = JSON.parse(localStorage.getItem("user") || '');
 	const [cart, setCart] = useState<any>([]);
 	const [idCart, setIdCart] = useState<number>()
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,13 +84,12 @@ const Header: React.FC = () => {
 	const toggleDropdown = () => {
 		setIsDropdownOpen(!isDropdownOpen);
 	};
-
 	const handleLogout = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         toast.success("Đã đăng xuất thành công!", { duration: 2000 });
         navigate("/login");
-        // setSignIn(true); // Cập nhật trạng thái để hiện form đăng nhập
+        
     };
 
 	return (
@@ -236,7 +232,7 @@ const Header: React.FC = () => {
 															</Link>
 														</li>
 														<li>
-															<button className="w-max px-4 py-2 " onClick={handleLogout}>
+														<button className="w-max px-4 py-2 " onClick={handleLogout}>
 																<h3 className="font-bold">
 																	Đăng xuất
 																</h3>
@@ -309,7 +305,6 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-
 					{cart?.map((item: any) => (
 						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity
 						} />

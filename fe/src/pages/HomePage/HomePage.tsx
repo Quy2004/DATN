@@ -9,7 +9,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { Drawer, Modal } from "flowbite-react";
 import toast from "react-hot-toast";
 const HomePage: React.FC = () => {
-	const storedUser = localStorage.getItem("user");
+  const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser!) : {};
   // slideShow
   const [currentIndex, setCurrentIndex] = useState<number>(0);
