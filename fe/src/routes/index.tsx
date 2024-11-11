@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+
 import { Route, Routes } from "react-router-dom";
 import WebsiteLayout from "../pages/Layout/WebsiteLayout";
 import HomePage from "../pages/HomePage/HomePage";
 import TeaPage from "../pages/TeaPage/TeaPage";
 import CoffeePage from "../pages/CoffeePage/Coffee";
 import MenuPage from "../pages/MenuPage/MenuPage";
-import AllSideBar from "../pages/MenuPage/SideBar/AllSide";
-import TeaSideBar from "../pages/MenuPage/SideBar/ProductById";
 import ChuyenNhaPage from "../pages/ChuyenNhaPage/ChuyenNha";
 import AllHomes from "../pages/ChuyenNhaPage/Tabs/AllHomes";
 import CoffeHolicTab from "../pages/ChuyenNhaPage/Tabs/CoffeeHome";
@@ -35,10 +33,6 @@ import ToppingAddPage from "../admin/Topping/add/page";
 import ToppingUpdatePage from "../admin/Topping/edit/page";
 import ProductManagerPage from "../admin/ProductAdmin/Product";
 import NotFoundPage from "../pages/NotFound/NotFound";
-
-import { Product } from "../types/product";
-import instance from "../services/api";
-
 import AuthPage from "../account/AuthPage/AuthPage";
 
 import BannerManagerPage from "../admin/Banner/Banner";
@@ -55,6 +49,9 @@ import CartPage from "../pages/CartPage/Cartpage";
 import PostAddPage from "../admin/Post/add/page";
 import PostUpdatePage from "../admin/Post/edit/page";
 import ResetPassword from "../account/forgotPassword/resetPassword";
+import Tracking from "../account/SettingAuth/Tracking";
+import AccountUpdate from "../account/SettingAuth/AccountUpdate";
+import OderHistory from "../account/SettingAuth/OderHistory";
 
 const Router = () => {
   return (
@@ -80,6 +77,9 @@ const Router = () => {
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="account-update" element={<AccountUpdate />} />
+          <Route path="tracking" element={<Tracking />} />
+          <Route path="oder-history" element={<OderHistory />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
