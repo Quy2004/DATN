@@ -6,11 +6,11 @@ import { Outlet } from "react-router-dom";
 const WebsiteLayout: React.FC = () => {
     return (
         <>
-            <div className=" w-full">
+            <div className=" w-full flex flex-col min-h-screen">
                 <header className="home">
                     <Header />
                 </header>
-                <main>
+                <main className="flex-1">
                     <Outlet />
                 </main>
                 <footer>
