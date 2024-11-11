@@ -243,6 +243,13 @@ const ProductManagerPage: React.FC = () => {
   // Cột trong bảng
   const columns = [
     {
+      title: "STT",
+      key: "stt",
+      render: (_: string, __: Product, index: number) =>
+        (currentPage - 1) * pageSize + index + 1,
+      width: 100,
+    },
+    {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
@@ -259,7 +266,7 @@ const ProductManagerPage: React.FC = () => {
     },
 
     {
-      title: "Ảnh sản phẩm",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
       render: (image: string) => (
@@ -273,7 +280,7 @@ const ProductManagerPage: React.FC = () => {
       ),
     },
     {
-      title: "Giá sản phẩm",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
@@ -283,6 +290,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
+      width: 100,
       render: (status: string, record: Product) => (
         <div className="flex items-center space-x-2">
           {/* Tooltip giải thích trạng thái */}
@@ -308,6 +316,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Danh mục",
       dataIndex: "category_id",
       key: "category",
+      width: 100,
       render: (categories: Array<Category>) => {
         const categoryNames = categories
           .map((category) => category.title)
@@ -319,6 +328,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Kích hoạt",
       dataIndex: "active",
       key: "active",
+      width: 100,
       render: (active: boolean, record: Product) => (
         <Tooltip
           title={active ? "Sản phẩm đang hoạt động" : "Sản phẩm tạm dừng"}

@@ -155,6 +155,18 @@ const BannerUpdatePage: React.FC = () => {
               customRequest={handleUpload}
               onRemove={handleRemoveImage}
               maxCount={1}
+              fileList={
+                imageUrl
+                  ? [
+                      {
+                        uid: "1",
+                        name: "banner.png",
+                        status: "done",
+                        url: imageUrl,
+                      },
+                    ]
+                  : []
+              }
             >
               <Button icon={<FileImageOutlined />}></Button>
             </Upload>
