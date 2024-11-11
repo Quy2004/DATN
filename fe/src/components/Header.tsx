@@ -9,7 +9,8 @@ import CartItem from "./CartItem";
 import { useClickOutside } from "./ClickOutSide";
 
 const Header: React.FC = () => {
-	const user = JSON.parse(localStorage.getItem("user") || '');
+	const storedUser = localStorage.getItem("user");
+	const user = storedUser ? JSON.parse(storedUser!) : {};
 	const [cart, setCart] = useState<any>([]);
 	const [idCart, setIdCart] = useState<number>()
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -305,7 +306,8 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					{cart?.map((item: any) => (
+
+					{cart?.map((item:any) => (
 						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity
 						} />
 					))}
