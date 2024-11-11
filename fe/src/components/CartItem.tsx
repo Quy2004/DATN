@@ -35,16 +35,31 @@ const CartItem: React.FC<{
     }
   };
 
-  if (deleted) return null; // Hide component if deleted
+  if (deleted) return null; 
 
-  const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
-    return (total += current?.size_id?.priceSize);
-  }, 0);
+   // Tính tổng giá của size và topping (Cộng dồn giá của từng size và topping vào giá gốc của sản phẩm)
+   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
+    return total + (current?.size_id?.priceSize || 0); // Cộng giá size, bảo vệ giá trị không bị undefined
+  }, 0) || 0;
 
   const toppingSize = product?.product_toppings?.reduce((total: number, current: any) => {
-    return (total += current?.topping_id?.priceTopping);
-  }, 0);
+    return total + (current?.topping_id?.priceTopping || 0); // Cộng giá topping, bảo vệ giá trị không bị undefined
+  }, 0) || 0;
 
+  // Tính tổng giá của sản phẩm (sale_price + priceSize + toppingSize)
+  const itemTotalPrice = (product?.sale_price || 0) + priceSize + toppingSize;
+
+  // Tính giá cuối cùng của sản phẩm sau khi cộng size và topping, nhân với số lượng
+  const finalPrice = itemTotalPrice * quantity;
+
+
+    // Hàm định dạng tiền Việt
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(amount);
+    };
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
       <div className="w-1/5">
@@ -53,7 +68,7 @@ const CartItem: React.FC<{
       <div className="w-3/5">
         <h3 className="text-base font-semibold">{item?.name}</h3>
         <p className="text-xs text-red-500 font-semibold">
-          {(item?.sale_price + priceSize + toppingSize) * quantity} VNĐ
+        {formatCurrency(finalPrice)}
         </p>
       </div>
       <div>
