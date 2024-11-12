@@ -76,7 +76,9 @@ const AuthPage = () => {
             localStorage.setItem("token", response.data.token);
 
             setTimeout(() => {
+                
                 navigate("/"); 
+                window.location.reload();
             }, 1500);
         } catch (error) {
             toast.error("Email hoặc mật khẩu không chính xác.", { duration: 3000 });
