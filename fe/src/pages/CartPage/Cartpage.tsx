@@ -20,14 +20,15 @@ const CartPage : React.FC<{
         try {
             const { data } = await instance.get(`/cart/${user._id}`);
             setCart(data.cart);
-            console.log(data);
+            console.log(data.cart);
             
             const total = data.cart.reduce((acc: number, item: any) => {
                 const priceSize = item?.product.product_sizes?.reduce((total: number, size: any) => total + (size?.size_id?.priceSize || 0), 0);
                 const toppingSize = item?.product.product_toppings?.reduce((total: number, topping: any) => total + (topping?.topping_id?.priceTopping || 0), 0);
                 return acc + ((item.product.sale_price + priceSize + toppingSize) * item.quantity);
             }, 0);
-
+            console.log(data.cart);
+            
             setTotalPrice(total);
         } catch (error) {
             console.error("Lỗi khi lấy sản phẩm:", error);
@@ -59,7 +60,6 @@ const CartPage : React.FC<{
             currency: 'VND',
         }).format(amount);
     };
-  
 
     return (
         <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
@@ -96,8 +96,8 @@ const CartPage : React.FC<{
                                         </div>
                                         <div className="w-full min-w-0 flex-1 space-y-3 md:order-2 md:max-w-md">
                                             <a href="#" className="text-base font-medium text-gray-900 hover:underline dark:text-white">{item.product.name}</a>
-                                            <div className="mx-2"><p className="text-sm">Size: L</p></div>
-                                            <div className="mx-2"><p className="text-sm">Topping: Sữa</p></div>
+                                            <div className="mx-2"><p className="text-sm">Size:</p></div>
+                                            <div className="mx-2"><p className="text-sm">Topping:  {item.product_toppings[0].name}</p></div>
                                             <button onClick={() => handleDelete(item._id)} type="button" className="inline-flex items-center text-xs font-medium text-red-600 hover:underline dark:text-red-500">
                                                 <svg className="me-1.5 h-3 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 17.94 6M18 18 6.06 6" />

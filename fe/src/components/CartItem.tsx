@@ -37,21 +37,15 @@ const CartItem: React.FC<{
 
   if (deleted) return null; 
 
-   // Tính tổng giá của size và topping (Cộng dồn giá của từng size và topping vào giá gốc của sản phẩm)
-   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
-    return total + (current?.size_id?.priceSize || 0); // Cộng giá size, bảo vệ giá trị không bị undefined
-  }, 0) || 0;
+  const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
+    return (total += current?.size_id?.priceSize);
+  }, 0);
 
   const toppingSize = product?.product_toppings?.reduce((total: number, current: any) => {
-    return total + (current?.topping_id?.priceTopping || 0); // Cộng giá topping, bảo vệ giá trị không bị undefined
-  }, 0) || 0;
-
-  // Tính tổng giá của sản phẩm (sale_price + priceSize + toppingSize)
-  const itemTotalPrice = (product?.sale_price || 0) + priceSize + toppingSize;
-
-  // Tính giá cuối cùng của sản phẩm sau khi cộng size và topping, nhân với số lượng
-  const finalPrice = itemTotalPrice * quantity;
-
+    return (total += current?.topping_id?.priceTopping);
+  }, 0);
+  
+  
 
     // Hàm định dạng tiền Việt
     const formatCurrency = (amount: number) => {
@@ -68,7 +62,7 @@ const CartItem: React.FC<{
       <div className="w-3/5">
         <h3 className="text-base font-semibold">{item?.name}</h3>
         <p className="text-xs text-red-500 font-semibold">
-        {formatCurrency(finalPrice)}
+        {formatCurrency((item?.sale_price + priceSize + toppingSize) * quantity)}
         </p>
       </div>
       <div>
