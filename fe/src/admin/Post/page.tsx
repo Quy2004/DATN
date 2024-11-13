@@ -126,6 +126,12 @@ const PostManagerPage = () => {
 
   const columns = [
     {
+      title: "STT",
+      dataIndex: "key",
+      key: "key",
+      width: 100,
+    },
+    {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",

@@ -76,6 +76,7 @@ const AuthPage = () => {
             localStorage.setItem("token", response.data.token);
 
             setTimeout(() => {
+                
                 navigate("/"); 
                 window.location.reload();
             }, 1500);

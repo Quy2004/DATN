@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
 import { useClickOutside } from "./ClickOutSide";
-import toast from "react-hot-toast";
 
 const Header: React.FC = () => {
 	const storedUser = localStorage.getItem("user");
