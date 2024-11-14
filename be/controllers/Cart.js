@@ -5,8 +5,7 @@ import Product from '../models/ProductModel';
 // Hàm thêm sản phẩm vào giỏ hàng và tính tổng số lượng, tổng tiền
 export const addtoCart = async (req, res) => {
   try {
-    const { userId, productId ,quantity} = req.body;
-    
+    const { userId, productId ,quantity, productToppings, productSizes} = req.body;
     
     if (!userId) {
       return res.status(400).json({ message: "User ID  are required." });
@@ -16,15 +15,23 @@ export const addtoCart = async (req, res) => {
     }
 
     // Kiểm tra nếu giỏ hàng tồn tại
-    let cart = await Cart.findOne({ userId});
+    let cart = await Cart.findOne({userId});
     var product = await Product.findOne({_id: productId})
+
+    console.log(cart)
     
     // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
     if (!cart) {
       cart = new Cart({
         userId,
-        products: [{ product: productId, quantity  }]
+        products: [{ 
+          product, 
+          quantity,
+          product_toppings: productToppings,
+          product_sizes: productSizes
+        }]
       });
+
     } else {
       // Tìm sản phẩm trong giỏ hàng
       const existingProduct = cart.products.find(p => p.product.toString() === productId);
@@ -32,7 +39,7 @@ export const addtoCart = async (req, res) => {
       if (existingProduct) {
         existingProduct.quantity += quantity; // Tăng số lượng nếu sản phẩm đã có trong giỏ hàng
       } else {
-        cart.products.push({ product: productId, quantity }); // Thêm sản phẩm mới vào giỏ hàng
+        cart.products.push({ product, quantity }); // Thêm sản phẩm mới vào giỏ hàng
       }
     }
 

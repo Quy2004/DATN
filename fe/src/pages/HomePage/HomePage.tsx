@@ -116,15 +116,22 @@ const HomePage: React.FC = () => {
         userId: user._id,
         productId: productId,
         quantity: 1,
+        productSizes: [selectedSize],
+        productToppings: selectedToppings
       });
       toast.success(data.messsage || "Thêm thành công");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
     }
   };
+  
+  useEffect(() => {
+    console.log({ selectedSize, selectedToppings })
+  }, [selectedSize, selectedToppings])
   return (
 
     <>
+
       <div >
         <img src={images[currentIndex]} alt="" className="w-max" />
         <div className='containerAll mx-auto home'>
@@ -229,6 +236,7 @@ const HomePage: React.FC = () => {
           ) : (
             // Render sản phẩm không dùng slider khi có dưới 4 sản phẩm
             <div className="flex md:mx-0 mt-10">
+            
               {products.map((product: Product, index) => (
                 <div key={`${product._id}-${index}`} className="item mx-2" >
                   <div className="my-4">
