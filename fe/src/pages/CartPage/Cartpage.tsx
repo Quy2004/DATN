@@ -20,7 +20,7 @@ const CartPage : React.FC<{
         try {
             const { data } = await instance.get(`/cart/${user._id}`);
             setCart(data.cart);
-            console.log(data.cart);
+            
             
             const total = data.cart.reduce((acc: number, item: any) => {
                 const priceSize = item?.product.product_sizes?.reduce((total: number, size: any) => total + (size?.size_id?.priceSize || 0), 0);
@@ -69,9 +69,10 @@ const CartPage : React.FC<{
                 <div className="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
                     <div className="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
                     {cart.map((item: any) => {
-                           const priceSize = item.product.product_sizes?.reduce((total: number, size: any) => total + (size?.size_id?.priceSize || 0), 0);
-                           const toppingSize = item.product.product_toppings?.reduce((total: number, topping: any) => total + (topping?.topping_id?.priceTopping || 0), 0);
-                           const itemTotalPrice = (item.product.sale_price + priceSize + toppingSize) * item.quantity;
+                        //    const priceSize = item.product.product_sizes?.reduce((total: number, size: any) => total + (size?.size_id?.priceSize || 0), 0);
+                        //    const toppingSize = item.product.product_toppings?.reduce((total: number, topping: any) => total + (topping?.topping_id?.priceTopping || 0), 0);
+                        //    const itemTotalPrice = (item.product.sale_price + priceSize + toppingSize) * item.quantity;
+                           console.log(item)
                             return (
                                 <div key={item.product._id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
                                     <div className="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
@@ -91,13 +92,13 @@ const CartPage : React.FC<{
                                                 className="w-16 mt-2 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                             />
                                             <div className="text-end md:order-4 md:w-32">
-                                                <p className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(itemTotalPrice)}</p>
+                                                <p className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(item?.product?.sale_price )}</p>
                                             </div>
                                         </div>
                                         <div className="w-full min-w-0 flex-1 space-y-3 md:order-2 md:max-w-md">
                                             <a href="#" className="text-base font-medium text-gray-900 hover:underline dark:text-white">{item.product.name}</a>
-                                            <div className="mx-2"><p className="text-sm">Size:</p></div>
-                                            <div className="mx-2"><p className="text-sm">Topping:  {item.product_toppings[0].name}</p></div>
+                                            <div className="mx-2"><p className="text-sm">Size: {item?.product_sizes?.name}</p></div>
+                                            <div className="mx-2"><p className="text-sm">Topping:  {item?.product_toppings?.nameTopping}</p></div>
                                             <button onClick={() => handleDelete(item._id)} type="button" className="inline-flex items-center text-xs font-medium text-red-600 hover:underline dark:text-red-500">
                                                 <svg className="me-1.5 h-3 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 17.94 6M18 18 6.06 6" />
