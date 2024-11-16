@@ -168,7 +168,11 @@ const ProductEditPage: React.FC = () => {
     onSuccess: () => {
       message.success("Cập nhật sản phẩm thành công!");
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      form.resetFields(); // Reset form
+      form.resetFields();
+      setImage("");
+      setThumbnails([]);
+      setMainImageFileList([]);
+      setThumbnailFileList([]);
       setTimeout(() => {
         navigate(`/admin/product`);
       }, 2000);
@@ -382,16 +386,7 @@ const ProductEditPage: React.FC = () => {
               name="size_id"
               label="Size"
               rules={[
-                {
-                  required: true,
-                  message: "Vui lòng chọn ít nhất một size",
-                  validator: (_, values) =>
-                    values && new Set(values).size === values.length
-                      ? Promise.resolve()
-                      : Promise.reject(
-                          new Error("Các size không được trùng lặp")
-                        ),
-                },
+                { required: true, message: "Vui lòng chọn ít nhất một size" },
               ]}
               className="flex-1 mb-0"
             >
@@ -403,7 +398,7 @@ const ProductEditPage: React.FC = () => {
                 className="w-full"
               >
                 {sizes?.data
-                  ?.filter(
+                  .filter(
                     (size: Size) =>
                       size.status === "available" && size.isDeleted === false
                   )
@@ -421,6 +416,27 @@ const ProductEditPage: React.FC = () => {
             <Form.Item
               name="topping_id"
               label="Topping"
+              rules={[
+                {
+                  validator: (_, values) => {
+                    // Kiểm tra trùng lặp
+                    if (values && new Set(values).size !== values.length) {
+                      return Promise.reject(
+                        new Error("Topping không được trùng lặp")
+                      );
+                    }
+
+                    // Giới hạn số lượng topping
+                    if (values && values.length > 5) {
+                      return Promise.reject(
+                        new Error("Chỉ được chọn tối đa 5 topping")
+                      );
+                    }
+
+                    return Promise.resolve();
+                  },
+                },
+              ]}
               className="flex-1 mb-0"
             >
               <Select
@@ -429,12 +445,37 @@ const ProductEditPage: React.FC = () => {
                 loading={isLoadingToppings}
                 disabled={isLoadingToppings}
                 className="w-full"
+                maxTagCount={3}
+                maxTagTextLength={10}
+                maxTagPlaceholder={(omittedValues) =>
+                  `+ ${omittedValues.length} topping`
+                }
+                onSelect={(value) => {
+                  const selectedTopping = toppings?.data.find(
+                    (topping: Topping) => topping._id === value
+                  );
+
+                  if (
+                    !selectedTopping ||
+                    selectedTopping.isDeleted ||
+                    selectedTopping.statusTopping !== "available"
+                  ) {
+                    // Loại bỏ topping không hợp lệ
+                    const currentValues =
+                      form.getFieldValue("topping_ids") || [];
+                    form.setFieldsValue({
+                      topping_ids: currentValues.filter(
+                        (v: string) => v !== value
+                      ),
+                    });
+                  }
+                }}
               >
                 {toppings?.data
-                  ?.filter(
+                  .filter(
                     (topping: Topping) =>
                       topping.statusTopping === "available" &&
-                      topping.isDeleted === false
+                      !topping.isDeleted
                   )
                   .map((topping: Topping) => (
                     <Option key={topping._id} value={topping._id}>
@@ -461,7 +502,7 @@ const ProductEditPage: React.FC = () => {
 
           {/* Giảm giá */}
           <Form.Item
-            label="Giảm giá (Tính theo %)"
+            label="Giảm giá (%)"
             name="discount"
             initialValue={0}
             rules={[

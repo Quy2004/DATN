@@ -2,11 +2,11 @@ import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
-  Checkbox,
   Form,
   Input,
   InputNumber,
   message,
+  Select,
   Spin,
 } from "antd";
 import { useEffect } from "react";
@@ -118,16 +118,18 @@ const ToppingUpdatePage = () => {
             name="category_id"
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
-            <Checkbox.Group
+            <Select
+              mode="multiple"
               style={{ width: "100%" }}
+              placeholder="Chọn danh mục"
               disabled={isLoadingCategories}
             >
               {categories?.data?.map((category: Category) => (
-                <Checkbox key={category._id} value={category._id}>
+                <Select.Option key={category._id} value={category._id}>
                   {category.title}
-                </Checkbox>
+                </Select.Option>
               ))}
-            </Checkbox.Group>
+            </Select>
           </Form.Item>
 
           <Form.Item<FieldType>
