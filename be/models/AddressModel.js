@@ -14,8 +14,7 @@ const addressSchema = new Schema({
     },
     phone: {
         type: String,
-        required: true,
-        unique: true,
+        // required: true,
     },
     address: {
         type: String,
