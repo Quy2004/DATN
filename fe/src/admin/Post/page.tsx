@@ -247,10 +247,10 @@ const PostManagerPage = () => {
         <Space>
           <Button
             onClick={handleToggleDeleted}
-            className={`flex items-center gap-2 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-semibold transition-colors duration-300 ${
               showDeleted
-                ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-gray-500 hover:bg-gray-600"
+                ? "bg-red-500 hover:bg-red-600 active:bg-red-700"
+                : " bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
             } text-white`}
           >
             <DeleteOutlined className="h-4 w-4" />
