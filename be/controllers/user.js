@@ -1,4 +1,5 @@
 import User from "../models/UserModel";
+import Address from "../models/AddressModel";
 
 class UserController {
 	// Hiện thị toàn bộ danh sách người dùng
@@ -74,17 +75,36 @@ class UserController {
 		}
 	}
 
-	// Xóa người dùng(vĩnh viễn)
-	// (tạm khóa vì như thầy yêu cầu admin k có quyền xóa người dùng mà chỉ có quyền khóa)
-	// async deleteUserPermanently(req, res) {
-	// 	try {
-	// 		const id = req.params.id;
-	// 		const response = await User.findOneAndDelete({ _id: id });
-	// 		res.status(200).json({ message: "Xóa người dùng thành công" });
-	// 	} catch (error) {
-	// 		res.status(404).json({ message: error.message });
-	// 	}
-	// }
+	// cập nhật thông tin người dùng
+	async updateUser(req, res) {
+		try {
+			const { id } = req.params;  // ID người dùng từ params
+			const { userName, email, avatars } = req.body;
+	
+			// Cập nhật thông tin người dùng
+			const user = await User.findByIdAndUpdate(
+				id,
+				{ userName, email, avatars },
+				{ new: true }  // Trả về bản ghi mới sau khi cập nhật
+			);
+	
+			
+	
+			res.status(200).json({
+				message: "User updated successfully",
+				data: {
+					user
+				}
+			});
+		} catch (error) {
+			console.error(error);
+			res.status(400).json({
+				message: "Error occurred while updating user",
+				error: error.message,
+			});
+		}
+	}
+	
 
 	// Xóa người dùng(xóa mềm)
 	async deleteUser(req, res) {

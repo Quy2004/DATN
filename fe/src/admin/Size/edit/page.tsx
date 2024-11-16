@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
-import { Size } from "../../../types/product";
+import { Size } from "../../../types/size";
 
 const { Option } = Select;
 
