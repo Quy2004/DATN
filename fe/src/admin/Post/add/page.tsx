@@ -111,7 +111,6 @@ const PostAddPage: React.FC = () => {
       return;
     }
     const newPost: Post = {
-      _id: "",
       title: values.title,
       imagePost: imageUrl,
       galleryPost: galleryUrls,
@@ -121,6 +120,7 @@ const PostAddPage: React.FC = () => {
       isDeleted: false,
     };
     mutate(newPost);
+    console.log(newPost)
   };
 
   if (isLoadingCategoryPost) {

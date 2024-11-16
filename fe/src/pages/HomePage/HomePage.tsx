@@ -68,8 +68,8 @@ const HomePage: React.FC = () => {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<ProductTopping[]>([]);
+  const [selectedSize, setSelectedSize] = useState<any | null>(null);
+  const [selectedToppings, setSelectedToppings] = useState<any>();
   const toggleModal = (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(!isModalOpen);
@@ -77,11 +77,10 @@ const HomePage: React.FC = () => {
   const handleSizeChange = (size: ProductSize) => {
     setSelectedSize(size); // Cập nhật kích thước đã chọn
   };
-
+  
+  
   const handleToppingChange = (topping: ProductTopping) => {
-    setSelectedToppings((prev) =>
-      prev.includes(topping) ? prev.filter((top) => top !== topping) : [...prev, topping]
-    );
+    setSelectedToppings(topping);
   };
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -116,15 +115,23 @@ const HomePage: React.FC = () => {
         userId: user._id,
         productId: productId,
         quantity: 1,
+        productSizes: selectedSize?.size_id,
+        productToppings: selectedToppings?.topping_id
       });
       toast.success(data.messsage || "Thêm thành công");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
     }
   };
+
+ 
+  useEffect(() => {
+    console.log({ selectedSize, selectedToppings })
+  }, [selectedSize, selectedToppings])
   return (
 
     <>
+
       <div >
         <img src={images[currentIndex]} alt="" className="w-max" />
         <div className='containerAll mx-auto home'>
@@ -229,6 +236,7 @@ const HomePage: React.FC = () => {
           ) : (
             // Render sản phẩm không dùng slider khi có dưới 4 sản phẩm
             <div className="flex md:mx-0 mt-10">
+            
               {products.map((product: Product, index) => (
                 <div key={`${product._id}-${index}`} className="item mx-2" >
                   <div className="my-4">
@@ -291,9 +299,9 @@ const HomePage: React.FC = () => {
                     <img src={selectedProduct.image} alt="Ảnh sản phẩm" className="w-[160px] h-[160px] rounded-xl" />
                   </div>
                   <div className="w-max flex-1">
-                    <h1 className="text-lg font-medium">{selectedProduct.name}</h1>
+                    <h1 className="text-lg font-medium">{selectedProduct?.name}</h1>
                     <div className="flex items-end gap-1 py-1 *:text-[#ea8025] *:font-medium">
-                      <p className="text-sm ">{formatPrice(selectedProduct.price)}</p>
+                      <p className="text-sm ">{formatPrice(selectedProduct?.price)}</p>
                       <p className="text-[10px]">VNĐ</p>
                     </div>
                     <i className="text-sm text-black" dangerouslySetInnerHTML={{ __html: selectedProduct.description }}></i>
@@ -328,7 +336,7 @@ const HomePage: React.FC = () => {
                         </div>
                       </form>
                       <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
-                        {inFormatPrice(selectedProduct.price, selectedSize?.size_id.priceSize || 0, quantity)} VNĐ
+                        {inFormatPrice(selectedProduct.price, selectedSize?.size_id?.priceSize || 0, quantity)} VNĐ
                       </button>
                     </div>
                   </div>
@@ -340,7 +348,7 @@ const HomePage: React.FC = () => {
                     {selectedProduct.product_sizes.map((size) => {
                       return (
                         <div className="flex items-center gap-2 px-6 py-2">
-                          <input key={size.size_id._id}
+                          <input key={size?.size_id?._id}
                             type="radio"
                             name="size"
                             checked={selectedSize === size}
@@ -360,16 +368,16 @@ const HomePage: React.FC = () => {
                   <h2 className="font-medium px-6">Topping</h2>
                   <form className="bg-white shadow-xl my-1 rounded-md">
                     {selectedProduct.product_toppings.map((topping) => (
-                      <div key={topping.topping_id._id} className="flex items-center gap-2 px-6 py-2">
+                      <div key={topping?.topping_id?._id} className="flex items-center gap-2 px-6 py-2">
                         <input
                           type="checkbox"
-                          checked={selectedToppings.includes(topping)}
+                          // checked={selectedToppings(topping)}
                           onChange={() => handleToppingChange(topping)}
-                          disabled={topping.stock <= 0}
+                          disabled={topping?.stock <= 0}
                           className="text-[#ea8025] border-[#ea8025] border-2"
                         />
                         <label htmlFor="">
-                          {topping.topping_id.nameTopping} {topping.priceTopping && `(+${topping.priceTopping} đ)`}
+                          {topping?.topping_id?.nameTopping} {topping?.priceTopping && `(+${topping?.priceTopping} đ)`}
                         </label>
                       </div>
                     ))}

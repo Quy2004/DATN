@@ -4,61 +4,78 @@ import instance from "../services/api";
 import toast from "react-hot-toast";
 
 const CartItem: React.FC<{
-  idcart:number,
+  idcart: number;
   item?: any;
-  quantity:number
-}> = ({ idcart,item,quantity }) => {
-    const [product, setProduct] = useState<Product>()
+  quantity: number;
+}> = ({ idcart, item, quantity }) => {
+  const [product, setProduct] = useState<Product>();
+  const [deleted, setDeleted] = useState(false); // New state to track deletion
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-              const { data } = await instance.get(`/products/${item?._id}`);
-              
-              setProduct(data.data); // Lưu sản phẩm vào state
-            } catch (error) {
-              console.error("Lỗi khi lấy sản phẩm:", error);
-              toast.error("Không thể tải sản phẩm.");
-            }
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data } = await instance.get(`/products/${item?._id}`);
+        setProduct(data.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm:", error);
+        toast.error("Không thể tải sản phẩm.");
+      }
+    };
+    fetchProduct();
+  }, [item]);
 
-          };
-          fetchProduct();
-        },[item])
+  
 
-const handleDelete = async (id:number) => {
-  const data = await instance.patch(`/cart/${idcart}/product/${id}`)
-}
+  const handleDelete = async (id: number) => {
+    try {
+      await instance.patch(`/cart/${idcart}/product/${id}`);
+      toast.success("Đã xóa sản phẩm khỏi giỏ hàng.");
+      setDeleted(true); // Update deleted state to true
+    } catch (error) {
+      console.error("Lỗi khi xóa sản phẩm:", error);
+      toast.error("Không thể xóa sản phẩm.");
+    }
+  };
+
+  if (deleted) return null; 
+  // console.log(product)
   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
     return (total += current?.size_id?.priceSize);
   }, 0);
 
+  const toppingSize = product?.product_toppings?.reduce((total: number, current: any) => {
+    return (total += current?.topping_id?.priceTopping);
+  }, 0);
   
-  const toppingSize = product?.product_toppings?.reduce(
-      (total: number, current: any) => {
-          return (total += current?.topping_id?.priceTopping);
-        },
-        0
-    );
 
-    //Delete Cart
-    
+    // Hàm định dạng tiền Việt
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(amount);
+    };
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
-      <div className="w-1/5">
+      {
+        item && <>
+        <div className="w-1/5">
         <img src={item?.image} alt="Ảnh" className="border rounded-lg p-1" />
       </div>
       <div className="w-3/5">
         <h3 className="text-base font-semibold">{item?.name}</h3>
-        <span></span>
         <p className="text-xs text-red-500 font-semibold">
-          {(item?.sale_price + priceSize + toppingSize) * quantity} VNĐ
+        {formatCurrency((item?.sale_price + priceSize + toppingSize) * quantity)}
         </p>
       </div>
       <div>
         <span>{quantity}</span>
       </div>
       <div className="1/5">
-        <button className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400">
+        <button
+          className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400"
+          onClick={() => handleDelete(item?._id)}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -66,7 +83,6 @@ const handleDelete = async (id:number) => {
             strokeWidth="1.5"
             stroke="currentColor"
             className="size-6"
-            onClick={() => handleDelete(item?._id)}
           >
             <path
               strokeLinecap="round"
@@ -76,6 +92,9 @@ const handleDelete = async (id:number) => {
           </svg>
         </button>
       </div>
+        </>
+      }
+      
     </div>
   );
 };

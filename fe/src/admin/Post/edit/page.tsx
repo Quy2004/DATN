@@ -180,7 +180,25 @@ const PostUpdatePage: React.FC = () => {
               placeholder="Nhập tiêu đề"
             />
           </Form.Item>
+
           <Form.Item
+            label="Danh mục"
+            name="categoryPost"
+            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+          >
+            <Select
+              placeholder="Chọn danh mục"
+              loading={isLoadingCategoryPost}
+              disabled={isLoadingCategoryPost}
+            >
+              {categoryPost?.data?.map((category: CategoryPost) => (
+                <Select.Option key={category._id} value={category._id}>
+                  {category.title}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          {/* <Form.Item
             label="Ảnh bài viết"
             name="imagePost"
             valuePropName="fileList"
@@ -198,23 +216,37 @@ const PostUpdatePage: React.FC = () => {
             {imageUrl && (
               <img src={imageUrl} alt="post" className="w-[200px] mt-2.5" />
             )}
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
-            label="Danh mục"
-            name="categoryPost"
-            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
+            label="Ảnh bài viết"
+            name="imagePost"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
           >
-            <Select
-              placeholder="Chọn danh mục"
-              loading={isLoadingCategoryPost}
-              disabled={isLoadingCategoryPost}
+            <Upload
+              name="file"
+              listType="picture-card"
+              customRequest={handleUpload}
+              onRemove={handleRemoveImage}
+              maxCount={1}
+              fileList={
+                imageUrl
+                  ? [
+                      {
+                        uid: "1",
+                        name: "image.png",
+                        status: "done",
+                        url: imageUrl,
+                      },
+                    ]
+                  : []
+              } // Thiết lập fileList
             >
-              {categoryPost?.data?.map((category: CategoryPost) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.title}
-                </Select.Option>
-              ))}
-            </Select>
+              <Button icon={<FileImageOutlined />}></Button>
+            </Upload>
+            {imageUrl && (
+              <img src={imageUrl} alt="post" className="w-[200px] mt-2.5" />
+            )}
           </Form.Item>
           <Form.Item label="Gallery ảnh phụ" name="galleryPost">
             <Upload
@@ -233,6 +265,9 @@ const PostUpdatePage: React.FC = () => {
               <Button icon={<FileImageOutlined />}></Button>
             </Upload>
           </Form.Item>
+
+          {/* Hiển thị ảnh phụ đã tải lên */}
+
           <Form.Item
             label="Đoạn trích"
             name="excerpt"

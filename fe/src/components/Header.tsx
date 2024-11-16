@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button, Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
 import { useClickOutside } from "./ClickOutSide";
-import toast from "react-hot-toast";
 
 const Header: React.FC = () => {
-	const user = JSON.parse(localStorage.getItem("user") || '');
+	const storedUser = localStorage.getItem("user");
+	const user = storedUser ? JSON.parse(storedUser!) : {};
 	const [cart, setCart] = useState<any>([]);
 	const [idCart, setIdCart] = useState<number>()
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,7 +92,7 @@ const Header: React.FC = () => {
         navigate("/login");
         
     };
-
+	const data_cart = cart?.map((value : any) => value?.isDeleted !== true && value)
 	return (
 		<>
 			<header className="absolute z-10">
@@ -225,7 +226,7 @@ const Header: React.FC = () => {
 															</Link>
 														</li>
 														<li>
-															<Link to="oder-histo" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+															<Link to="oder-history" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
 																<h3>
 																	Xem lịch sử mua hàng
 																</h3>
@@ -288,7 +289,7 @@ const Header: React.FC = () => {
 											/>
 										</svg>
 										<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white">
-											{cart?.length}
+											{data_cart[0] === false ? 0 : data_cart?.length}
 										</span>
 									</button>
 								</div>
@@ -305,9 +306,9 @@ const Header: React.FC = () => {
 			>
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-					{cart?.map((item: any) => (
-						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity
-						} />
+
+					{data_cart?.map((item:any) => (
+						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity} />
 					))}
 
 					<div className="flex gap-2">
