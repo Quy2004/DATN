@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'; // Thêm dòng này
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -9,26 +9,21 @@ const cartItem = new Schema({
       type: Boolean,
       default: false,
     },
-    product_toppings: [
+    product_sizes:
       {
-        topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
+        type: mongoose.Schema.Types.ObjectId, ref: "Size"
       },
-    ],
-    product_sizes: [
+    product_toppings:
       {
-        size_id: { type: mongoose.Schema.Types.ObjectId, ref: "Size" }
+         type: mongoose.Schema.Types.ObjectId, ref: "Topping" 
       },
-    ],
 });
 
 const cartSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     products: [cartItem],
     totalprice: { type: Number, default: 0 },
-    
-    
 },
-
 {
   timestamps: true,
   versionKey: false,

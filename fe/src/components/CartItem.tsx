@@ -24,6 +24,8 @@ const CartItem: React.FC<{
     fetchProduct();
   }, [item]);
 
+  
+
   const handleDelete = async (id: number) => {
     try {
       await instance.patch(`/cart/${idcart}/product/${id}`);
@@ -36,7 +38,7 @@ const CartItem: React.FC<{
   };
 
   if (deleted) return null; 
-
+  // console.log(product)
   const priceSize = product?.product_sizes?.reduce((total: number, current: any) => {
     return (total += current?.size_id?.priceSize);
   }, 0);
@@ -44,7 +46,6 @@ const CartItem: React.FC<{
   const toppingSize = product?.product_toppings?.reduce((total: number, current: any) => {
     return (total += current?.topping_id?.priceTopping);
   }, 0);
-  
   
 
     // Hàm định dạng tiền Việt
@@ -56,7 +57,9 @@ const CartItem: React.FC<{
     };
   return (
     <div className="flex *:mx-1 items-center border-b-2 pb-2">
-      <div className="w-1/5">
+      {
+        item && <>
+        <div className="w-1/5">
         <img src={item?.image} alt="Ảnh" className="border rounded-lg p-1" />
       </div>
       <div className="w-3/5">
@@ -89,6 +92,9 @@ const CartItem: React.FC<{
           </svg>
         </button>
       </div>
+        </>
+      }
+      
     </div>
   );
 };

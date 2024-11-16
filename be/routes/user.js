@@ -6,7 +6,7 @@ const userController= new UserController()
 
 userRouter.get('/', userController.getAllUsers)
 userRouter.get('/:id', userController.getUserById)
-// userRouter.delete('/:id', userController.deleteUserPermanently)
+userRouter.put('/:id', userController.updateUser);
 userRouter.patch('/:id/soft-delete', userController.deleteUser)
 userRouter.patch('/:id/restore', userController.restoreUser)
 // userRouter.patch('/:id/manager', userController.managerUser)
