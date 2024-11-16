@@ -60,6 +60,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["bank transfer", "cash on delivery"],
     },
+    cancellationReason: {
+      type: String,
+      required: false,
+    },
     orderNumber: {
       type: String,
       required: false,
