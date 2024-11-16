@@ -3,7 +3,8 @@ import {
     createOrder,
     getOrders,
     updateOrderStatus,
-    getAllOrders 
+    getAllOrders, 
+    cancelOrder
   } from "../controllers/ordersController";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.get('/:userId', getOrders);
 
 // Cập nhật trạng thái đơn hàng
 router.put('/status/:orderId', updateOrderStatus);
+router.put('/cancel/:orderId', cancelOrder);
 
 export default router;
