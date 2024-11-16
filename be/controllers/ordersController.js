@@ -207,3 +207,43 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+// Hủy đơn hàng
+export const cancelOrder = async (req, res) => {
+  const { orderId } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Đơn hàng không tồn tại.",
+      });
+    }
+
+    if (order.orderStatus === "canceled") {
+      return res.status(400).json({
+        success: false,
+        message: "Đơn hàng đã được hủy trước đó.",
+      });
+    }
+
+    order.orderStatus = "canceled";
+    order.cancellationReason = reason || "Không có lý do cụ thể.";
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Hủy đơn hàng thành công.",
+      data: order,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi hủy đơn hàng.",
+      error: error.message,
+    });
+  }
+};
