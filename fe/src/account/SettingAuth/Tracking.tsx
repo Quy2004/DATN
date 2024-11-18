@@ -6,8 +6,8 @@ const Tracking = () => {
   return (
     <>
       <div className="bg-gray-100">
-        <main className="containerAll mx-auto py-5 *:bg-white">
-          <section className="flex justify-between py-4 border-b-2">
+        <main className="containerAll mx-auto py-5 mb-5 *:bg-white">
+          <section className="flex justify-between py-4 border-b-2 *:mx-5">
             <div>
               <p className="flex items-center uppercase gap-1 text-sm text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
@@ -80,67 +80,69 @@ const Tracking = () => {
               <p className="text-center text-xs text-gray-400">23:59 13-10-2024</p>
             </div>
           </section>
-          <section className="mt-2 bg-[#eda500]">
-            <div className="w-full">
-              <h1>Địa CHỉ Nhận Hàng</h1>
+          <section className="mt-2  py-2">
+            <div className="w-full mx-5 mb-6">
+              <h1 className="text-xl" >Địa Chỉ Nhận Hàng</h1>
             </div>
-            <div>
-              <div>
-                <div>
+            <div className="flex justify-between mx-5 h-44">
+              <div className="introduct">
+                <div className="">
                   <p>Ngọc Quý</p>
                 </div>
-                <div>
-                  <span tabIndex={0}>(+84) 7632472832</span><br />
-                  <span>
+                <div className="my-2 *:text-gray-500">
+                  <span tabIndex={0} className="">(+84) 7632472832</span><br />
+                  <span className="">
                     Trinh Văn Bô, Nam Từ Liêm, Hà Nội
                   </span>
                 </div>
               </div>
-              <div>
-                <Link to={``}>Mua Lại</Link>
+              <div className="py-3">
+                <Link to={``} className="bg-red-600 text-white px-14 rounded text-center py-2">Mua lại</Link>
               </div>
             </div>
-            <p>Cảm ơn bạn đã mua sắm tại CozyHaven</p>
+            <div className="bg-[#FEFFD2] w-full">
+              <p className="mx-5 text-xs text-gray-500 py-3">Cảm ơn bạn đã mua sắm tại CozyHaven</p>
+            </div>
           </section>
-          <section>
-            <div>
+          <section className="border-t-2 border-dashed">
+            <div className="flex items-center justify-end py-2 mx-5">
               <TooltipArrow />
             </div>
-            <div className="flex justify-between mx-3 border-t-2 border-gray-200 pt-3 pb-10">
-              <div className="flex ">
+            <div className="flex justify-between mx-5 border-t-2 border-gray-200 py-5">
+              <div className="flex">
                 <img src="Ảnh.jpg" alt="Ảnh sp" className="w-20 h-20 border-[1px]" />
-                <div className="mx-3">
+                <div className="mx-5">
                   <p>Prodcuct Cart</p>
                   <span className="flex gap-1">Phân Loại: <p className="text-gray-500">Size XL - Topping : A, B, C, D</p></span>
                   <span>x1</span>
                 </div>
               </div>
-              <p className="text-sm">33.000 VND</p>
+              <p className="text-sm font-medium text-gray-600">33.000 VND</p>
             </div>
-            <div>
-              <div className="grid grid-cols-4 *:text-right *:border w-full">
-                <div className="col-span-3 ">Tổng tiền hàng</div>
-                <div className="col-span-1">57.000 VND</div>
+            <div className="*:*:py-3 *:*:px-3 border-t-2">
+              <div className="grid grid-cols-4 *:text-right *:border-b-2 w-full">
+                <div className="col-span-3 text-xs text-gray-500 border-r-[1px]  border-dashed ">Tổng tiền hàng</div>
+                <div className="col-span-1 text-sm text-gray-600 font-medium border-l-[1px] border-dashed ">57.000 VND</div>
               </div>
-              <div className="grid grid-cols-4 *:text-right *:border w-full">
-                <div className="col-span-3 ">Giảm giá</div>
-                <div className="col-span-1">- 5.000 VND</div>
+              <div className="grid grid-cols-4 *:text-right *:border-b-2    w-full">
+                <div className="col-span-3 text-xs text-gray-500 border-r-[1px]  border-dashed">Giảm giá</div>
+                <div className="col-span-1  text-sm text-gray-600 font-medium border-l-[1px] border-dashed ">- 5.000 VND</div>
               </div>
-              <div className="grid grid-cols-4 *:text-right *:border w-full">
-                <div className="col-span-3 ">Thành tiền </div>
-                <div className="col-span-1">52.000 VND</div>
+              <div className="grid grid-cols-4 *:text-right w-full">
+                <div className="col-span-3 text-xs text-gray-500 border-r-[1px]  border-dashed">Thành tiền </div>
+                <div className="col-span-1 text-xl text-red-500 font-medium  border-l-[1px] border-dashed ">52.000 VND</div>
               </div>
-              <div className="w-full border-2 border-[#FCCD2A]">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4 border-[1px] border-[#FCCD2A] text-[#FCCD2A] rounded-2xl">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                </svg>
-                <p>
-                  Vui lòng thanh toán <p>57.000</p> khi nhận hàng
+              <div className="w-full px-3 rounded-md mb-2 border-2 border-[#FCCD2A] *:flex *:items-center *:gap-x-2">
+                <p className="text-sm text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4 border-[1px] border-[#FCCD2A] text-[#FCCD2A] rounded-2xl">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                  </svg>
+                  Vui lòng thanh toán <p className="text-red-500 font-medium">57.000</p> khi nhận hàng !
                 </p>
               </div>
-              <div className="grid grid-cols-4 *:text-right *:border w-full">
-                <div className="col-span-3 ">Phương thức thanh toán</div>
-                <div className="col-span-1">Thanh toán khi nhận hàng</div>
+              <div className="grid grid-cols-4 *:text-right *:border-t-2 *:border-dashed w-full">
+                <div className="col-span-3 text-xs text-gray-500 border-r-[1px]  border-dashed">Phương thức thanh toán</div>
+                <div className="col-span-1 text-sm text-gray-600 font-medium  border-l-[1px] border-dashed">Thanh toán khi nhận hàng</div>
               </div>
             </div>
           </section>

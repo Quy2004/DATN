@@ -70,8 +70,22 @@ const HomePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<any | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<any>();
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const handleCloseModal = () => {
+    setSelectedSize(null);
+    setSelectedToppings([]);
+    setQuantity(1);
+    setTotalPrice(0);
+    setIsModalOpen(false);
+  };
+
+  // Cập nhật khi mở modal với sản phẩm mới
   const toggleModal = (product: Product) => {
     setSelectedProduct(product);
+    setSelectedSize(null);
+    setSelectedToppings([]);
+    setQuantity(1);
+    setTotalPrice(product.price);
     setIsModalOpen(!isModalOpen);
   };
   const handleSizeChange = (size: ProductSize) => {
@@ -93,6 +107,7 @@ const HomePage: React.FC = () => {
   // Modal
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
+  
   // Tăng giảm số lượng
   const [quantity, setQuantity] = useState(1);
   const handleIncrement = () => {
@@ -129,9 +144,7 @@ const HomePage: React.FC = () => {
     console.log({ selectedSize, selectedToppings })
   }, [selectedSize, selectedToppings])
   return (
-
     <>
-
       <div >
         <img src={images[currentIndex]} alt="" className="w-max" />
         <div className='containerAll mx-auto home'>
@@ -290,7 +303,7 @@ const HomePage: React.FC = () => {
         {/* <Drawer.Header title="Cart" /> */}
         <Drawer.Items>
           {isModalOpen && selectedProduct && (
-            <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <Modal show={isModalOpen} onClose={handleCloseModal}>
               <Modal.Header className="relative h-0 top-5 text-black p-0 mr-2 border-none">
               </Modal.Header>
               <Modal.Body className="bg-gray-100">

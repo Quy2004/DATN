@@ -429,7 +429,7 @@ const ProductAddPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Giảm giá (Tính theo %)"
+            label="Giảm giá (%)"
             name="discount"
             initialValue={0}
             rules={[
