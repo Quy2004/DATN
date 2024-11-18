@@ -311,7 +311,7 @@ const ClientAdmin = () => {
 		key: index + 1,
 		userName: item.userName,
 		email: item.email,
-		avatar: item.avatar,
+		avatar: item.avatars[0],
 		role: item.role,
 		isDeleted: item.isDeleted,
 	}));
