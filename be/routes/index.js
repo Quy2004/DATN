@@ -14,6 +14,7 @@ import bannerRouter from "./banners.js";
 import categoryPostRouter from "./categoryPost.js";
 import postRouter from "./post.js";
 import commentRouter from "./comment.js";
+import momoRouter from "./momoRoutes.js";
 
 const router = Router();
 
@@ -36,6 +37,6 @@ router.use("/orders-detail", ordersDetailRouter);
 router.use("/banners", bannerRouter);
 router.use("/categoryPost", categoryPostRouter);
 router.use("/posts", postRouter);
-
+router.use("/payments", momoRouter);
 
 export default router;
