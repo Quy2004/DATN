@@ -37,4 +37,5 @@ router.use("/banners", bannerRouter);
 router.use("/categoryPost", categoryPostRouter);
 router.use("/posts", postRouter);
 
+
 export default router;
