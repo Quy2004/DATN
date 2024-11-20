@@ -100,6 +100,37 @@ const AccountUpdate = () => {
         }
     };
 
+    // API call để cập nhật địa chỉ
+    const updateAddressMutation = useMutation({
+        mutationFn: async (values: any) => {
+            const { address, phone, name } = values;
+
+            const formData = new FormData();
+            formData.append("address", address);
+            formData.append("phone", phone);
+            formData.append("name", name);
+
+            const response = await instance.put(`address/${user._id}`, formData); // Cập nhật địa chỉ
+            return response.data;
+        },
+    });
+
+    const createAddressMutation = useMutation({
+        mutationFn: async (values: any) => {
+            const { address, phone, name } = values;
+
+            const formData = new FormData();
+            formData.append("user_id", user._id); // Sử dụng user_id từ localStorage
+            formData.append("address", address);
+            formData.append("phone", phone);
+            formData.append("name", name);
+
+            const response = await instance.post(`address`, formData);
+            return response.data;
+        },
+    });
+
+
     const handleAvatars = ({ fileList }: { fileList: UploadFile[] }) => {
         setAvatarsList(fileList);
         if (fileList.length > 0) {
@@ -113,6 +144,12 @@ const AccountUpdate = () => {
     const onFinish = async (values: any) => {
         try {
             await updateUserMutation.mutateAsync(values);
+            if (!addressData || addressData.length === 0) {
+                await createAddressMutation.mutateAsync(values);
+            } else {
+                // Nếu có địa chỉ, cập nhật
+                await updateAddressMutation.mutateAsync(values);
+            }
             notification.success({ message: "Cập nhật thông tin thành công!" });
         } catch (error) {
             notification.error({ message: "Cập nhật thông tin không thành công!" });
