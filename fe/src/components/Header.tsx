@@ -73,25 +73,30 @@ const Header: React.FC = () => {
 	}, []);
 	// const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [userName, setUserName] = useState('');
-	useEffect(() => {
-		const storedUser = localStorage.getItem("user");
-		if (storedUser) {
-			const user = JSON.parse(storedUser);
-			setUserName(user.userName); // Lấy `userName` từ `localStorage`
-		}
-	}, []);
-	const { isDropdownOpen, setIsDropdownOpen, dropdownRef } = useClickOutside(false);
+useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        setUserName(user.userName); // Lấy `userName` từ `localStorage`
+    } else {
+        setUserName(''); // Đặt lại giá trị khi không có dữ liệu
+    }
+}, []);
 
-	const toggleDropdown = () => {
-		setIsDropdownOpen(!isDropdownOpen);
-	};
-	const handleLogout = () => {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        toast.success("Đã đăng xuất thành công!", { duration: 2000 });
-        navigate("/login");
-        
-    };
+const { isDropdownOpen, setIsDropdownOpen, dropdownRef } = useClickOutside(false);
+
+const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+};
+
+const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUserName(''); // Đặt lại trạng thái userName
+    toast.success("Đã đăng xuất thành công!", { duration: 2000 });
+    navigate("/login");
+};
+
 	const data_cart = cart?.map((value : any) => value?.isDeleted !== true && value)
 	return (
 		<>

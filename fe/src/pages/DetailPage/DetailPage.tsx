@@ -115,7 +115,10 @@ const DetailPage = () => {
         userId: user._id,
         productId: productId,
         quantity: quantity,
+        productSizes: selectedSize?.size_id,
+        productToppings: selectedToppings?.topping_id
       });
+      
       console.log("Data returned from API:", data);
       toast.success(data.messsage || "Thêm thành công");
     } catch (error) {
@@ -210,7 +213,7 @@ const DetailPage = () => {
                         Vui lòng chọn một sản phẩm để xem kích thước.
                       </p>
                     )}
-ư
+
                     {/* Phần chọn topping */}
                     <div className="my-6">
                       <h2 className="font-medium text-lg mb-2">Chọn topping</h2>

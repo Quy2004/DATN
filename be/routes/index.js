@@ -13,6 +13,7 @@ import ordersDetailRouter from"./ordersDetail.js"
 import bannerRouter from "./banners.js";
 import categoryPostRouter from "./categoryPost.js";
 import postRouter from "./post.js";
+import commentRouter from "./comment.js";
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.use("/toppings", toppingsRouter);
 router.use("/users", userRouter);
 router.use("/vouchers", voucherRouter);
 router.use("/auth", authRouter); 
+router.use("/comment", commentRouter); 
 router.use("/sizes", sizeRouter); 
 router.use("/address", addressRouter); 
 router.use("/cart", RouterCart); 
