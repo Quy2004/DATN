@@ -30,7 +30,7 @@ router.use("/vouchers", voucherRouter);
 router.use("/auth", authRouter); 
 router.use("/comment", commentRouter); 
 router.use("/sizes", sizeRouter); 
-router.use("/address", commentRouter); 
+router.use("/address", addressRouter); 
 router.use("/cart", RouterCart); 
 router.use("/orders", ordersRouter);
 router.use("/orders-detail", ordersDetailRouter);
