@@ -156,6 +156,7 @@ const ToppingManagerPage = () => {
       dataIndex: "key",
       key: "key",
       render: (text: string, record: Topping, index: number) => index + 1,
+      width: 80,
     },
     {
       title: "Tên Topping",
