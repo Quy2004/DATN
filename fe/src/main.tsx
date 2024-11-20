@@ -12,15 +12,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Toaster position="top-right" 
-           toastOptions={{
-          success: {
-            style: {
-              
-              marginTop: "53px",
-            }
-          }
-        }} />
+        <Toaster position="top-right"
+          toastOptions={{
+            style: { marginTop: "53px" },
+          }} />
         <App />
       </BrowserRouter>
     </QueryClientProvider>
