@@ -248,7 +248,7 @@ const PostUpdatePage: React.FC = () => {
               <img src={imageUrl} alt="post" className="w-[200px] mt-2.5" />
             )}
           </Form.Item>
-          <Form.Item label="Gallery ảnh phụ" name="galleryPost">
+          <Form.Item label="Ảnh phụ" name="galleryPost">
             <Upload
               name="file"
               listType="picture-card"

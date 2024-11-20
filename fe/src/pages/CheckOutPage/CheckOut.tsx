@@ -20,11 +20,19 @@ const Checkout: React.FC = () => {
       return response.data.cart;
     },
   });
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
+  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedMethod = event.target.value;
+    setPaymentMethod(selectedMethod);
 
-  const [paymentMethod, setPaymentMethod] = useState<string>("");
-  console.log(paymentMethod); // Trạng thái để theo dõi phương thức thanh toán
-  const [isOpen, setIsOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    // Kiểm tra nếu chọn "Thẻ ATM nội địa / Internet Banking"
+    if (selectedMethod === "bank transfer") {
+      setIsBankTransferSelected(true);
+    } else {
+      setIsBankTransferSelected(false);
+    }
+  };
 
   const getTotalPrice = () => {
     return carts.reduce((total, item) => {
@@ -32,20 +40,8 @@ const Checkout: React.FC = () => {
       return total + salePrice * item.quantity; // Tính tổng giá dựa trên giá sale
     }, 0);
   };
-  const handleClose = () => setIsOpen(false);
-  const toggleModal = () => setIsModalOpen((prev) => !prev);
 
-  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedMethod = event.target.value;
-    setPaymentMethod(selectedMethod);
 
-    // Kiểm tra nếu chọn Thẻ nội địa/Internet Banking thì mở Drawer
-    if (selectedMethod === "bank transfer") {
-      setIsModalOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  };
   interface Form {
     name: string;
     address: string;
@@ -147,6 +143,26 @@ const Checkout: React.FC = () => {
               {/* Payment Method */}
               <div className="space-y-2">
                 <h6 className="font-semibold">Phương thức thanh toán</h6>
+                {!paymentMethod && (
+                  <p className="flex items-center gap-x-4 text-red-600 bg-[#feffd2] py-1  font-semibold rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-4 mt-[3px]">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    Vui lòng chọn phương thức thanh toán.
+                  </p>
+                )}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="cod"
+                    name="paymentMethod"
+                    value="cash on delivery"
+                    onChange={handlePaymentMethodChange}
+                    className="mr-2"
+                  />
+                  <label htmlFor="cod">Thanh toán khi nhận hàng (COD)</label>
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <input
                     type="radio"
@@ -160,27 +176,42 @@ const Checkout: React.FC = () => {
                     Thẻ ATM nội địa / Internet Banking
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="cod"
-                    name="paymentMethod"
-                    value="cash on delivery"
-                    onChange={handlePaymentMethodChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="cod">Thanh toán khi nhận hàng (COD)</label>
-                </div>
-                {!paymentMethod && (
-                  <p className="text-yellow-600">
-                    Vui lòng chọn phương thức thanh toán.
-                  </p>
-                )}
               </div>
+              {isBankTransferSelected && (
+                <div className="bg-gray-50 border rounded-lg">
+                  <h3 className="text-lg font-medium m-2">Chọn phương thức thanh toán</h3>
+                  <div className="flex  justify-center gap-4 *:w-28 my-2">
+                    <button className=" rounded-md">
+                      <img
+                        src="src/pages/CheckOutPage/ImageBanking/Momo.png"
+                        alt="Momo"
+                        className="w-16 mx-auto border-2"
+                      />
+                      <div className="mt-2 text-center font-medium">Momo</div>
+                    </button>
+                    <button className=" rounded-md">
+                      <img
+                        src="src/pages/CheckOutPage/ImageBanking/ZaloPay.png"
+                        alt="ZaloPay"
+                        className="w-16 mx-auto border-2"
+                      />
+                      <div className="mt-2 text-center font-medium">ZaloPay</div>
+                    </button>
+                    <button className=" rounded-md">
+                      <img
+                        src="src/pages/CheckOutPage/ImageBanking/PhoneBanking.png"
+                        alt="Phone Banking"
+                        className="w-16 mx-auto border-2"
+                      />
+                      <div className="mt-2 text-center font-medium">Phone Banking</div>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"
-                className="w-full p-3 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                className="w-full p-3 text-white bg-[#ea8025] rounded-md hover:opacity-80"
               >
                 Thanh toán
               </button>
@@ -189,77 +220,84 @@ const Checkout: React.FC = () => {
 
           {/* Checkout Details */}
           <section className="w-full md:w-1/2 bg-gray-50 rounded-lg shadow-md p-6">
-            <h6 className="text-lg font-semibold mb-4">Sản phẩm của bạn</h6>
+            <h6 className="text-lg font-semibold mb-4">Sản phẩm</h6>
             <div className="flex flex-col space-y-4 mb-6">
-            {carts.map((item) => (
-  <div
-    key={item._id}
-    className="flex flex-col md:flex-row items-center p-4 bg-white rounded-lg shadow-sm"
-  >
-    {item.product && (
-      <>
-        <img
-          src={item.product.image}
-          alt={item.product.name}
-          className="w-full md:w-1/3 rounded-lg"
-        />
-        <div className="w-full md:w-2/3 pl-0 md:pl-4">
-          <div className="font-semibold text-lg">{item.product.name}</div>
-          <div className="text-gray-800 font-bold text-2xl mt-1">
-  {item.product.sale_price
-    ? (item.product.sale_price * item.quantity).toLocaleString("vi-VN")
-    : ""}
-</div>
+              {carts.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
+                >
+                  {item.product && (
+                    <>
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="h-[70px] w-[70px] rounded-sm"
+                      />
+                      <div className="w-full md:w-2/3 pl-0 md:pl-4 ">
+                        <div className="font-semibold text-lg">{item.product.name}</div>
+                        {/* <div className="flex justify-between"> */}
+                        {/* Hiển thị tên kích thước của sản phẩm hiện tại */}
+                        {item.product.product_sizes && item.product.product_sizes.length > 0 && (
+                          <div className="flex items-center justify-between space-x-2 text-sm p-1 ">
+                            <label className="">Size:</label>
+                            <div className="text-gray-500 font-semibold ">XL</div>
+                            {/* <div className="flex space-x-2">
+                                {item.product.product_sizes.map((size, index) => (
+                                  <span key={size._id}>
+                                    {size.size_id.name}
+                                    {index < item.product.product_sizes.length - 1 && ", "}
+                                  </span>
+                                ))}
+                              </div> */}
+                          </div>
+                        )}
+                        {/* </div> */}
+                        {/* Hiển thị topping của sản phẩm hiện tại */}
+                        {item.product.product_toppings && item.product.product_toppings.length > 0 && (
+                          <div className="flex items-center justify-between space-x-2 text-sm p-1">
+                            <label className="">Topping:</label>
+                            <div className="font-semibold text-gray-500">Hahaa</div>
+                            {/* <div className="flex space-x-2">
+                              {item.product.product_toppings.map((topping, index) => (
+                                <span key={topping._id}>
+                                {topping.topping_id?.nameTopping || "Không có topping"}
+                                {index < item.product.product_toppings.length - 1 && ", "}
+                                </span>
+                                ))}
+                                </div> */}
+                          </div>
+                        )}
+                        {/* Giá */}
+                        <div className="flex justify-between text-sm p-1">
+                          <div className="">Giá : </div>
+                          <div className="text-gray-500 font-semibold ">
+                            {item.product.sale_price
+                              ? (item.product.sale_price * item.quantity).toLocaleString("vi-VN")
+                              : ""}
+                          </div>
+                        </div>
+                        {/* Số lượng */}
+                        <div className=" shadow-sm flex items-center justify-between text-sm p-1">
+                          <span className="">Số lượng:</span>
+                          <span className="font-semibold text-gray-500">{item.quantity}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
-          {/* Hiển thị tên kích thước của sản phẩm hiện tại */}
-          {item.product.product_sizes && item.product.product_sizes.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <label className="text-sm">Size:</label>
-              <div className="flex space-x-2">
-                {item.product.product_sizes.map((size, index) => (
-                  <span key={size._id}>
-                    {size.size_id.name}
-                    {index < item.product.product_sizes.length - 1 && ", "}
-                  </span>
-                ))}
-              </div>
+              ))}
+
             </div>
-          )}
-
-          {/* Hiển thị topping của sản phẩm hiện tại */}
-          {item.product.product_toppings && item.product.product_toppings.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <label className="text-sm">Topping:</label>
-              <div className="flex space-x-2">
-                {item.product.product_toppings.map((topping, index) => (
-                  <span key={topping._id}>
-                    {topping.topping_id?.nameTopping || "Không có topping"}
-                    {index < item.product.product_toppings.length - 1 && ", "}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-2 rounded-lg p-3 bg-gray-100 shadow-sm flex items-center justify-between">
-            <span className="text-sm text-gray-500">Số lượng:</span>
-            <span className="text-lg font-bold text-gray-800">{item.quantity}</span>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-))}
-
-</div>
 
             <div className="border-t-2 border-gray-300 py-4">
               <div className="flex justify-between">
-                <span className="text-lg font-semibold">Tổng cộng:</span>
-                <span className="text-xl font-bold">
-                {getTotalPrice() && getTotalPrice() > 0
-  ? getTotalPrice().toLocaleString("vi-VN")
-  : ""}
+                <span className="text-lg font-semibold">Tổng thanh toán:</span>
+                <span className="text-xl font-bold text-[#ea8025]">
+                  {getTotalPrice() && getTotalPrice() > 0
+                    ? getTotalPrice().toLocaleString("vi-VN")
+                    : ""}
                   VND
                 </span>
               </div>
@@ -268,95 +306,6 @@ const Checkout: React.FC = () => {
         </main>
       </div>
 
-      {/* Modal Payment Method */}
-      <Modal show={isModalOpen} onClose={toggleModal}>
-        <Modal.Header>Chọn phương thức thanh toán</Modal.Header>
-        <Modal.Body>
-          <div className="flex justify-center items-center space-x-4">
-            <div>
-              <button
-                onClick={toggleModal}
-                className="bg-gray-200 p-2 rounded-md"
-              >
-                <img
-                  src="src/pages/CheckOutPage/ImageBanking/Momo.png"
-                  alt="Momo"
-                  className="w-24"
-                />
-                <div className="mt-2 text-center">Momo</div>
-              </button>
-            </div>
-            <div>
-              <button
-                onClick={toggleModal}
-                className="bg-gray-200 p-2 rounded-md"
-              >
-                <img
-                  src="src/pages/CheckOutPage/ImageBanking/ZaloPay.png"
-                  alt="ZaloPay"
-                  className="w-24"
-                />
-                <div className="mt-2 text-center">ZaloPay</div>
-              </button>
-            </div>
-            <div>
-              <button
-                onClick={toggleModal}
-                className="bg-gray-200 p-2 rounded-md"
-              >
-                <img
-                  src="src/pages/CheckOutPage/ImageBanking/PhoneBanking.png"
-                  alt="Phone Banking"
-                  className="w-24"
-                />
-                <div className="mt-2 text-center">Phone Banking</div>
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      {/* Drawer Component for payment details */}
-      <Drawer open={isOpen} onClose={handleClose} position="right">
-        <Drawer.Items>
-          <Modal show={isModalOpen} onClose={toggleModal}>
-            <Modal.Header className="relative h-0 top-2 text-black p-0 mr-2 border-none">
-              <h2 className="text-lg font-semibold">Thông tin sản phẩm</h2>
-            </Modal.Header>
-            <Modal.Body className="bg-gray-100">
-              <form onSubmit={handleSubmit}>
-                <div className="flex gap-3">
-                  {/* Cart-left */}
-                  <div className="w-[170px]">
-                    <img
-                      src="src/account/AuthPage/Bg-coffee.jpg"
-                      alt="Cà phê không phê"
-                      className="w-[160px] h-[160px] rounded-xl"
-                    />
-                  </div>
-                  {/* Cart-right */}
-                  <div className="w-max flex-1">
-                    <h1 className="text-lg font-medium">Cà phê không phê</h1>
-                    <p className="text-sm text-[#ea8025] font-medium py-1">
-                      30.000 đ
-                    </p>
-                    <i className="text-sm text-black">
-                      Không ngon không lấy tiền
-                    </i>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleModal}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Đóng
-                </button>
-              </form>
-            </Modal.Body>
-          </Modal>
-        </Drawer.Items>
-      </Drawer>
     </>
   );
 };
