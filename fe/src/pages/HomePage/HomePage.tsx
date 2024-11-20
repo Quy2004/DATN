@@ -133,6 +133,10 @@ const HomePage: React.FC = () => {
         productSizes: selectedSize?.size_id,
         productToppings: selectedToppings?.topping_id
       });
+      console.log(selectedSize?.size_id);
+      console.log(selectedToppings?.topping_id);
+      
+    
       toast.success(data.messsage || "Thêm thành công");
     } catch (error) {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
@@ -400,6 +404,8 @@ const HomePage: React.FC = () => {
                   <button
                     onClick={() => {
                       addToCart(selectedProduct?._id);
+                      console.log(addToCart);
+                      
                     }}
                     className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
                   >
