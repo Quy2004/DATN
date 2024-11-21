@@ -255,7 +255,7 @@ useEffect(() => {
     <>
       <div>
         <img src={images[currentIndex]} alt="" className="w-max" />
-        <div className="containerAll mx-auto home">
+        <div className="containerAll mx-auto overflow-hidden home">
           <h1 className="font-semibold text-3xl p-3">Sản Phẩm Hot</h1>
           <div className="row grid grid-cols-4 gap-6 text-left h-[330px]">
             <div className="cow_left col-span-2">
