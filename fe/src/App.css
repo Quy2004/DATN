@@ -3,7 +3,22 @@
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
+:root {
+  --vh: 100%;
+}
+body {
+  opacity: 1 !important;
+  filter: none !important;
+  height: calc(var(--vh) - 1px); 
+  overflow-y: auto;
+  min-height: 100%;
+  margin: 0;
+  background-color: transparent !important;
+}
+body:not(.home) header {
+  background-color: #fff;
+  opacity: 1;
+}
 .containerAll {
   margin-top: 60px;
   max-width: 1124px;
@@ -72,16 +87,8 @@ header.sticky {
 .no-scroll {
   overflow: hidden; /* Vô hiệu hóa cuộn */
 }
-body:not(.home) header {
-  background-color: #fff;
-  opacity: 1;
 
-}
-body {
-  opacity: 1 !important;
-  filter: none !important;
-  background-color: transparent !important;
-}
+
 
 header .sticky #main-menu p {
   color: #000;
