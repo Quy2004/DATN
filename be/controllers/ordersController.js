@@ -71,7 +71,7 @@ export const createOrder = async (req, res) => {
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
-      orderStatus: "pending",
+      orderStatus: "pending", // Đặt trạng thái đơn hàng là "pending" nếu thanh toán MoMo
       orderDetail_id: [],
     });
 
@@ -82,7 +82,6 @@ export const createOrder = async (req, res) => {
       if (!item.product?._id || !item.product?.price) {
         throw new Error("Thông tin sản phẩm không hợp lệ");
       }
-      console.log(item.product._i);
 
       const orderDetail = await createOrderDetail({
         orderId: order._id,
@@ -102,6 +101,34 @@ export const createOrder = async (req, res) => {
     // Clear cart after order created
     await Cart.findOneAndDelete({ userId });
 
+    // Nếu phương thức thanh toán là MoMo
+    if (paymentMethod === "momo") {
+      try {
+        // Gửi yêu cầu thanh toán MoMo và nhận URL thanh toán
+        const paymentResponse = await axios.post("http://localhost:8000/payments/momo/create-payment", {
+          orderId: order._id, // Sử dụng orderId của đơn hàng đã tạo
+        });
+
+        // Lấy URL thanh toán từ phản hồi
+        const { payUrl } = paymentResponse.data;
+
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl, // Trả về URL thanh toán MoMo cho frontend
+        });
+      } catch (paymentError) {
+        console.error("Lỗi khi tạo thanh toán MoMo", paymentError.response?.data || paymentError.message);
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán MoMo",
+          error: paymentError.message,
+        });
+      }
+    }
+
+    // Trả về kết quả tạo đơn hàng nếu không phải MoMo
     return res.status(201).json({
       success: true,
       message: "Tạo đơn hàng thành công",

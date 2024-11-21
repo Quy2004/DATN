@@ -65,7 +65,8 @@ const orderSchema = new mongoose.Schema(
     ],
     paymentMethod: {
       type: String,
-      enum: ["bank transfer", "cash on delivery"],
+      enum: ["bank transfer", "cash on delivery","momo"],
+      required: true 
     },
     cancellationReason: {
       type: String,
