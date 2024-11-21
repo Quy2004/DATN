@@ -117,7 +117,7 @@ const Header: React.FC = () => {
 	return (
 		<>
 			<header className="absolute z-10 w-full">
-				<div className="flex container h-16 bg-white justify-between items-center px-4 sm:px-6 lg:px-8">
+				<div className="flex h-16 container bg-white sm:justify-evenly md:justify-between items-center mx-auto px-4 sm:px-6 lg:px-8">
 					{/* Hamburger Menu - Hiển thị khi màn hình nhỏ */}
 					<button
 						onClick={() => setIsOpenMenu(true)}
@@ -140,7 +140,7 @@ const Header: React.FC = () => {
 					</button>
 
 					{/* Logo - Center */}
-					<div className="flex-grow text-center">
+					<div className="flex-grow md:flex-grow-0 flex justify-center items-center">
 						<Link to="/">
 							<img
 								className="h-12 mx-auto"
@@ -149,10 +149,8 @@ const Header: React.FC = () => {
 							/>
 						</Link>
 					</div>
-
-					{/* Tabs - Hiển thị khi màn hình lớn */}
-					<nav className="hidden md:flex items-center text-sm font-semibold">
-						<ul className="flex items-center space-x-4">
+					<nav className="hidden md:flex items-center text-sm font-semibold ">
+						<ul className="flex items-center *:py-5 *:px-5">
 							<li>
 								<Link className="hover:text-gray-700" to="/tea">
 									Trà
@@ -330,7 +328,7 @@ const Header: React.FC = () => {
 				open={isOpenMenu}
 				onClose={handleCloseMenu}
 				position="left"
-				className="fixed w-[400px] px-0 z-50"
+				className="fixed max-w-[270px] px-0 z-50 h-full"
 			>
 				{/* <Drawer.Header title="" className="border-b-2 px-4" /> */}
 				<Drawer.Items>
@@ -356,27 +354,27 @@ const Header: React.FC = () => {
 						</button>
 					</nav>
 					<nav className=" flex flex-col items-start ml-6 space-y-1 *:block *:w-[92.5%] *:border-b-2 *:py-4 ">
-						<Link to="/tea" className="text-2xl font-semibold " onClick={toggleMenu}>
+						<Link to="/tea" className="text-lg font-semibold " onClick={toggleMenu}>
 							<h3>Trà</h3>
 						</Link>
-						<Link to="/coffee" className="text-2xl font-semibold" onClick={toggleMenu}>
+						<Link to="/coffee" className="text-lg font-semibold" onClick={toggleMenu}>
 							<h3>Cà Phê</h3>
 						</Link>
-						<Link to="/menu" className="text-2xl font-semibold" onClick={toggleMenu}>
+						<Link to="/menu" className="text-lg font-semibold" onClick={toggleMenu}>
 							<h3>Menu </h3>
 						</Link>
-						<Link to="/chuyennha" className="text-2xl font-semibold" onClick={toggleMenu}>
+						<Link to="/chuyennha" className="text-lg font-semibold" onClick={toggleMenu}>
 							<h3>Chuyện Nhà </h3>
 						</Link>
-						<Link to="/login" className="text-2xl font-semibold" onClick={toggleMenu}>
+						<Link to="/login" className="text-lg font-semibold" onClick={toggleMenu}>
 							<h3>Tài Khoản </h3>
 						</Link>
 					</nav>
-					<div className="flex justify-center mb:hidden lg:block mt-4">
+					<div className="flex justify-center mb:hidden mt-4">
 						<div className="relative flex items-center  ">
 							<input
 								type="text"
-								className="border rounded-full w-[333px] px-6 py-3"
+								className="border rounded-full max-w-[333px] px-6 py-3"
 								placeholder="Search"
 								value={searchTerm}
 								onChange={e => handleSearch(e.target.value)}
