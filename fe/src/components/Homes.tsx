@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom"
 const Homes: React.FC = () => {
     return (
-        <div className="bg-orange-50 pt-12 pb-36">
+        <div className="bg-orange-50 md:pt-12 md:pb-36">
             <div className="containerAll mx-auto">
                 {/* COFFEEHOLIC */}
-                <h1 className="text-3xl font-semibold">Chuyện Nhà</h1>
-                <div>
+                <h1 className="text-3xl text-center md:text-left font-semibold pt-8 md:pt-0">Chuyện Nhà</h1>
+                <div className="mx-4 md:mx-0">
                     <h2 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Coffeholic</h2>
-                    <div className="row grid grid-cols-3 gap-5 ">
+                    <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li className="">
@@ -17,47 +17,51 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
-                            <span className="text-left">
-                                <p className="my-2 text-gray-500">
-                                    5/25/2024
-                                </p>
-                            </span>
-                            <Link to=''>
-                                <h3 className="uppercase truncate text-[17px] font-semibold pb-1">bắt gặp sài gòn xưa trong món uống hiện đại của giới trẻ</h3>
-                            </Link>
-                            <p className="text-[15px]">Dẫu qua bao nhiêu lớp sóng thời gian,
-                                người ta vẫn có thể tìm lại những dấu ấn thăng trầm của một Sài Gòn xưa cũ.
-                                Trên những góc phố, trong các bức ảnh, trong vô số tác phẩm văn chương...
-                                và dĩ nhiên trong cả thiên đường ẩm thực phong phú.
-                                Món ăn đường phố Sài Gòn nức tiếng qua bao nhiêu thế hệ,
-                                trong đó có một món tưởng bình dị nhưng lại là “kho báu” của tuổi thơ,
-                                và là cảm hứng cho các tín đồ ăn uống.</p>
+                            <nav className="mx-3 md:mx-0">
+                                <span className="text-left">
+                                    <p className="my-2 text-gray-500">
+                                        5/25/2024
+                                    </p>
+                                </span>
+                                <Link to=''>
+                                    <h3 className="uppercase truncate text-[17px] font-semibold pb-1">bắt gặp sài gòn xưa trong món uống hiện đại của giới trẻ</h3>
+                                </Link>
+                                <p className="text-[15px]">Dẫu qua bao nhiêu lớp sóng thời gian,
+                                    người ta vẫn có thể tìm lại những dấu ấn thăng trầm của một Sài Gòn xưa cũ.
+                                    Trên những góc phố, trong các bức ảnh, trong vô số tác phẩm văn chương...
+                                    và dĩ nhiên trong cả thiên đường ẩm thực phong phú.
+                                    Món ăn đường phố Sài Gòn nức tiếng qua bao nhiêu thế hệ,
+                                    trong đó có một món tưởng bình dị nhưng lại là “kho báu” của tuổi thơ,
+                                    và là cảm hứng cho các tín đồ ăn uống.</p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li>
                                     <Link to="#">
                                         <img src="https://file.hstatic.net/1000075078/article/1200x630_0b0081d93ba6479b934e04e71cbfd102_grande.jpg" alt=""
-                                            className="hover:scale-110 ease-in-out duration-300 object-cover"  />
+                                            className="hover:scale-110 ease-in-out duration-300 object-cover" />
                                     </Link>
                                 </li>
                             </ul>
-                            <span>
-                                <p className="my-2 text-left text-gray-500">
-                                    30/10/2023
+                            <nav className="mx-3 md:mx-0">
+                                <span>
+                                    <p className="my-2 text-left text-gray-500">
+                                        30/10/2023
+                                    </p>
+                                </span>
+                                <Link to=''>
+                                    <h3 className="uppercase truncate text-[17px] font-semibold pb-1">
+                                        CHỈ CHỌN CÀ PHÊ MỖI SÁNG NHƯNG CŨNG KHIẾN CUỘC SỐNG CỦA BẠN THÊM THÚ VỊ, TẠI SAO KHÔNG?
+                                    </h3>
+                                </Link>
+                                <p className="text-[15px]">
+                                    Thực chất, bạn không nhất thiết phải làm gì to tát để tạo nên một ngày rực rỡ.
+                                    Chỉ cần bắt đầu từ những việc nhỏ nhặt nhất,
+                                    khi bạn đứng trước quầy cà phê mỗi sáng,
+                                    mạnh dạn thử một thức uống mới mẻ và phá cách.
                                 </p>
-                            </span>
-                            <Link to=''>
-                                <h3 className="uppercase truncate text-[17px] font-semibold pb-1">
-                                    CHỈ CHỌN CÀ PHÊ MỖI SÁNG NHƯNG CŨNG KHIẾN CUỘC SỐNG CỦA BẠN THÊM THÚ VỊ, TẠI SAO KHÔNG?
-                                </h3>
-                            </Link>
-                            <p className="text-[15px]">
-                                Thực chất, bạn không nhất thiết phải làm gì to tát để tạo nên một ngày rực rỡ.
-                                Chỉ cần bắt đầu từ những việc nhỏ nhặt nhất,
-                                khi bạn đứng trước quầy cà phê mỗi sáng,
-                                mạnh dạn thử một thức uống mới mẻ và phá cách.
-                            </p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
@@ -68,6 +72,7 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
+                            <nav className="mx-3 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -82,14 +87,15 @@ const Homes: React.FC = () => {
                                 Mới đây, các "tín đồ" cà phê đang bàn tán xôn xao về SIGNATURE
                                 - Biểu tượng văn hóa cà phê của The Coffee House đã quay trở lại.
                             </p>
+                            </nav>
                         </div>
                     </div>
                 </div>
 
                 {/* TEAHOLIC */}
-                <div>
+                <div className="mx-4 md:mx-0">
                     <h3 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Techolic</h3>
-                    <div className="row grid grid-cols-3 gap-5">
+                    <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li>
@@ -99,6 +105,7 @@ const Homes: React.FC = () => {
                                     </a>
                                 </li>
                             </ul>
+                            <nav className="mx-3 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -118,6 +125,7 @@ const Homes: React.FC = () => {
                                 Vậy thì mùa trăng năm nay, sao không thử “dừng một chút thôi”,
                                 vì chúng ta đều xứng đáng tự thương mình, và tự “thưởng một chút trôi”.
                             </p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
@@ -128,6 +136,7 @@ const Homes: React.FC = () => {
                                     </a>
                                 </li>
                             </ul>
+                            <nav className="mx-3 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -147,6 +156,7 @@ const Homes: React.FC = () => {
                                 - “địa điểm xin vía mới nổi” để vừa thưởng thức bộ sưu tập
                                 thức uống dành riêng cho Tết vừa mong năm mới Cầu Toàn Kèo Thơm.
                             </p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
@@ -157,7 +167,7 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
-
+                            <nav className="mx-2 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -177,14 +187,15 @@ const Homes: React.FC = () => {
                                 như khuấy lên niềm hạnh phúc, nao nức về một trung thu
                                 đầy thú vị mà không người trẻ nào muốn bỏ lỡ.
                             </p>
+                            </nav>
                         </div>
                     </div>
                 </div>
 
                 {/* BLOG */}
-                <div>
+                <div className="mx-4 pb-8 md:mx-0 ">
                     <h2 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Blog</h2>
-                    <div className="row grid grid-cols-3 gap-5">
+                    <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li>
@@ -194,6 +205,7 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
+                            <nav className="mx-2 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -217,6 +229,7 @@ const Homes: React.FC = () => {
                                 & BQL tòa nhà Việt Tower (bên cho thuê và vận hành tòa nhà)
                                 xác định thiệt hại và đề xuất phương án hỗ trợ.
                             </p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
@@ -227,6 +240,7 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
+                            <nav className="mx-3 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -243,6 +257,7 @@ const Homes: React.FC = () => {
                                 Bạn cầu mong gì cho mình và người thân trong những chiếc lộc
                                 trao tay đón xuân mới?
                             </p>
+                            </nav>
                         </div>
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
@@ -253,6 +268,7 @@ const Homes: React.FC = () => {
                                     </Link>
                                 </li>
                             </ul>
+                            <nav className="mx-3 md:mx-0">
                             <span>
                                 <p className="text-left my-2 text-gray-500">
                                     30/2/2024
@@ -268,6 +284,7 @@ const Homes: React.FC = () => {
                                 Quảng trường Thời Đại (New York) với ly cà phê sữa đá quen thuộc,
                                 đi cùng thương hiệu The Coffee House.
                             </p>
+                            </nav>
                         </div>
                     </div>
                 </div>
