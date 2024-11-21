@@ -63,20 +63,20 @@ header {
 }
 
 header.sticky {
-  /* background-color: rgba(255, 255, 255, 0.94); */
-  opacity: 0.9;
+  position: fixed; 
+  top: 0;
+  width: 100%; 
+  z-index: 10; 
+  box-sizing: border-box; 
 }
-
-/* body:not(.home) header{ */
-/* background-color: #fff; Màu trắng cho header trên các trang khác */
-/* opacity: 1;  */
-
+.no-scroll {
+  overflow: hidden; /* Vô hiệu hóa cuộn */
+}
 body:not(.home) header {
   background-color: #fff;
   opacity: 1;
 
 }
-
 body {
   opacity: 1 !important;
   filter: none !important;

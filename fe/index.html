@@ -14,13 +14,6 @@
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script>
     $(document).ready(function () {
-      // $(window).scroll(function () {
-      //   if ($(this).scrollTop()) {
-      //     $('header').addClass('sticky')
-      //   } else {
-      //     $('header').removeClass('sticky')
-      //   }
-      // })
       $(window).scroll(function () {
         if ($(this).scrollTop() && window.location.pathname === '/') {
           $('header').addClass('sticky');
