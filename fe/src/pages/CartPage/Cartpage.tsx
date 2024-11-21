@@ -28,10 +28,10 @@ const CartPage: React.FC<{
         // Ensure product_toppings is an array and reduce to get total topping price
         const toppingPrice = Array.isArray(item?.product_toppings)
           ? item.product_toppings.reduce(
-              (total: number, topping: any) =>
-                total + (topping?.topping_id?.priceTopping || 0),
-              0
-            )
+            (total: number, topping: any) =>
+              total + (topping?.topping_id?.priceTopping || 0),
+            0
+          )
           : 0;
 
         // Total price for this item (including size, toppings, and quantity)
@@ -78,7 +78,7 @@ const CartPage: React.FC<{
         toast.error("Không thể cập nhật số lượng sản phẩm.");
       }
     } catch (error) {
-console.error("Error updating quantity:", error);
+      console.error("Error updating quantity:", error);
       toast.error("Không thể cập nhật số lượng sản phẩm.");
     }
   };
@@ -103,79 +103,79 @@ console.error("Error updating quantity:", error);
     });
   };
 
-const handleDeleteItem = async (productId: string) => {
-  try {
-    const response = await instance.patch(
-      `/cart/${idcart}/product/${productId}/delete`
+  const handleDeleteItem = async (productId: string) => {
+    try {
+      const response = await instance.patch(
+        `/cart/${idcart}/product/${productId}/delete`
+      );
+      if (response.status === 200) {
+        toast.success("Sản phẩm đã được xóa.");
+        fetchCart(); // Refresh the cart to update the UI
+      } else {
+        toast.error("Không thể xóa sản phẩm.");
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Có lỗi xảy ra khi xóa sản phẩm.");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.length === 0) {
+      toast.error("Bạn chưa chọn sản phẩm nào để xóa.");
+      return;
+    }
+
+    try {
+      const response = await instance.patch(`/cart/${idcart}/delete-selected`, {
+        productIds: selectedItems,
+      });
+
+      if (response.status === 200) {
+        toast.success("Các sản phẩm đã được xóa.");
+        setSelectedItems([]); // Clear selection
+        fetchCart(); // Refresh the cart after deletion
+      } else {
+        toast.error("Không thể xóa sản phẩm đã chọn.");
+      }
+    } catch (error) {
+      console.error("Error deleting selected items:", error);
+      toast.error("Có lỗi xảy ra khi xóa các sản phẩm đã chọn.");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    const confirmDelete = window.confirm(
+      "Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?"
     );
-    if (response.status === 200) {
-      toast.success("Sản phẩm đã được xóa.");
-      fetchCart(); // Refresh the cart to update the UI
-    } else {
-      toast.error("Không thể xóa sản phẩm.");
+    if (!confirmDelete) return; // Nếu người dùng không xác nhận, không làm gì cả
+
+    try {
+      const response = await instance.delete(`/cart/${idcart}/delete-all`);
+      if (response.status === 200) {
+        toast.success("Tất cả sản phẩm đã được xóa.");
+        fetchCart(); // Refresh the cart after deletion
+      } else {
+        toast.error("Không thể xóa tất cả sản phẩm.");
+      }
+    } catch (error) {
+      console.error("Error deleting all items:", error);
+      toast.error("Có lỗi xảy ra khi xóa tất cả sản phẩm.");
     }
-  } catch (error) {
-    console.error("Error deleting item:", error);
-    toast.error("Có lỗi xảy ra khi xóa sản phẩm.");
-  }
-};
+  };
 
-const handleDeleteSelected = async () => {
-  if (selectedItems.length === 0) {
-    toast.error("Bạn chưa chọn sản phẩm nào để xóa.");
-    return;
-  }
-
-  try {
-    const response = await instance.patch(`/cart/${idcart}/delete-selected`, {
-      productIds: selectedItems,
-    });
-
-    if (response.status === 200) {
-      toast.success("Các sản phẩm đã được xóa.");
-      setSelectedItems([]); // Clear selection
-      fetchCart(); // Refresh the cart after deletion
+  const handleMasterCheckboxChange = () => {
+    if (selectedItems.length === cart.length) {
+      setSelectedItems([]); // Deselect all if all are selected
     } else {
-      toast.error("Không thể xóa sản phẩm đã chọn.");
+      setSelectedItems(cart.map((item: any) => item.product._id)); // Select all items
     }
-  } catch (error) {
-    console.error("Error deleting selected items:", error);
-    toast.error("Có lỗi xảy ra khi xóa các sản phẩm đã chọn.");
-  }
-};
-
-const handleDeleteAll = async () => {
-  const confirmDelete = window.confirm(
-    "Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?"
-  );
-  if (!confirmDelete) return; // Nếu người dùng không xác nhận, không làm gì cả
-
-  try {
-    const response = await instance.delete(`/cart/${idcart}/delete-all`);
-    if (response.status === 200) {
-      toast.success("Tất cả sản phẩm đã được xóa.");
-      fetchCart(); // Refresh the cart after deletion
-    } else {
-      toast.error("Không thể xóa tất cả sản phẩm.");
-    }
-  } catch (error) {
-    console.error("Error deleting all items:", error);
-    toast.error("Có lỗi xảy ra khi xóa tất cả sản phẩm.");
-  }
-};
-
-const handleMasterCheckboxChange = () => {
-  if (selectedItems.length === cart.length) {
-    setSelectedItems([]); // Deselect all if all are selected
-  } else {
-    setSelectedItems(cart.map((item: any) => item.product._id)); // Select all items
-  }
-};
+  };
 
 
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
-<div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
+      <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
           Giỏ hàng
         </h2>
@@ -198,11 +198,10 @@ const handleMasterCheckboxChange = () => {
                 <button
                   onClick={handleDeleteSelected}
                   disabled={selectedItems.length === 0}
-                  className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${
-                    selectedItems.length === 0
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:scale-105"
-                  }`}
+                  className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${selectedItems.length === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:scale-105"
+                    }`}
                 >
                   Xóa đã chọn
                 </button>
@@ -232,7 +231,7 @@ const handleMasterCheckboxChange = () => {
                       <img
                         className="h-24 w-24 rounded-lg object-cover dark:hidden"
                         src={item.product.image}
-alt="product image"
+                        alt="product image"
                       />
                     </Link>
                   </div>
@@ -246,16 +245,16 @@ alt="product image"
                       {item.product.name}
                     </Link>
                     <div className="space-y-2 text-sm text-gray-600">
-                      <p>Size: {item?.product_sizes?.name}</p>
+                      <p>Size: <span className="font-semibold text-gray-600">{item?.product_sizes?.name} L</span></p>
                       <p>
                         Topping:{" "}
                         {item?.product_toppings &&
-                        item?.product_toppings.length > 0 ? (
+                          item?.product_toppings.length > 0 ? (
                           item?.product_toppings.map(
                             (topping: ProductTopping, index: number) => (
                               <span
                                 key={topping?.topping_id?._id}
-                                className="font-medium"
+                                className="font-semibold text-gray-600"
                               >
                                 {topping?.topping_id?.nameTopping}
                                 {topping?.priceTopping && (
@@ -269,7 +268,7 @@ alt="product image"
                             )
                           )
                         ) : (
-                          <span className="text-gray-500">
+                          <span className="font-semibold text-gray-600">
                             Không có Topping
                           </span>
                         )}
@@ -277,7 +276,7 @@ alt="product image"
                     </div>
                     <button
                       onClick={() => handleDeleteItem(item.product._id)}
-                      className="mt-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors duration-200"
+                      className="mt-2 border-2 border-red-500 px-2 rounded-lg hover:bg-red-500 text-sm font-medium text-red-500 hover:text-white transition-colors duration-200"
                     >
                       Xóa
                     </button>
@@ -297,7 +296,7 @@ alt="product image"
                       <input
                         type="number"
                         value={item.quantity}
-readOnly
+                        readOnly
                         className="w-16 text-center bg-white border-2 border-gray-200 rounded-lg shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                       />
                       <button
@@ -310,7 +309,7 @@ readOnly
                       </button>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      <p className="text-lg font-semibold text-gray-700 dark:text-white">
                         {formatCurrency(
                           (item?.product?.sale_price || 0) * item.quantity
                         )}
@@ -345,27 +344,29 @@ readOnly
                 Tiến hành thanh toán
               </Link>
               <div className="mt-4 flex items-center justify-center gap-3">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="mb-0.5 text-sm text-gray-500 dark:text-gray-400">
                   hoặc
                 </span>
                 <Link
                   to="/"
                   className="group inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-200"
                 >
-                  Tiếp tục mua sắm
-                  <svg
-                    className="h-5 w-5 transform transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
+                  <h3 className="flex gap-1 hover:underline">
+                    Tiếp tục mua sắm
+                    <svg
+                      className="h-5 w-5 mt-0.5 transform transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </svg></h3>
+
                 </Link>
               </div>
             </div>

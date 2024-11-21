@@ -138,7 +138,7 @@ const DetailPage = () => {
                 <img
                   src={mainImage}
                   alt="Product"
-                  className="w-[480px] h-[480px] mx-auto bg-cover rounded-sm border-2 shadow-md mb-4"
+                  className="w-[480px] h-[480px] mx-auto bg-cover rounded-lg border-2 shadow-md mb-4"
                 />
                 <div className="flex gap-4 justify-center overflow-x-auto">
                   {/* Thumbnails */}
