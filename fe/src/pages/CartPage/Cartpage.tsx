@@ -68,11 +68,7 @@ const CartPage: React.FC<{
       );
 
       if (response.status === 200) {
-        toast.success(
-          increase
-            ? "Số lượng sản phẩm đã được tăng"
-            : "Số lượng sản phẩm đã được giảm"
-        );
+       
         fetchCart(); // Gọi lại hàm fetchCart() sau khi thay đổi số lượng
       } else {
         toast.error("Không thể cập nhật số lượng sản phẩm.");
