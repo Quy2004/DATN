@@ -1,7 +1,7 @@
 
 const CommentAdmin = () => {
     return (
-        <div>Comment</div>
+        <div>Comment hihi</div>
     )
 }
 

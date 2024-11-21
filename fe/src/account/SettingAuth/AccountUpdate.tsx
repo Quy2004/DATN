@@ -41,7 +41,18 @@ const AccountUpdate = () => {
                 userName: userData.userName,
                 email: userData.email,
             });
-            setAvatar(userData.avatars[0]);
+    
+            // Kiểm tra nếu avatar có tồn tại và là blob URL, sau đó thay thế bằng URL thật
+            const avatarUrl = userData.avatars[0]?.url;
+            if (avatarUrl && avatarUrl.startsWith("blob:")) {
+                // Lưu trữ lại URL của ảnh đã tải lên (nếu cần, bạn có thể tải lại ảnh từ blob)
+                // Ở đây có thể cần chuyển đổi hoặc sử dụng một dịch vụ lưu trữ ảnh
+                setAvatar(""); // Cần xử lý với URL vĩnh viễn từ Cloudinary hoặc API khác
+            } else {
+                setAvatar(avatarUrl || ""); // Nếu URL hợp lệ, sử dụng trực tiếp
+            }
+    
+            // Cập nhật danh sách avatars
             setAvatarsList(
                 userData.avatars.length > 0
                     ? [
@@ -49,13 +60,13 @@ const AccountUpdate = () => {
                               uid: "0",
                               name: "avatar.jpg",
                               status: "done",
-                              url: userData.avatars[0],
+                              url: avatarUrl, // Đảm bảo URL là ổn định, không phải blob URL
                           },
                       ]
                     : []
             );
         }
-    }, [userData, form]);
+    }, [userData]);
 
     const updateUserMutation = useMutation({
         mutationFn: async (values: any) => {
@@ -63,7 +74,7 @@ const AccountUpdate = () => {
             const formData = new FormData();
             formData.append("userName", userName);
             formData.append("email", email);
-            formData.append("avatars", avatar || "");
+            formData.append("avatars.url", avatar || "");
             const response = await instance.put(`users/${user._id}`, formData);
             return response.data;
         },
@@ -73,19 +84,52 @@ const AccountUpdate = () => {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", "duan_totnghiep");
-
+    
         try {
+            // Upload lên Cloudinary hoặc dịch vụ lưu trữ khác
             const res = await axios.post(
                 "https://api.cloudinary.com/v1_1/duantotnghiep/image/upload",
                 formData
             );
-            setAvatar(res.data.secure_url);
-            setAvatarUrl(res.data.secure_url);
-            return res.data.secure_url;
+            const imageUrl = res.data.secure_url; // Lấy URL ổn định từ Cloudinary
+            setAvatar(imageUrl); // Cập nhật URL avatar ổn định
+            setAvatarUrl(imageUrl); // Cập nhật URL trong state
+            return imageUrl;
         } catch (error) {
             message.error("Upload ảnh thất bại!");
         }
     };
+
+    // API call để cập nhật địa chỉ
+    const updateAddressMutation = useMutation({
+        mutationFn: async (values: any) => {
+            const { address, phone, name } = values;
+
+            const formData = new FormData();
+            formData.append("address", address);
+            formData.append("phone", phone);
+            formData.append("name", name);
+
+            const response = await instance.put(`address/${user._id}`, formData); // Cập nhật địa chỉ
+            return response.data;
+        },
+    });
+
+    const createAddressMutation = useMutation({
+        mutationFn: async (values: any) => {
+            const { address, phone, name } = values;
+
+            const formData = new FormData();
+            formData.append("user_id", user._id); // Sử dụng user_id từ localStorage
+            formData.append("address", address);
+            formData.append("phone", phone);
+            formData.append("name", name);
+
+            const response = await instance.post(`address`, formData);
+            return response.data;
+        },
+    });
+
 
     const handleAvatars = ({ fileList }: { fileList: UploadFile[] }) => {
         setAvatarsList(fileList);
@@ -100,6 +144,12 @@ const AccountUpdate = () => {
     const onFinish = async (values: any) => {
         try {
             await updateUserMutation.mutateAsync(values);
+            if (!addressData || addressData.length === 0) {
+                await createAddressMutation.mutateAsync(values);
+            } else {
+                // Nếu có địa chỉ, cập nhật
+                await updateAddressMutation.mutateAsync(values);
+            }
             notification.success({ message: "Cập nhật thông tin thành công!" });
         } catch (error) {
             notification.error({ message: "Cập nhật thông tin không thành công!" });
