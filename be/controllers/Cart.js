@@ -302,8 +302,7 @@ const itemIndex = cart.products.findIndex(
     });
   }
 };
-
-// Xóa tất cả sản phẩm trong giỏ hàng
+// Xóa tất cả
 export const clearCart = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -439,4 +438,45 @@ export const updateProductQuantity = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
-};J
+};
+
+export const changeProductQuantity = async (req, res) => {
+  const { userId, productId, increase } = req.body;
+  try {
+    // Tìm giỏ hàng của người dùng
+    let cart = await Cart.findOne({ userId });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    // Tìm sản phẩm trong giỏ hàng
+    const product = cart.products.find(
+      (item) => item.product.toString() === productId
+    );
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    // Kiểm tra điều kiện increase và xử lý tăng/giảm
+    if (increase) {
+      product.quantity++; // Tăng số lượng sản phẩm
+    } else {
+      // Giảm số lượng nếu > 1 (hoặc điều kiện khác)
+      if (product.quantity > 1) {
+        product.quantity--; // Giảm số lượng sản phẩm
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Cannot reduce quantity below 1" });
+      }
+    }
+
+    // Tính lại tổng giá trị giỏ hàng
+    cart.totalprice = await calculateTotalPrice(cart);
+
+    // Lưu lại giỏ hàng với số lượng mới
+    await cart.save();
+
+    return res.status(200).json({ cart });
+  } catch (error) {
+    console.error("Error in updating quantity:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
