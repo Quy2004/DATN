@@ -4,12 +4,13 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
 import axios from "axios";
-import { ProductTopping } from "../../types/product";
+import Swal from 'sweetalert2';
 
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   console.log("User ID:", userId);
 
+  
   const {
     data: carts,
     isLoading: isCartsLoading,
@@ -22,6 +23,7 @@ const Checkout: React.FC = () => {
       return response.data.cart;
     },
   });
+  
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
   const [loading, setLoading] = useState<boolean>(false); 
@@ -68,23 +70,21 @@ const Checkout: React.FC = () => {
   });
 
   const onSubmit = async (data: Form) => {
-    const oderData = {
+    const orderData = {
       userId,
       customerInfo: data,
       paymentMethod: paymentMethod,
       note: data.note,
     };
-    console.log(oderData);
-
+  
     try {
-      // 1. Tạo đơn hàng đầu tiên
-      const { data: orderResponse } = await instance.post("orders", oderData);
+      // 1. Tạo đơn hàng
+      const { data: orderResponse } = await instance.post("orders", orderData);
       console.log("Đơn hàng đã được tạo:", orderResponse);
-
-      // 2. Kiểm tra nếu phương thức thanh toán là MoMo
+  
+      // 2. Nếu phương thức thanh toán là MoMo, thực hiện thanh toán (chỉ với MoMo)
       if (paymentMethod === "momo") {
         setLoading(true);
-
         try {
           const response = await axios.post(
             "http://localhost:8000/payments/momo/create-payment",
@@ -92,35 +92,47 @@ const Checkout: React.FC = () => {
               orderId: orderResponse._id,
             }
           );
-
-          // 4. Kiểm tra URL thanh toán từ phản hồi
+  
           if (response.data?.payUrl) {
             const { payUrl } = response.data;
-
-            // 5. Chuyển hướng người dùng tới trang thanh toán MoMo
+            // Chuyển hướng tới trang thanh toán MoMo
             window.location.href = payUrl;
           } else {
-            throw new Error("Không nhận được URL thanh toán MoMo");
+            throw new Error("Không nhận được URL thanh toán");
           }
         } catch (paymentError) {
-          console.error(
-            "Lỗi khi tạo thanh toán MoMo",
-            paymentError.response?.data || paymentError.message
-          );
-          alert("Lỗi khi kết nối với MoMo, vui lòng thử lại sau.");
+          console.error("Lỗi thanh toán MoMo", paymentError);
+          alert("Lỗi khi kết nối với MoMo. Vui lòng thử lại sau.");
           setLoading(false);
         }
       }
+  
+      // 3. Hiển thị thông báo thành công và reload trang về trang chủ
+      Swal.fire({
+        title: 'Đặt hàng thành công!',
+        text: 'Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi. Đơn hàng của bạn đang được xử lý.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        // Chuyển hướng về trang chủ
+        window.location.href = '/'; // Điều hướng về trang chủ (URL gốc của ứng dụng)
+      });
+  
     } catch (error) {
-      console.error(
-        "Lỗi khi tạo đơn hàng",
-        error.response?.data || error.message
-      );
-      // Thông báo lỗi cho người dùng nếu không thể tạo đơn hàng
-      alert("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.");
+      console.error("Lỗi khi tạo đơn hàng", error);
+      // Hiển thị thông báo lỗi nếu không tạo được đơn hàng
+      Swal.fire({
+        title: 'Có lỗi xảy ra!',
+        text: 'Vui lòng thử lại sau.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        // Chuyển hướng về trang chủ khi có lỗi xảy ra (tùy chọn)
+        window.location.href = '/'; // Điều hướng về trang chủ
+      });
     }
   };
-
+  
   // Hàm xử lý khi người dùng click vào biểu tượng MoMo
   const handleMomoClick = () => {
     setPaymentMethod("momo");
