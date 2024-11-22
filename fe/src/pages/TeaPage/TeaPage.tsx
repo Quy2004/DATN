@@ -29,21 +29,23 @@ const TeaPage: React.FC = () => {
     };
 
     return (
-        <div className="containerAll mx-auto px-4">
-            <div className="mb-8">
-                <h1 className="pt-10 text-3xl font-semibold mb-3 mt-6">Trà</h1>
+        <div className="containerAll mx-4 md:px-4 md:mx-auto ">
+            <div className="mb-6 md:mb-8">
+                <h1 className="pt-4 text-3xl font-semibold mb-3 mt-6 md:pt-10">Trà</h1>
                 <p className="border-b-orange-400 w-10 border-b-[4px]"></p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 text-left mb-12">
+            <div className="flex flex-wrap gap-x-5 gap-y-4 justify-center md:gap-5 text-left mb-4 md:justify-start md:grid-cols-4">
                 {productsData?.map((tea: Product) => (
                     <div key={tea._id} className="item">
-                        <Link to={`/detail/${tea._id}`} className="product_img">
-                            <img src={tea.image} alt={tea.name} className="w-full h-auto object-cover" />
+                        <Link to={`/detail/${tea._id}`} className="md:product_img">
+                            <img src={tea.image} alt={tea.name} className="w-[180px] h-[180px] border-2 rounded-lg md:w-full md:h-auto object-cover" />
                         </Link>
-                        <Link to="#">
-                            <h3 className="text-2xl mt-2">{tea.name}</h3>
-                        </Link>
-                        <p className="text-lg font-semibold">{formatPrice(tea.price)} VNĐ</p>
+                        <div className="*:leading-6 ">
+                            {/* <Link to="#"> */}
+                                <h3 className="text-2xl mt-0 md:mt-2">{tea.name}</h3>
+                            {/* </Link> */}
+                            <p className="text-sm font-semibold">{formatPrice(tea.price)} VNĐ</p>
+                        </div>
                     </div>
                 ))}
             </div>
