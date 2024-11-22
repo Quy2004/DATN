@@ -141,21 +141,21 @@ const DetailPage = () => {
     <>
       {product && (
         <div>
-          <div className="containerAll mx-auto px-4 py-8">
-            <div className="flex flex-wrap -mx-4 my-2">
+          <div className="containerAll mx-4 py-8 md:mx-auto md:px-4">
+            <div className="flex flex-wrap mx-0 md:mx-4 my-2">
               {/* Product Images */}
-              <div className="w-full md:w-2/5 px-4 mb-4">
+              <div className="w-full mb-4 p-0 md:w-2/5 md:px-4">
                 <img
                   src={mainImage}
                   alt="Product"
-                  className="w-[480px] h-[480px] mx-auto bg-cover rounded-lg border-2 shadow-md mb-4"
+                  className="w-[390px] h-[360px] md:w-[480px] md:h-[409px] mx-auto bg-cover rounded-lg border-2 shadow-md mb-4"
                 />
                 <div className="flex gap-4 justify-center overflow-x-auto">
                   {/* Thumbnails */}
                   <img
                     src={product.image} // Hiển thị ảnh chính trong thumbnail
                     alt="Main Product Thumbnail"
-                    className="w-20 h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
+                    className="w-[100px] h-[100px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
                     onClick={() => changeImage(product.image)} // Có thể click để xem ảnh chính
                   />
                   {Array.isArray(product.thumbnail) &&
@@ -164,7 +164,7 @@ const DetailPage = () => {
                         key={index}
                         src={thumb}
                         alt={`Thumbnail ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
+                        className="w-[100px] h-[100px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
                         onClick={() => changeImage(thumb)} // Thay đổi ảnh chính khi nhấp vào thumbnail
                       />
                     ))}
@@ -172,10 +172,10 @@ const DetailPage = () => {
               </div>
 
               {/* Product Info */}
-              <div className="w-full md:w-3/5 px-4">
-                <h2 className="text-4xl font-bold mb-2">{product.name}</h2>
+              <div className="w-full px-0 md:px-4 md:w-3/5">
+                <h2 className="text-lg md:text-4xl font-semibold md:font-bold mb-2">{product.name}</h2>
                 <div className="mb-4">
-                  <span className="text-lg font-medium mr-2">
+                  <span className="text-2xl md:text-lg text-[#ea8025] font-semibold md:text-black md:font-medium mr-2">
                     {formatPrice(
                       product.price,
                       selectedSize?.size_id.priceSize || 0,
@@ -258,7 +258,7 @@ const DetailPage = () => {
                 <div className="mb-6">
                   <label
                     htmlFor="quantity"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-lg font-medium text-gray-700 mb-1"
                   >
                     Số lượng:
                   </label>
@@ -292,23 +292,23 @@ const DetailPage = () => {
                 </div>
               </div>
             </div>
-            <hr className="mb-4 mx-4" />
-            <div className="mx-4">
+            <hr className="mb-4 mx-0 md:mx-4" />
+            <div className="mx-0 md:mx-4">
               <h1 className="font-medium text-xl">Mô tả sản phẩm:</h1>
               <p
-                className="text-gray-700 mb-4 mt-1"
+                className="text-md md:text-lg text-gray-700 mb-4 mt-1"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               ></p>
             </div>
-            <hr className="my-2 mx-4" />
-            <div className="mx-4">
-              <h1 className="my-2 font-medium text-xl">Sản phẩm khác</h1>
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+            <hr className="my-2 mx-0 md:mx-4" />
+            <div className="mx-0 md:mx-4">
+              <h1 className="text-lg mb-[2px] md:my-2 font-medium md:text-xl">Sản phẩm khác</h1>
+              <div className="flex flex-wrap justify-center md:grid md:grid-cols-6 gap-x-4">
                 {products.slice(0, 6).map((item) =>
                   item._id !== product._id ? (
                     <div
                       key={item._id}
-                      className="p-2 flex flex-col items-center"
+                      className="px-[1.5px] md:p-2 flex flex-col items-center"
                     >
                       <Link to={`/detail/${item._id}`}>
                         <div className="w-full max-w-[150px] aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-300 my-2">
