@@ -34,7 +34,7 @@ const TeaPage: React.FC = () => {
                 <h1 className="pt-10 text-3xl font-semibold mb-3 mt-6">Trà</h1>
                 <p className="border-b-orange-400 w-10 border-b-[4px]"></p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 text-left mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 text-left mb-12">
                 {productsData?.map((tea: Product) => (
                     <div key={tea._id} className="item">
                         <Link to={`/detail/${tea._id}`} className="product_img">
@@ -48,6 +48,7 @@ const TeaPage: React.FC = () => {
                 ))}
             </div>
         </div>
+
     );
 };
 
