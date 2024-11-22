@@ -16,9 +16,7 @@ const DetailPage = () => {
   // Size + Topping
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
-  const [selectedToppings, setSelectedToppings] = useState<ProductTopping[]>(
-    []
-  );
+  const [selectedToppings, setSelectedToppings] = useState<any>();
 
   console.log(selectedProduct)
 
@@ -53,11 +51,15 @@ const DetailPage = () => {
   };
 
   const handleToppingChange = (topping: ProductTopping) => {
-    setSelectedToppings((prev) =>
-      prev.includes(topping)
-        ? prev.filter((top) => top !== topping)
-        : [...prev, topping]
-    );
+    setSelectedToppings((prevToppings: ProductTopping[] | undefined) => {
+      // Nếu topping đã có trong danh sách, thì xóa nó
+      if (prevToppings?.some((t) => t.topping_id === topping.topping_id)) {
+        return prevToppings.filter((t) => t.topping_id !== topping.topping_id);
+      } else {
+        // Nếu chưa có, thêm vào danh sách
+        return [...(prevToppings || []), topping];
+      }
+    });
   };
 
   const {
@@ -105,27 +107,35 @@ const DetailPage = () => {
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
   //add To Cart
   const addToCart = async (productId: string) => {
-    if (!productId) {
-      return toast.success(
-        "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
-      );
-    }
-    try {
-      const { data } = await instance.post("/cart", {
-        userId: user._id,
-        productId: productId,
-        quantity: quantity,
-        productSizes: selectedSize?.size_id,
-        productToppings: selectedToppings?.topping_id
-      });
-      
-      console.log("Data returned from API:", data);
-      toast.success(data.messsage || "Thêm thành công");
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
-    }
-  };
+  if (!productId) {
+    return toast.error(
+      "Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
+    );
+  }
+
+  try {
+    const payload = {
+      userId: user._id, 
+      productId, 
+      quantity, 
+      productSizes: selectedSize?.size_id || null, 
+      productToppings: selectedToppings?.map((t: ProductTopping) => t.topping_id) || [], 
+    };
+    console.log(
+      "Mapped Toppings (productToppings):",
+      selectedToppings?.map((t: ProductTopping) => t.topping_id) || []
+    );
+    console.log("Payload gửi lên:", payload);
+
+    // Gửi request thêm vào giỏ hàng
+    const { data } = await instance.post("/cart", payload);
+
+    toast.success(data.messsage || "Thêm thành công");
+  } catch (error) {
+    toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
+  }
+};
+
 
   return (
     <>
@@ -138,7 +148,7 @@ const DetailPage = () => {
                 <img
                   src={mainImage}
                   alt="Product"
-                  className="w-[480px] h-[480px] mx-auto bg-cover rounded-sm border-2 shadow-md mb-4"
+                  className="w-[480px] h-[480px] mx-auto bg-cover rounded-lg border-2 shadow-md mb-4"
                 />
                 <div className="flex gap-4 justify-center overflow-x-auto">
                   {/* Thumbnails */}
@@ -216,40 +226,36 @@ const DetailPage = () => {
 
                     {/* Phần chọn topping */}
                     <div className="my-6">
-                      <h2 className="font-medium text-lg mb-2">Chọn topping</h2>
-                      {selectedProduct ? (
-                        <form className="flex flex-col my-1 rounded-md">
-                          {selectedProduct.product_toppings.map((topping) => {
-                            return (
-                              <div
-                                key={topping.topping_id._id}
-                                className="flex items-center gap-2 px-2 py-2 border-b border-gray-200"
-                              >
-                                <input
-                                  type="checkbox"
-                                  name="topping"
-                                  checked={selectedToppings.includes(topping)}
-                                  onChange={() => handleToppingChange(topping)}
-                                  className="text-[#ea8025] border-[#ea8025] border-2 focus:ring-[#ea8025] focus:ring-opacity-50"
-                                />
-                                <label className="flex-1">
-                                  {topping.topping_id.nameTopping}
-                                  {topping.topping_id.priceTopping
-                                    ? ` ( + ${listPrice(
-                                        topping.topping_id.priceTopping
-                                      )} VNĐ)`
-                                    : null}
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </form>
-                      ) : (
-                        <p className="px-6 text-gray-500">
-                          Không có topping nào có sẵn.
-                        </p>
-                      )}
-                    </div>
+                    <h2 className="font-medium text-lg mb-2">Chọn topping</h2>
+                    {selectedProduct ? (
+                      <form className="bg-white shadow-xl my-1 rounded-md">
+                        {selectedProduct.product_toppings.map((topping) => (
+                          <div
+                            key={topping?.topping_id?._id}
+                            className="flex items-center gap-2 px-6 py-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedToppings?.some(
+                                (t:any) => t.topping_id === topping.topping_id
+                              )}
+                              onChange={() => handleToppingChange(topping)}
+                              disabled={topping?.stock <= 0}
+                              className="text-[#ea8025] border-[#ea8025] border-2"
+                            />
+                            <label htmlFor="">
+                              {topping?.topping_id?.nameTopping}{" "}
+                              {topping?.priceTopping &&
+                                `(+${listPrice(topping?.priceTopping)} đ)`}
+                            </label>
+                          </div>
+                        ))}
+                      </form>
+                    ) : (
+                      <p className="px-6 text-gray-500">Không có topping nào có sẵn.</p>
+                    )}
+                  </div>
+
                   </div>
                 </div>
 
