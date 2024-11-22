@@ -21,10 +21,21 @@ const orderDetailSchema = new mongoose.Schema(
       // Thêm trường image
       type: String, // Có thể sử dụng kiểu String cho URL hình ảnh
     },
+    product_size: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Size",
+    },
+    product_toppings: [
+      {
+        topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
+      },
+    ],
   },
-  { timestamps: true,
-    
-    versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
 export default mongoose.model("OrderDetail", orderDetailSchema);
+

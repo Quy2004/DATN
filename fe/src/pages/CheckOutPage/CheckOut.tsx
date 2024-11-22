@@ -24,7 +24,7 @@ const Checkout: React.FC = () => {
   });
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
-  const [loading, setLoading] = useState<boolean>(false); // Để kiểm tra khi đang xử lý yêu cầu thanh toán
+  const [loading, setLoading] = useState<boolean>(false); 
   const handlePaymentMethodChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -364,10 +364,9 @@ const Checkout: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-lg font-semibold">Tổng thanh toán:</span>
                 <span className="text-xl font-bold text-[#ea8025]">
-                  {getTotalPrice() && getTotalPrice() > 0
-                    ? getTotalPrice().toLocaleString("vi-VN")
-                    : ""}
-                  VND
+                {getTotalPrice() && getTotalPrice() > 0
+  ? `${getTotalPrice().toLocaleString("vi-VN")} VNĐ`
+  : ""}
                 </span>
               </div>
             </div>
