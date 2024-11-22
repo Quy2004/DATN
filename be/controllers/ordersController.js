@@ -197,9 +197,46 @@ export const getOrders = async (req, res) => {
       });
     }
 
+    // Tính toán tổng giá cho mỗi đơn hàng
+    const updatedOrders = await Promise.all(
+      orders.map(async (order) => {
+        let totalPrice = 0;
+
+        // Lặp qua các chi tiết đơn hàng
+        for (const orderDetail of order.orderDetail_id) {
+          const { product_id, quantity, product_size, product_toppings } =
+            orderDetail;
+
+          // Giá gốc của sản phẩm sau khi áp dụng giảm giá
+          const productPrice = product_id.sale_price || product_id.price;
+
+          // Tính giá của sản phẩm bao gồm size
+          let productTotalPrice = productPrice + (product_size?.priceSize || 0);
+
+          // Tính giá của toppings
+          let toppingsPrice = 0;
+          if (product_toppings?.length) {
+            for (const topping of product_toppings) {
+              const toppingPrice = topping.topping_id.priceTopping || 0;
+              toppingsPrice += toppingPrice;
+            }
+          }
+
+          productTotalPrice += toppingsPrice;
+
+          totalPrice += productTotalPrice * quantity;
+        }
+
+        // Cập nhật tổng giá của đơn hàng
+        order.totalPrice = totalPrice;
+
+        return order;
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      data: orders,
+      data: updatedOrders,
     });
   } catch (error) {
     return res.status(500).json({
