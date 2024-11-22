@@ -93,13 +93,14 @@ export const createOrder = async (req, res) => {
         product_id: item.product._id,
         quantity: item.quantity,
         price: item.product.price,
+        sale_price: item.product.sale_price,
         image: item.product.image,
-        product_size, 
-        product_toppings, 
+        product_size,
+        product_toppings,
       });
 
       await orderDetail.save();
-      return orderDetail._id; 
+      return orderDetail._id;
     });
 
     // Lưu tất cả chi tiết đơn hàng
@@ -336,4 +337,3 @@ export const cancelOrder = async (req, res) => {
     });
   }
 };
-

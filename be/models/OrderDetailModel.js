@@ -17,6 +17,7 @@ const orderDetailSchema = new mongoose.Schema(
       required: true,
     },
     price: { type: Number, required: true },
+    sale_price: { type: Number },
     image: {
       // Thêm trường image
       type: String, // Có thể sử dụng kiểu String cho URL hình ảnh
@@ -38,4 +39,3 @@ const orderDetailSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("OrderDetail", orderDetailSchema);
-
