@@ -20,13 +20,14 @@ const CommentSchema = new Schema(
     product_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
+      // required: true,
     //   index: true,
     },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      // default: "Chủ cửa hàng"
+      // required: true,
     //   index: true,
     },
     isDeleted: {
