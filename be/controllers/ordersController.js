@@ -1,6 +1,6 @@
 import Order from "../models/OderModel.js";
 import Cart from "../models/Cart.js";
-import { createOrderDetail } from "./OrderDetail.js";
+import OrderDetail from "../models/OrderDetailModel.js";
 
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
@@ -77,23 +77,33 @@ export const createOrder = async (req, res) => {
 
     await order.save();
 
-    // Create order details
+    // Create order details including size and topping
     const orderDetailPromises = cart.products.map(async (item) => {
       if (!item.product?._id || !item.product?.price) {
         throw new Error("Thông tin sản phẩm không hợp lệ");
       }
 
-      const orderDetail = await createOrderDetail({
-        orderId: order._id,
-        productId: item.product._id,
+      // Lấy thông tin size và topping từ giỏ hàng
+      const product_size = item.product_sizes; // Size
+      const product_toppings = item.product_toppings; // Topping
+
+      // Tạo chi tiết đơn hàng
+      const orderDetail = new OrderDetail({
+        order_id: order._id,
+        product_id: item.product._id,
         quantity: item.quantity,
         price: item.product.price,
+        sale_price: item.product.sale_price,
         image: item.product.image,
+        product_size,
+        product_toppings,
       });
 
+      await orderDetail.save();
       return orderDetail._id;
     });
 
+    // Lưu tất cả chi tiết đơn hàng
     const orderDetailIds = await Promise.all(orderDetailPromises);
     order.orderDetail_id = orderDetailIds;
     await order.save();
@@ -105,9 +115,12 @@ export const createOrder = async (req, res) => {
     if (paymentMethod === "momo") {
       try {
         // Gửi yêu cầu thanh toán MoMo và nhận URL thanh toán
-        const paymentResponse = await axios.post("http://localhost:8000/payments/momo/create-payment", {
-          orderId: order._id, // Sử dụng orderId của đơn hàng đã tạo
-        });
+        const paymentResponse = await axios.post(
+          "http://localhost:8000/payments/momo/create-payment",
+          {
+            orderId: order._id, // Sử dụng orderId của đơn hàng đã tạo
+          }
+        );
 
         // Lấy URL thanh toán từ phản hồi
         const { payUrl } = paymentResponse.data;
@@ -119,7 +132,10 @@ export const createOrder = async (req, res) => {
           payUrl, // Trả về URL thanh toán MoMo cho frontend
         });
       } catch (paymentError) {
-        console.error("Lỗi khi tạo thanh toán MoMo", paymentError.response?.data || paymentError.message);
+        console.error(
+          "Lỗi khi tạo thanh toán MoMo",
+          paymentError.response?.data || paymentError.message
+        );
         return res.status(500).json({
           success: false,
           message: "Lỗi khi tạo thanh toán MoMo",
@@ -156,14 +172,24 @@ export const getOrders = async (req, res) => {
     }
 
     const orders = await Order.find({ user_id: userId })
+      .sort({ createdAt: -1 })
       .populate({
         path: "orderDetail_id",
-        populate: {
-          path: "product_id",
-          model: "Product",
-        },
-      })
-      .populate("address_id");
+        populate: [
+          {
+            path: "product_id",
+            model: "Product",
+          },
+          {
+            path: "product_size",
+            model: "Size",
+          },
+          {
+            path: "product_toppings.topping_id",
+            model: "Topping",
+          },
+        ],
+      });
 
     if (!orders?.length) {
       return res.status(404).json({
@@ -172,9 +198,46 @@ export const getOrders = async (req, res) => {
       });
     }
 
+    // Tính toán tổng giá cho mỗi đơn hàng
+    const updatedOrders = await Promise.all(
+      orders.map(async (order) => {
+        let totalPrice = 0;
+
+        // Lặp qua các chi tiết đơn hàng
+        for (const orderDetail of order.orderDetail_id) {
+          const { product_id, quantity, product_size, product_toppings } =
+            orderDetail;
+
+          // Giá gốc của sản phẩm sau khi áp dụng giảm giá
+          const productPrice = product_id.sale_price || product_id.price;
+
+          // Tính giá của sản phẩm bao gồm size
+          let productTotalPrice = productPrice + (product_size?.priceSize || 0);
+
+          // Tính giá của toppings
+          let toppingsPrice = 0;
+          if (product_toppings?.length) {
+            for (const topping of product_toppings) {
+              const toppingPrice = topping.topping_id.priceTopping || 0;
+              toppingsPrice += toppingPrice;
+            }
+          }
+
+          productTotalPrice += toppingsPrice;
+
+          totalPrice += productTotalPrice * quantity;
+        }
+
+        // Cập nhật tổng giá của đơn hàng
+        order.totalPrice = totalPrice;
+
+        return order;
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      data: orders,
+      data: updatedOrders,
     });
   } catch (error) {
     return res.status(500).json({
@@ -194,7 +257,7 @@ export const updateOrderStatus = async (req, res) => {
     // Validate order status
     const validStatuses = [
       "pending",
-      "confirmed", 
+      "confirmed",
       "shipping",
       "delivered",
       "completed",

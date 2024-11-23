@@ -9,3 +9,7 @@ export interface Cart{
     products : [Product],
     totalprice : number
 }
+export interface CartItem {
+    product: Product;
+    quantity: number;
+}
