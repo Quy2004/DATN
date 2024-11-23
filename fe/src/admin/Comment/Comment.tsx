@@ -4,12 +4,15 @@ import {
 	LockOutlined,
 	PlusCircleFilled,
 } from "@ant-design/icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	Alert,
 	Button,
 	Descriptions,
+	Form,
+	FormProps,
 	Image,
+	Input,
 	message,
 	Modal,
 	Select,
@@ -31,6 +34,7 @@ const CommentAdmin = () => {
 	const queryClient = useQueryClient();
 	const [messageApi, contextHolder] = message.useMessage();
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [isModalRep, setIsModalRep] = useState(false);
 	const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
 	const [isDeleted, setIsDeleted] = useState(false);
 	const [searchTerm, setSearchTerm] = useState<string>("");
@@ -39,7 +43,9 @@ const CommentAdmin = () => {
 	const [selectedProduct, setSelectedProduct] = useState<string | undefined>(
 		undefined,
 	);
+	const [parentId, setParentId] = useState<string | null>(null);
 
+	const [form] = Form.useForm();
 	const navigate = useNavigate();
 
 	const updateUrlParams = useCallback(() => {
@@ -57,7 +63,14 @@ const CommentAdmin = () => {
 		params.set("page", currentPage.toString());
 		params.set("limit", pageComment.toString());
 		navigate({ search: params.toString() }, { replace: true });
-	}, [searchTerm, currentPage, pageComment, isDeleted,  selectedProduct, navigate]);
+	}, [
+		searchTerm,
+		currentPage,
+		pageComment,
+		isDeleted,
+		selectedProduct,
+		navigate,
+	]);
 
 	useEffect(() => {
 		updateUrlParams();
@@ -66,7 +79,7 @@ const CommentAdmin = () => {
 		currentPage,
 		pageComment,
 		isDeleted,
-		
+
 		selectedProduct,
 		updateUrlParams,
 	]);
@@ -82,7 +95,7 @@ const CommentAdmin = () => {
 			currentPage,
 			pageComment,
 			isDeleted,
-			
+
 			selectedProduct,
 		],
 		queryFn: async () => {
@@ -99,19 +112,24 @@ const CommentAdmin = () => {
 	});
 
 	// hiển thị sản phẩm
-	const {
-		data: products
-	} = useQuery({
-		queryKey: [
-			"comment",
-		],
+	const { data: products } = useQuery({
+		queryKey: ["product"],
 		queryFn: async () => {
-			const response = await instance.get(
-				`products`,
-			);
+			const response = await instance.get(`products`);
 			return response.data;
 		},
 	});
+
+	// hiển thị sản phẩm
+	const { data: repComment } = useQuery({
+		queryKey: ["comment", parentId],
+		queryFn: async () => {
+			const response = await instance.get(`/comment/parent/${parentId}`);
+			return response.data;
+		},
+		enabled: !!parentId, // Chỉ gọi API khi có parentId
+	});
+	console.log("rep", parentId); // Kiểm tra dữ liệu của repComment
 
 	// trạng thái comment
 	const handleStatusChange = async (checked: boolean, id: string) => {
@@ -131,16 +149,54 @@ const CommentAdmin = () => {
 			message.error("Lỗi khi cập nhật trạng thái!");
 		}
 	};
+	//trả lời bình luận
+	const { mutate } = useMutation({
+		mutationFn: async (size: Comment) => {
+			// Lấy dữ liệu từ trường content và gán vào content
+			const replyData = {
+				...size, // Giữ lại các trường hiện tại trong size
+				content: size.content, // Nội dung trả lời
+				parent_id: size.id, // Gán parent_id từ trường id trong form
+			};
+
+			// Gửi request với nội dung đã được thay đổi
+			return await instance.post(`/comment`, replyData);
+		},
+		onSuccess: () => {
+			messageApi.success("Thêm bình luận thành công");
+			// Reset form sau khi thêm thành công
+			form.resetFields();
+			// Chuyển hướng về trang quản lý bình luận
+			setTimeout(() => {
+				navigate("/admin/comment"); // Cập nhật đường dẫn nếu cần
+			}, 2000);
+		},
+		onError(error) {
+			messageApi.error(`Lỗi: ${error.message}`);
+		},
+	});
 
 	// Hàm để hiển thị chi tiết sản phẩm trong Modal
 	const showModal = (comment: Comment) => {
 		setSelectedComment(comment); // Lưu sản phẩm được chọn
+		setParentId(comment._id);
 		setIsModalVisible(true); // Mở Modal
 	};
 
 	// Hàm để đóng Modal
 	const handleCloseModal = () => {
 		setIsModalVisible(false);
+		setSelectedComment(null); // Reset sản phẩm khi đóng Modal
+	};
+	// Hàm để hiển thị chi tiết sản phẩm trong Modal
+	const showModalRep = (comment: Comment) => {
+		setSelectedComment(comment); // Lưu sản phẩm được chọn
+		setIsModalRep(true); // Mở Modal
+	};
+
+	// Hàm để đóng Modal
+	const handleCloseModalRep = () => {
+		setIsModalRep(false);
 		setSelectedComment(null); // Reset sản phẩm khi đóng Modal
 	};
 
@@ -208,9 +264,14 @@ const CommentAdmin = () => {
 			key: "action",
 			render: (_: string, size: Comment) => (
 				<Space size="middle">
-					<Button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all">
-						Trả lời
-					</Button>
+					{!size.isDeleted && (
+						<Button
+							onClick={() => showModalRep(size)}
+							className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
+						>
+							Trả lời
+						</Button>
+					)}
 				</Space>
 			),
 		},
@@ -253,6 +314,20 @@ const CommentAdmin = () => {
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
 		setCurrentPage(1);
+	};
+
+	const onFinish: FormProps<Comment>["onFinish"] = values => {
+		const replyContent = {
+			...values, // Giữ lại các trường hiện tại trong values
+			content: values.content, // Chỉ gán giá trị của content vào trường content
+			// Bạn có thể bỏ qua repcontent vì không cần phải thay đổi nó
+		};
+
+		console.log("Success:", replyContent);
+
+		// Gửi giá trị đã cập nhật lên server
+		mutate(replyContent);
+		
 	};
 
 	return (
@@ -320,12 +395,115 @@ const CommentAdmin = () => {
 				style={{ tableLayout: "fixed" }} // Giữ chiều rộng ổn định
 			/>
 
+x
 			<Modal
-				title="Chi tiết size"
+				title="Trả lời bình luận"
+				open={isModalRep}
+				onCancel={handleCloseModalRep}
+				footer={null}
+				width={800}
+			>
+				{selectedComment && (
+					<div>
+						<Form
+							name="replyForm"
+							labelCol={{ span: 8 }}
+							wrapperCol={{ span: 16 }}
+							style={{ maxWidth: 600 }}
+							autoComplete="off"
+							form={form}
+							onFinish={onFinish}
+							initialValues={{
+								repcontent: selectedComment.content, // Nội dung bình luận hiển thị ở đây
+								userName: selectedComment.userName, // Tên người dùng
+								name: selectedComment.name, // Tên sản phẩm
+								id: selectedComment._id, // ID của bình luận
+							}}
+						>
+							<Form.Item
+								label="id comment"
+								name="id"
+								className="hidden"
+							>
+								<Input
+									disabled
+									className="Input-antd text-sm placeholder-gray-400"
+									style={{ color: "black" }}
+								/>
+							</Form.Item>
+
+							<Form.Item
+								label="Tên người dùng"
+								name="userName"
+							>
+								<Input
+									disabled
+									className="Input-antd text-sm placeholder-gray-400"
+									style={{ color: "black" }}
+								/>
+							</Form.Item>
+
+							<Form.Item
+								label="Tên sản phẩm"
+								name="name"
+							>
+								<Input
+									disabled
+									className="Input-antd text-sm placeholder-gray-400"
+									style={{ color: "black" }}
+								/>
+							</Form.Item>
+
+							<Form.Item
+								label="Nội dung bình luận"
+								name="repcontent"
+							>
+								<Input.TextArea
+									disabled
+									className="Input-antd text-sm placeholder-gray-400"
+									style={{ color: "black" }}
+									rows={4}
+								/>
+							</Form.Item>
+
+							<Form.Item
+								label="Trả lời"
+								name="content"
+								rules={[
+									{
+										required: true,
+										message: "Vui lòng nhập nội dung trả lời!",
+									},
+								]}
+							>
+								<Input.TextArea
+									className="Input-antd text-sm placeholder-gray-400"
+									style={{ color: "black" }}
+									rows={4}
+								/>
+							</Form.Item>
+
+							<Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+								<Button
+									type="primary"
+									htmlType="submit"
+								>
+									Trả lời
+								</Button>
+							</Form.Item>
+						</Form>
+					</div>
+				)}
+			</Modal>
+
+			<Modal
+				title="Chi tiết bình luận"
 				open={isModalVisible}
 				onCancel={handleCloseModal}
 				footer={null}
 				width={800}
+				className="mt-[-90px] ml-[25%] max-h-[630px] fixed overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+
 			>
 				{selectedComment && (
 					<div className="p-5">
@@ -358,9 +536,10 @@ const CommentAdmin = () => {
 							>
 								<Image
 									src={
-										Array.isArray(selectedComment.image)
+										Array.isArray(selectedComment.image) &&
+										selectedComment.image.length > 0
 											? selectedComment.image[0]
-											: selectedComment.image
+											: "/path/to/placeholder-image.jpg" // Use a placeholder if no image exists
 									}
 									alt="Không có ảnh"
 									width={100}
@@ -378,22 +557,41 @@ const CommentAdmin = () => {
 								</span>
 							</Descriptions.Item>
 
+							<Descriptions.Item
+								label="Trả lời của người bán"
+								span={2}
+							>
+								<div className="space-y-2">
+									{Array.isArray(repComment) && repComment.length > 0 ? (
+										repComment.map((reply, index) => (
+											<div
+												key={index}
+												className="font-semibold text-sm border-b border-gray-300"
+											>
+												{reply.content}
+											</div>
+										))
+									) : (
+										<span className="font-semibold text-lg text-gray-900">
+											Không có trả lời
+										</span>
+									)}
+								</div>
+							</Descriptions.Item>
+
 							<Descriptions.Item label="Trạng thái">
-                <span
-                  className={`font-semibold ${
-                    selectedComment.isDeleted === false
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {selectedComment.isDeleted === false
-                    ? "Hoạt động"
-                    : "Đã bị khóa"}
-                </span>
-              </Descriptions.Item>
-
-
-
+								<span
+									className={`font-semibold ${
+										selectedComment.isDeleted === false
+											? "text-green-600"
+											: "text-red-600"
+									}`}
+								>
+									{selectedComment.isDeleted === false
+										? "Hoạt động"
+										: "Đã bị khóa"}
+								</span>
+							</Descriptions.Item>
 						</Descriptions>
 					</div>
 				)}

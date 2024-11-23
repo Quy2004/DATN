@@ -5,11 +5,12 @@ class CommentController {
 
 	async getAllComments(req, res) {
 		try {
-		  const { isDeleted = "false", status, page = 1, limit, productId } = req.query;
+		  const { isDeleted = "false", search = "", page = 1, limit, productId } = req.query;
 	  
 		  // Tạo điều kiện lọc
 		  const query = {
 			isDeleted: isDeleted === "true", // Chuyển isDeleted thành boolean
+			parent_id: null, // Thêm điều kiện lọc để chỉ lấy các bình luận gốc (parent_id: null)
 		  };
 	  
 		  // Nếu có productId, thêm vào điều kiện lọc
@@ -17,6 +18,9 @@ class CommentController {
 			query.product_id = productId;
 		  }
 	  
+		  if (search) {
+			query.content = { $regex: search, $options: "i" }; // Tìm kiếm theo nội dung
+		  }
 	  
 		  // Xử lý logic phân trang
 		  const pageLimit = parseInt(limit, 10) || 10; // Mặc định 10 nếu không có limit
@@ -26,18 +30,33 @@ class CommentController {
 		  // Thực hiện truy vấn với populate để lấy thông tin sản phẩm, người dùng và bình luận cha
 		  const comments = await Comment.find(query)
 			.populate("parent_id", "content") // Lấy thông tin bình luận cha
-			.populate("product_id", "name") // Lấy thông tin sản phẩm
-			.populate("user_id", "userName") // Lấy thông tin người dùng
+			.populate("product_id", "_id name") // Lấy thông tin sản phẩm
+			.populate("user_id", "_id userName") // Lấy thông tin người dùng
 			.skip(skip)
 			.limit(pageLimit)
 			.lean();
+	  
+		  // Chuyển đổi định dạng dữ liệu trả về
+		  const formattedComments = comments.map((comment) => ({
+			...comment,
+			productId: comment.product_id?._id, // Lấy ID của product
+			userId: comment.user_id?._id,       // Lấy ID của user
+			product_id: {
+			  productId: comment.product_id?._id,
+			  name: comment.product_id?.name,
+			},
+			user_id: {
+			  userId: comment.user_id?._id,
+			  userName: comment.user_id?.userName,
+			},
+		  }));
 	  
 		  // Tổng số comment để tính tổng số trang
 		  const totalItems = await Comment.countDocuments(query);
 	  
 		  res.status(200).json({
 			message: "Lấy danh sách comment thành công!",
-			data: comments,
+			data: formattedComments,
 			pagination: {
 			  totalItems,
 			  currentPage,
@@ -50,6 +69,37 @@ class CommentController {
 		  });
 		}
 	  }
+	  
+	
+	  async getCommentParent(req, res) {
+		try {
+		  const { parent_id } = req.params; // Lấy parent_id từ URL params
+	  
+		  // Kiểm tra nếu không có parent_id trong request
+		  if (!parent_id) {
+			return res.status(400).json({ message: "parent_id is required" });
+		  }
+	  
+		  // Tìm tất cả các bình luận có parent_id tương ứng
+		  const comments = await Comment.find({ parent_id })
+			.populate("product_id")  // Nếu bạn muốn lấy thông tin sản phẩm liên quan
+			.populate("user_id")     // Nếu bạn muốn lấy thông tin người dùng liên quan
+			.sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo giảm dần (tùy chọn)
+	  
+		  // Kiểm tra nếu không tìm thấy bình luận nào
+		  if (comments.length === 0) {
+			return res.status(404).json({ message: "No comments found for this parent_id" });
+		  }
+	  
+		  // Trả về danh sách bình luận
+		  return res.status(200).json(comments);
+		} catch (error) {
+		  console.error(error);
+		  return res.status(500).json({ message: "Server error", error });
+		}
+	  }
+	  
+	  
 	  
 
 	// thêm mới size
