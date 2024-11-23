@@ -5,48 +5,102 @@ class CommentController {
 
 	async getAllComments(req, res) {
 		try {
-			const { isDeleted = "false", status, page = 1, limit } = req.query;
-
-			// Tạo điều kiện lọc
-			const query = {
-				isDeleted: isDeleted === "true", // Chuyển isDeleted thành boolean
-			};
-
-			// Xử lý logic phân trang
-			const pageLimit = parseInt(limit, 10) || 10; // Mặc định 10 nếu không có limit
-			const currentPage = parseInt(page, 10) || 1;
-			const skip = (currentPage - 1) * pageLimit; // Tính toán skip cho phân trang
-
-			// Thực hiện truy vấn với populate để lấy thông tin sản phẩm, người dùng và bình luận cha
-			const queryExec = Comment.find(query)
-				.populate("parent_id", "content") // Lấy thông tin bình luận cha
-				.populate("product_id", "name") // Lấy thông tin sản phẩm
-				.populate("user_id", "userName") // Lấy thông tin người dùng
-				.skip(skip)
-				.limit(pageLimit)
-				.lean();
-
-			const comments = await queryExec.exec();
-
-			// Tổng số comment để tính tổng số trang
-			const totalItems = await Comment.countDocuments(query);
-
-			res.status(200).json({
-				message: "Lấy danh sách comment thành công!",
-				data: comments,
-				pagination: {
-							totalItems,
-							currentPage,
-							totalPages: Math.ceil(totalItems / pageLimit),
-					  }
-					
-			});
+		  const { isDeleted = "false", search = "", page = 1, limit, productId } = req.query;
+	  
+		  // Tạo điều kiện lọc
+		  const query = {
+			isDeleted: isDeleted === "true", // Chuyển isDeleted thành boolean
+			parent_id: null, // Thêm điều kiện lọc để chỉ lấy các bình luận gốc (parent_id: null)
+		  };
+	  
+		  // Nếu có productId, thêm vào điều kiện lọc
+		  if (productId) {
+			query.product_id = productId;
+		  }
+	  
+		  if (search) {
+			query.content = { $regex: search, $options: "i" }; // Tìm kiếm theo nội dung
+		  }
+	  
+		  // Xử lý logic phân trang
+		  const pageLimit = parseInt(limit, 10) || 10; // Mặc định 10 nếu không có limit
+		  const currentPage = parseInt(page, 10) || 1;
+		  const skip = (currentPage - 1) * pageLimit; // Tính toán skip cho phân trang
+	  
+		  // Thực hiện truy vấn với populate để lấy thông tin sản phẩm, người dùng và bình luận cha
+		  const comments = await Comment.find(query)
+			.populate("parent_id", "content") // Lấy thông tin bình luận cha
+			.populate("product_id", "_id name") // Lấy thông tin sản phẩm
+			.populate("user_id", "_id userName") // Lấy thông tin người dùng
+			.skip(skip)
+			.limit(pageLimit)
+			.lean();
+	  
+		  // Chuyển đổi định dạng dữ liệu trả về
+		  const formattedComments = comments.map((comment) => ({
+			...comment,
+			productId: comment.product_id?._id, // Lấy ID của product
+			userId: comment.user_id?._id,       // Lấy ID của user
+			product_id: {
+			  productId: comment.product_id?._id,
+			  name: comment.product_id?.name,
+			},
+			user_id: {
+			  userId: comment.user_id?._id,
+			  userName: comment.user_id?.userName,
+			},
+		  }));
+	  
+		  // Tổng số comment để tính tổng số trang
+		  const totalItems = await Comment.countDocuments(query);
+	  
+		  res.status(200).json({
+			message: "Lấy danh sách comment thành công!",
+			data: formattedComments,
+			pagination: {
+			  totalItems,
+			  currentPage,
+			  totalPages: Math.ceil(totalItems / pageLimit),
+			},
+		  });
 		} catch (error) {
-			res.status(400).json({
-				message: error.message,
-			});
+		  res.status(400).json({
+			message: error.message,
+		  });
 		}
-	}
+	  }
+	  
+	
+	  async getCommentParent(req, res) {
+		try {
+		  const { parent_id } = req.params; // Lấy parent_id từ URL params
+	  
+		  // Kiểm tra nếu không có parent_id trong request
+		  if (!parent_id) {
+			return res.status(400).json({ message: "parent_id is required" });
+		  }
+	  
+		  // Tìm tất cả các bình luận có parent_id tương ứng
+		  const comments = await Comment.find({ parent_id })
+			.populate("product_id")  // Nếu bạn muốn lấy thông tin sản phẩm liên quan
+			.populate("user_id")     // Nếu bạn muốn lấy thông tin người dùng liên quan
+			.sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo giảm dần (tùy chọn)
+	  
+		  // Kiểm tra nếu không tìm thấy bình luận nào
+		  if (comments.length === 0) {
+			return res.status(404).json({ message: "No comments found for this parent_id" });
+		  }
+	  
+		  // Trả về danh sách bình luận
+		  return res.status(200).json(comments);
+		} catch (error) {
+		  console.error(error);
+		  return res.status(500).json({ message: "Server error", error });
+		}
+	  }
+	  
+	  
+	  
 
 	// thêm mới size
 	async createComment(req, res) {
@@ -63,75 +117,105 @@ class CommentController {
 		}
 	}
 
-	//   khóa comment
-	async lookComment(req, res) {
+	// //   khóa comment
+	// async lookComment(req, res) {
+	// 	try {
+	// 		const { id } = req.params;
+
+	// 		// Tìm bình luận theo ID
+	// 		const comment = await Comment.findById(id);
+
+	// 		if (!comment) {
+	// 			return res.status(404).json({ message: "Bình luận không tồn tại" });
+	// 		}
+
+	// 		// Kiểm tra nếu bình luận đã có trạng thái là "inactive"
+	// 		if (comment.status === "inactive") {
+	// 			return res.status(400).json({ message: "Bình luận này đã bị khóa" });
+	// 		}
+
+	// 		// Cập nhật trạng thái của bình luận
+	// 		const updatedComment = await Comment.findByIdAndUpdate(
+	// 			id,
+	// 			{ status: "inactive" },
+	// 			{ new: true }, // Trả về bình luận đã cập nhật
+	// 		);
+
+	// 		res.status(200).json({
+	// 			message: "Bình luận đã bị khóa thành công",
+	// 			data: updatedComment,
+	// 		});
+	// 	} catch (error) {
+	// 		res.status(400).json({
+	// 			message: error.message,
+	// 		});
+	// 	}
+	// }
+
+	// //   mở khóa comment
+	// async unLookComment(req, res) {
+	// 	try {
+	// 		const { id } = req.params;
+
+	// 		// Tìm bình luận theo ID
+	// 		const comment = await Comment.findById(id);
+
+	// 		if (!comment) {
+	// 			return res.status(404).json({ message: "Bình luận không tồn tại" });
+	// 		}
+
+	// 		// Kiểm tra nếu bình luận đã có trạng thái là "inactive"
+	// 		if (comment.status === "active") {
+	// 			return res.status(400).json({ message: "Bình luận này không bị khóa" });
+	// 		}
+
+	// 		// Cập nhật trạng thái của bình luận
+	// 		const updatedComment = await Comment.findByIdAndUpdate(
+	// 			id,
+	// 			{ status: "active" },
+	// 			{ new: true }, // Trả về bình luận đã cập nhật
+	// 		);
+
+	// 		res.status(200).json({
+	// 			message: "Bình luận đã mở khóa thành công",
+	// 			data: updatedComment,
+	// 		});
+	// 	} catch (error) {
+	// 		res.status(400).json({
+	// 			message: error.message,
+	// 		});
+	// 	}
+	// }
+
+	async updateStatusComment(req, res) {
 		try {
-			const { id } = req.params;
-
-			// Tìm bình luận theo ID
-			const comment = await Comment.findById(id);
-
-			if (!comment) {
-				return res.status(404).json({ message: "Bình luận không tồn tại" });
-			}
-
-			// Kiểm tra nếu bình luận đã có trạng thái là "inactive"
-			if (comment.status === "inactive") {
-				return res.status(400).json({ message: "Bình luận này đã bị khóa" });
-			}
-
-			// Cập nhật trạng thái của bình luận
-			const updatedComment = await Comment.findByIdAndUpdate(
-				id,
-				{ status: "inactive" },
-				{ new: true }, // Trả về bình luận đã cập nhật
-			);
-
-			res.status(200).json({
-				message: "Bình luận đã bị khóa thành công",
-				data: updatedComment,
-			});
+		  const { isDeleted } = req.body;
+	  
+		  // Kiểm tra xem giá trị isDeleted có hợp lệ không
+		  if (typeof isDeleted !== 'boolean') {
+			return res.status(400).json({ message: "isDeleted phải là một giá trị boolean" });
+		  }
+	  
+		  // Tìm bình luận và cập nhật trường isDeleted
+		  const comment = await Comment.findByIdAndUpdate(
+			req.params.id,
+			{ isDeleted }, // Cập nhật isDeleted
+			{ new: true }
+		  );
+	  
+		  if (!comment) {
+			return res.status(404).json({ message: "Không tìm thấy bình luận" });
+		  }
+	  
+		  res.status(200).json({
+			message: "Cập nhật trạng thái isDeleted của bình luận thành công",
+			data: comment,
+		  });
 		} catch (error) {
-			res.status(400).json({
-				message: error.message,
-			});
+		  res.status(400).json({ message: error.message });
 		}
-	}
-
-	//   mở khóa comment
-	async unLookComment(req, res) {
-		try {
-			const { id } = req.params;
-
-			// Tìm bình luận theo ID
-			const comment = await Comment.findById(id);
-
-			if (!comment) {
-				return res.status(404).json({ message: "Bình luận không tồn tại" });
-			}
-
-			// Kiểm tra nếu bình luận đã có trạng thái là "inactive"
-			if (comment.status === "active") {
-				return res.status(400).json({ message: "Bình luận này không bị khóa" });
-			}
-
-			// Cập nhật trạng thái của bình luận
-			const updatedComment = await Comment.findByIdAndUpdate(
-				id,
-				{ status: "active" },
-				{ new: true }, // Trả về bình luận đã cập nhật
-			);
-
-			res.status(200).json({
-				message: "Bình luận đã mở khóa thành công",
-				data: updatedComment,
-			});
-		} catch (error) {
-			res.status(400).json({
-				message: error.message,
-			});
-		}
-	}
+	  }
+	  
 
 
     // xóa mềm 

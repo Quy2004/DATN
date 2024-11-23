@@ -3,6 +3,7 @@ import {
     changeProductQuantity,
     clearCart,
     deleteCartItem,
+    deleteSelectedItems,
     getCart,
     updateProductQuantity,
   } from "../controllers/Cart";
@@ -19,6 +20,7 @@ import {
     "/:userId/product/:productId/quantity/change",
     changeProductQuantity
   );
-  RouterCart.patch("/:cartId/:productId/delete", deleteCartItem);
-  RouterCart.delete("/:cartId/delete-all", clearCart);
+  RouterCart.patch("/:userId/:productId/delete", deleteCartItem);
+  RouterCart.delete("/:userId/delete-all", clearCart);
+  RouterCart.patch("/:userId/delete-selected", deleteSelectedItems);
   export default RouterCart;
