@@ -3,6 +3,7 @@ import instance from "../../services/api";
 import {
   Alert,
   Button,
+  Drawer,
   Image,
   Input,
   message,
@@ -13,8 +14,9 @@ import {
   Tag,
 } from "antd";
 import Title from "antd/es/typography/Title";
-
 import { useState } from "react";
+import { Order } from "../../types/order";
+import { ProductSize, ProductTopping } from "../../types/product";
 
 type PriceType = number | { $numberDecimal: string };
 // Kiểu dữ liệu
@@ -25,6 +27,15 @@ type OrderStatus =
   | "delivered"
   | "completed"
   | "canceled";
+type Product = {
+  _id: string;
+  name: string;
+  images: string[];
+  price: number;
+  sale_price: number;
+  product_sizes: ProductSize[];
+  product_toppings: ProductTopping[];
+};
 
 const OrderStatusLabels: Record<OrderStatus, string> = {
   pending: "Chờ Xác Nhận",
@@ -35,32 +46,6 @@ const OrderStatusLabels: Record<OrderStatus, string> = {
   canceled: "Đã Hủy",
 };
 
-interface Product {
-  _id: string;
-  name: string;
-  images: string[];
-  price: number;
-}
-
-interface Order {
-  _id: string;
-  orderNumber: string;
-  customerInfo?: {
-    name: string;
-    email: string;
-    phone: string;
-  };
-  totalPrice: number;
-  orderStatus: OrderStatus;
-  orderDetail_id: Array<{
-    _id: string;
-    product: Product;
-    quantity: number;
-    price: number;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
 const OrderManagerPage = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
@@ -68,6 +53,13 @@ const OrderManagerPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); // Modal hủy đơn hàng
   const [cancellationReason, setCancellationReason] = useState("");
+  // Thêm state để lưu trạng thái filter
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+
+  const localStorageUser = localStorage.getItem("user");
+  const storedUserId = localStorageUser
+    ? JSON.parse(localStorageUser)._id
+    : null;
 
   const {
     data: orders,
@@ -75,17 +67,25 @@ const OrderManagerPage = () => {
     isError,
     error,
   } = useQuery<Order[]>({
-    queryKey: ["orders"],
+    queryKey: ["orders", storedUserId],
     queryFn: async () => {
-      try {
-        const response = await instance.get("orders");
-        return response.data.data;
-      } catch (error) {
-        throw new Error("Lỗi khi tải danh sách đơn hàng");
+      if (!storedUserId) {
+        console.error("User ID is not available.");
+        throw new Error("User ID is not available.");
       }
+      console.log("Fetching orders for User ID:", storedUserId);
+      const response = await instance.get(`orders/${storedUserId}`);
+
+      if (!response.data || !response.data.data) {
+        console.error("Invalid response structure:", response.data);
+        throw new Error("Invalid response structure.");
+      }
+      return response.data.data;
     },
     staleTime: 60000,
+    enabled: !!storedUserId,
   });
+
   console.log(orders);
   console.log(selectedOrder);
   const [pagination, setPagination] = useState({
@@ -208,17 +208,30 @@ const OrderManagerPage = () => {
       messageApi.error(
         `Không thể chuyển từ trạng thái "${
           OrderStatusLabels[currentOrder.orderStatus]
-        }" sang "${OrderStatusLabels[newStatus]}". 
-       Vui lòng chuyển trạng thái theo từng bước.`
+        }" sang "${
+          OrderStatusLabels[newStatus]
+        }". Vui lòng chuyển trạng thái theo từng bước.`
       );
       return;
     }
 
-    updateOrderStatusMutation.mutate({
-      orderId: currentOrder._id,
-      newStatus,
-    });
+    if (newStatus === "completed") {
+      // Kiểm tra người dùng đã nhận hàng chưa
+      if (currentOrder.orderStatus !== "delivered") {
+        messageApi.error(
+          "Chỉ có thể hoàn thành đơn hàng sau khi đơn hàng đã được giao."
+        );
+        return;
+      }
+    } else {
+      // Cập nhật trạng thái cho các trạng thái khác ngoài "hoàn thành"
+      updateOrderStatusMutation.mutate({
+        orderId: currentOrder._id,
+        newStatus,
+      });
+    }
   };
+
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
       case "pending":
@@ -306,7 +319,7 @@ const OrderManagerPage = () => {
       },
     },
     {
-      title: "Tổng Giá",
+      title: "Tổng Đơn Hàng",
       dataIndex: "totalPrice",
       key: "totalPrice",
       render: (totalPrice: number) => formatPrice(totalPrice),
@@ -332,7 +345,7 @@ const OrderManagerPage = () => {
       title: "Trạng Thái",
       dataIndex: "orderStatus",
       with: 200,
-      render: (status: OrderStatus, record: Order) => {
+      render: (status: OrderStatus) => {
         const statusColors = {
           pending: "orange",
           confirmed: "green",
@@ -367,17 +380,38 @@ const OrderManagerPage = () => {
     },
   ];
 
+  const handleStatusFilterChange = (value: OrderStatus | "all") => {
+    setStatusFilter(value);
+    setPagination({ ...pagination, current: 1 });
+  };
+
+  const getFilteredOrders = () => {
+    if (!orders) return [];
+    if (statusFilter === "all") return orders;
+    return orders.filter((order) => order.orderStatus === statusFilter);
+  };
+
   const itemColumns = [
     {
       title: "Sản phẩm",
       dataIndex: "product_id",
       key: "product_id",
-      render: (product: Product) => product.name,
+      width: 200,
+      render: (product: Product) => {
+        const maxLength = 20;
+        const truncatedName =
+          product.name.length > maxLength
+            ? product.name.substring(0, maxLength) + "..."
+            : product.name;
+
+        return truncatedName;
+      },
     },
     {
-      title: "Hình ảnh",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
+      width: 200,
       render: (image: string) => {
         return image ? (
           <Image
@@ -392,15 +426,65 @@ const OrderManagerPage = () => {
       },
     },
     {
+      title: "Size",
+      dataIndex: "product_size",
+
+      key: "size",
+      render: (selectedSize: { name: string }) => {
+        return selectedSize?.name || "Không có kích cỡ";
+      },
+    },
+    {
+      title: "Topping",
+      dataIndex: "product_toppings",
+
+      key: "topping",
+      render: (productToppings: ProductTopping[]) => {
+        if (!productToppings || !productToppings.length)
+          return "Không có topping";
+        const toppings = productToppings.map(
+          (item: ProductTopping) => item.topping_id.nameTopping
+        );
+
+        return toppings.length ? toppings.join(", ") : "Không có topping";
+      },
+    },
+    {
+      title: "Giá",
+      width: 200,
+      dataIndex: "price",
+      key: "price",
+      render: (price: PriceType, record: Product) => {
+        const priceToShow = record.sale_price || price;
+        return formatPrice(priceToShow);
+      },
+    },
+    {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
     },
+
     {
-      title: "Giá",
-      dataIndex: "price",
-      key: "price",
-      render: (price: PriceType) => formatPrice(price),
+      title: "Giá tổng",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      width: 200,
+      render: (text: string, record: any) => {
+        const productPrice = record.sale_price || record.price || 0;
+        const sizePrice = record.product_size?.priceSize || 0;
+        const toppingsPrice =
+          record.product_toppings?.reduce(
+            (total: string, topping: ProductTopping) => {
+              return total + (topping.topping_id?.priceTopping || 0);
+            },
+            0
+          ) || 0;
+        const totalPrice =
+          (productPrice + sizePrice + toppingsPrice) * record.quantity;
+
+        return formatPrice(totalPrice);
+      },
     },
   ];
 
@@ -426,35 +510,76 @@ const OrderManagerPage = () => {
   return (
     <>
       {contextHolder}
-      <Title level={3}>Danh sách đơn hàng</Title>
+      <div className="flex items-center justify-between mb-5 space-x-4"></div>
+      <Title level={3} className="text-2xl font-semibold text-gray-700">
+        Danh sách đơn hàng
+      </Title>
+      <div className="mb-4 flex items-center mt-6">
+        <Select
+          style={{ width: 200 }}
+          value={statusFilter}
+          onChange={handleStatusFilterChange}
+          className="mr-2"
+        >
+          <Select.Option value="all">
+            <span className="font-semibold">Tất cả</span>
+          </Select.Option>
+          {Object.entries(OrderStatusLabels).map(([key, label]) => (
+            <Select.Option key={key} value={key}>
+              <span
+                className={`font-semibold ${getStatusColor(
+                  key as OrderStatus
+                )}`}
+              >
+                {label}
+              </span>
+            </Select.Option>
+          ))}
+        </Select>
+
+        {statusFilter !== "all" && (
+          <Button
+            onClick={() => handleStatusFilterChange("all")}
+            size="small"
+            className="flex items-center"
+          >
+            Xóa bộ lọc
+          </Button>
+        )}
+      </div>
       <Table
+        className="mt-5"
         columns={columns}
-        dataSource={orders}
+        dataSource={getFilteredOrders()}
         rowKey="orderNumber"
-        // scroll={{ x: "max-content", y: 350 }}
         scroll={{ y: 350 }}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
           onChange: handlePaginationChange,
-          total: orders?.length,
+          total: getFilteredOrders().length,
         }}
         rowClassName={getRowClassName}
       />
       <Modal
-        title={<h2 className="text-xl font-bold">Hủy Đơn Hàng</h2>}
+        title={<h2 className="text-xl font-bold text-red-500">Hủy Đơn Hàng</h2>}
         open={isCancelModalVisible}
         onCancel={() => setIsCancelModalVisible(false)}
         footer={[
           <Button key="cancel" onClick={() => setIsCancelModalVisible(false)}>
             Đóng
           </Button>,
-          <Button key="submit" type="primary" onClick={handleCancelSubmit}>
+          <Button
+            key="submit"
+            type="primary"
+            className="bg-lime-500"
+            onClick={handleCancelSubmit}
+          >
             Hủy Đơn
           </Button>,
         ]}
       >
-        <p>Vui lòng nhập lý do hủy đơn hàng:</p>
+        <p className="mt-3 mb-2">Vui lòng nhập lý do hủy đơn hàng:</p>
         <Input.TextArea
           rows={4}
           value={cancellationReason}
@@ -462,10 +587,13 @@ const OrderManagerPage = () => {
           placeholder="Lý do hủy..."
         />
       </Modal>
-      <Modal
+
+      <Drawer
         title={<h2 className="text-xl font-bold">Chi tiết đơn hàng</h2>}
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onClose={() => setIsModalVisible(false)}
+        width={600}
+        destroyOnClose
         footer={[
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button key="close" onClick={() => setIsModalVisible(false)}>
@@ -473,7 +601,6 @@ const OrderManagerPage = () => {
             </Button>
           </div>,
         ]}
-        destroyOnClose
       >
         {selectedOrder && (
           <>
@@ -481,36 +608,22 @@ const OrderManagerPage = () => {
             <p>
               Ngày đặt hàng:
               <span className="mx-1">
+                {new Date(selectedOrder.createdAt).toLocaleString("vi-VN")}
+              </span>
+            </p>
+            <p>
+              Ngày cập nhật:
+              <span className="mx-1">
                 {new Date(selectedOrder.updatedAt).toLocaleString("vi-VN")}
               </span>
             </p>
             <p>Tên khách hàng: {selectedOrder.customerInfo?.name || "N/A"} </p>
             <p>Email: {selectedOrder.customerInfo?.email}</p>
-            <p>Tổng giá: {formatPrice(selectedOrder.totalPrice)}</p>
+            <p>Tổng đơn hàng: {formatPrice(selectedOrder.totalPrice)}</p>
             <p style={{ display: "flex", alignItems: "center" }}>
               <span style={{ marginRight: 8 }}>Trạng thái:</span>
-              <Tag
-                color={
-                  selectedOrder.orderStatus === "pending"
-                    ? "yellow"
-                    : selectedOrder.orderStatus === "confirmed"
-                    ? "green"
-                    : selectedOrder.orderStatus === "shipping"
-                    ? "blue"
-                    : selectedOrder.orderStatus === "delivered"
-                    ? "green"
-                    : selectedOrder.orderStatus === "completed"
-                    ? "green"
-                    : selectedOrder.orderStatus === "canceled"
-                    ? "red"
-                    : "cyan"
-                }
-                
-              >
-                {OrderStatusLabels[selectedOrder.orderStatus]}
-              </Tag>
               <Select
-                style={{ width: 150, marginLeft: 10 }}
+                className="w-40 ml-2"
                 value={selectedOrder.orderStatus}
                 onChange={(newStatus) =>
                   handleStatusChange(newStatus, selectedOrder)
@@ -522,7 +635,7 @@ const OrderManagerPage = () => {
                 {Object.entries(OrderStatusLabels).map(([key, label]) => (
                   <Select.Option key={key} value={key}>
                     <span
-                      className={`font-semibold ${getStatusColor(
+                      className={`font-semibold px-2 py-1 rounded-md ${getStatusColor(
                         key as OrderStatus
                       )}`}
                     >
@@ -532,6 +645,20 @@ const OrderManagerPage = () => {
                 ))}
               </Select>
             </p>
+            {selectedOrder.orderStatus === "canceled" &&
+              selectedOrder.cancellationReason && (
+                <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-md">
+                  <div className="flex items-center">
+                    <h4 className="text-lg font-semibold text-red-600">
+                      Đơn hàng bị hủy
+                    </h4>
+                  </div>
+                  <p className="mt-2 text-sm text-red-600">
+                    <strong>Lý do hủy: </strong>
+                    {selectedOrder.cancellationReason}
+                  </p>
+                </div>
+              )}
 
             <h4 className="mt-4 mb-2 text-lg">Chi tiết sản phẩm:</h4>
             <Table
@@ -544,8 +671,8 @@ const OrderManagerPage = () => {
             />
           </>
         )}
-      </Modal>
-    
+      </Drawer>
+
       <style>{`
         .row-canceled {
           color:rgb(224 36 36)
