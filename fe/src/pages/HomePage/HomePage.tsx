@@ -31,6 +31,31 @@ const HomePage: React.FC = () => {
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024, // Với màn hình dưới 1024px
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 768, // Với màn hình dưới 768px
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 480, // Với màn hình dưới 480px
+        settings: {
+          slidesToShow: 2, // Hiển thị 1 sản phẩm trên màn hình nhỏ
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,6 +64,7 @@ const HomePage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [currentIndex, images.length]);
+
   //showProduct
 
   // const [loading, setLoading] = useState(true); // State kiểm soát việc hiển thị trạng thái loading
@@ -109,20 +135,20 @@ const HomePage: React.FC = () => {
       setQuantity((prevQuantity) => prevQuantity - 1);
     }
   };
-useEffect(() => {
-  if (selectedProduct && selectedSize) {
-    const basePrice = selectedProduct.price;
-    const sizePrice = selectedSize.priceSize || 0;
-    const toppingPrice = selectedToppings.reduce(
-      (total, topping) => total + (topping.topping_id.priceTopping || 0),
-      0
-    );
+  useEffect(() => {
+    if (selectedProduct && selectedSize) {
+      const basePrice = selectedProduct.price;
+      const sizePrice = selectedSize.priceSize || 0;
+      const toppingPrice = selectedToppings.reduce(
+        (total, topping) => total + (topping.topping_id.priceTopping || 0),
+        0
+      );
 
-    const total = (basePrice + sizePrice + toppingPrice) * quantity;
-    console.log({ basePrice, sizePrice, toppingPrice, total });
-    setTotalPrice(total);
-  }
-}, [quantity, selectedSize, selectedToppings, selectedProduct]);
+      const total = (basePrice + sizePrice + toppingPrice) * quantity;
+      console.log({ basePrice, sizePrice, toppingPrice, total });
+      setTotalPrice(total);
+    }
+  }, [quantity, selectedSize, selectedToppings, selectedProduct]);
 
 
 
@@ -254,106 +280,105 @@ useEffect(() => {
   return (
     <>
       <div>
-        <img src={images[currentIndex]} alt="" className="w-max" />
+        <img src={images[currentIndex]} alt="" className="w-max h-52 mt-[65px] object-cover  md:mt-12 md:h-[480px] md:object-contain" />
         <div className="containerAll mx-auto overflow-hidden home">
-          <h1 className="font-semibold text-3xl p-3">Sản Phẩm Hot</h1>
-          <div className="row grid grid-cols-4 gap-6 text-left h-[330px]">
-            <div className="cow_left col-span-2">
+          <h1 className="font-medium text-lg py-1 mx-4 md:py-3 md:mx-0 md:font-semibold md:text-3xl">Sản Phẩm Hot</h1>
+          <div className="flex flex-wrap gap-0 text-left h-auto md:flex-row md:gap-6 md:h-[330px]">
+            <div className="cow_left mx-4 md:mx-0 ">
               <img
                 src="/src/assets/images/banner/banner4.jpg"
                 alt=""
-                className="mb-10 "
+                className="w-[542px] h-[200px] rounded-[10px] object-cover md:w-[542px] md:h-[333px] md:mb-10 mb-4"
               />
             </div>
-            <div className="cow_right col-span-2 flex gap-6 h-[330px]">
-              {products.slice(0, 2).map((product: Product) => (
-                <div className="item" key={product._id}>
-                  <div className="relative product_img group place-items-center">
-                    <img
-                      src={`${product.image}`}
-                      alt=""
-                      className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2"
-                    />
-                    {product.status === "available" ? (
-                      <button
-                        key={product._id}
-                        onClick={() => toggleModal(product)}
-                        className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+            {products.slice(0, 2).map((product: Product) => (
+              <div className="item mx-auto md:mx-0" key={product._id}>
+                <div className="relative  group place-items-center md:product_img">
+                  <img
+                    src={`${product.image}`}
+                    alt=""
+                    className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
+                  />
+                  {product.status === "available" ? (
+                    <button
+                      key={product._id}
+                      onClick={() => toggleModal(product)}
+                      className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
                           left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-5"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                          />
-                        </svg>{" "}
-                        Mua ngay
-                      </button>
-                    ) : (
-                      <button
-                        className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                        />
+                      </svg>{" "}
+                      Mua ngay
+                    </button>
+                  ) : (
+                    <button
+                      className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
                           left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-5"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                          />
-                        </svg>{" "}
-                        Hết Hàng
-                      </button>
-                    )}
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                        />
+                      </svg>{" "}
+                      Hết Hàng
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="">
+                    <Link to={`detail/${product._id}`}>
+                      <h3 className="">{product.name}</h3>
+                    </Link>
+                    <p>{formatPrice(product.price)} VNĐ </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="">
-                      <Link to={`detail/${product._id}`}>
-                        <h3 className="">{product.name}</h3>
-                      </Link>
-                      <p>{formatPrice(product.price)} VNĐ </p>
-                    </div>
-                    <div className="">
-                      <i className="text-sm">
-                        {product.status === "available" ? (
-                          ""
-                        ) : (
-                          <span className="text-red-500">Hết hàng</span>
-                        )}
-                      </i>
-                    </div>
+                  <div className="">
+                    <i className="text-sm">
+                      {product.status === "available" ? (
+                        ""
+                      ) : (
+                        <span className="text-red-500">Hết hàng</span>
+                      )}
+                    </i>
                   </div>
                 </div>
-              ))}
-            </div>
+
+              </div>
+            ))}
           </div>
           <div className="my-4"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
               {products.slice(0, 10).map((product: Product, index) => (
-                <div className="flex md:mx-0">
+                <div className="flex mx-2 md:mx-0 ">
                   <div key={`${product._id}-${index}`} className="item mx-2">
                     <div className="my-4">
-                      <div className="relative group w-[300px] mb-2 rounded-xl place-items-center">
+                      <div className="relative group w-[180px] mb-2 rounded-xl place-items-center md:w-[300px]">
                         <img
                           src={`${product.image}`}
                           alt=""
-                          className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2"
+                          className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
                         />
                         {product.status === "available" ? (
                           <button
@@ -410,7 +435,7 @@ useEffect(() => {
                             <p>{formatPrice(product.price)} VNĐ </p>
                           </div>
                           <div className="">
-                            <i className="text-sm mr-2">
+                            <i className="text-sm mr-5 md:mr-2">
                               {product.status === "available" ? (
                                 ""
                               ) : (
@@ -426,11 +451,10 @@ useEffect(() => {
               ))}
             </Slider>
           ) : (
-            // Render sản phẩm không dùng slider khi có dưới 4 sản phẩm
-            <div className="flex md:mx-0 mt-10">
+            <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-10">
               {products.map((product: Product, index) => (
-                <div key={`${product._id}-${index}`} className="item mx-2">
-                  <div className="my-4">
+                <div key={`${product._id}-${index}`} className="item mx-[1px] md:mx-2">
+                  <div className="mx-4 md:mx-0 md:my-4">
                     <Link
                       to="#"
                       className="overflow-hidden rounded-lg shadow-lg"
@@ -438,7 +462,7 @@ useEffect(() => {
                       <img
                         src={`${product.image}`}
                         alt=""
-                        className="h-[250px] w-[260px] object-cover rounded-[10px] shadow-3xl border-2"
+                        className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2  md:h-[250px] md:w-[260px]"
                       />
                     </Link>
                     <div>
@@ -447,7 +471,7 @@ useEffect(() => {
                           <Link to={`detail/${product._id}`}>
                             <h3 className="">{product.name}</h3>
                           </Link>
-                          <p>{formatPrice(product.price)} VNĐ </p>
+                          <p className="">{formatPrice(product.price)} VNĐ </p>
                         </div>
                         <div className="">
                           <i className="text-sm">
@@ -459,241 +483,216 @@ useEffect(() => {
                           </i>
                         </div>
                       </div>
-                      {product.status === "available" ? (
-                        <div className="w-[260px] mt-5">
-                          <button
-                            key={product._id}
-                            onClick={() => toggleModal(product)}
-                            className="relative inline-flex w-full items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-base font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-[#ea8025] to-orange-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
-                          >
-                            <span className="relative flex items-center justify-center gap-4 w-full px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                              <h2>Mua ngay</h2>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                                className="size-5"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                                />
-                              </svg>
-                            </span>
-                          </button>
-                        </div>
-                      ) : (
-                        ""
-                      )}
+                     
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
+
           {/*  */}
-          <div className="banner-mid mt-16">
-            <img src="/src/assets/images/banner/Banner_TX.jpg" alt="" />
+          <div className="banner-mid mt-0 md:my-5">
+            <img src="/src/assets/images/banner/Banner_TX.jpg" className="h-auto md:h-[600px]" alt="" />
           </div>
         </div>
         <Homes />
-      </div>
+      </div >
       {/* Mua ngay */}
-      <Drawer open={isOpen} onClose={handleClose}>
+      <Drawer open={isOpen} onClose={handleClose} >
         {/* <Drawer.Header title="Cart" /> */}
         <Drawer.Items>
-          {isModalOpen && selectedProduct && (
-            <Modal show={isModalOpen} onClose={handleCloseModal}>
-              <Modal.Header className="relative h-0 top-5 text-black p-0 mr-2 border-none"></Modal.Header>
-              <Modal.Body className="bg-gray-100">
-                <div className="flex gap-3">
-                  <div className="w-[170px]">
-                    <img
-                      src={selectedProduct.image}
-                      alt="Ảnh sản phẩm"
-                      className="w-[160px] h-[160px] rounded-xl"
-                    />
-                  </div>
-                  <div className="w-max flex-1">
-                    <h1 className="text-lg font-medium">
-                      {selectedProduct?.name}
-                    </h1>
+          {
+            isModalOpen && selectedProduct && (
+              <Modal show={isModalOpen} onClose={handleCloseModal}>
+                <Modal.Header className="relative h-0 top-5 text-black p-0 mr-2 border-none"></Modal.Header>
+                <Modal.Body className="bg-gray-100">
+                  <div className="flex gap-3">
+                    <div className="w-[170px]">
+                      <img
+                        src={selectedProduct.image}
+                        alt="Ảnh sản phẩm"
+                        className="w-[160px] h-[160px] rounded-xl"
+                      />
+                    </div>
+                    <div className="w-max flex-1">
+                      <h1 className="text-lg font-medium">
+                        {selectedProduct?.name}
+                      </h1>
 
-                    {/* Hiển thị giá */}
-                    {selectedProduct?.sale_price &&
-                    selectedProduct?.sale_price < selectedProduct?.price ? (
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm line-through text-gray-500">
-                          {formatPrice(selectedProduct?.price)}{" "}
-                          {/* Giá gốc bị gạch bỏ */}
-                        </p>
-                        <p className="text-sm text-[#ea8025] font-semibold">
-                          {formatPrice(selectedProduct?.sale_price)} VNĐ{" "}
-                          {/* Giá giảm */}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex items-end gap-1 py-1">
-                        <p className="text-sm text-[#ea8025] font-medium">
-                          {formatPrice(selectedProduct?.price)}
-                        </p>
-                        <p className="text-[10px] text-[#ea8025] font-medium">
-                          VNĐ
-                        </p>
-                      </div>
-                    )}
-
-                    <i
-                      className="text-sm text-black"
-                      dangerouslySetInnerHTML={{
-                        __html: selectedProduct.description,
-                      }}
-                    ></i>
-
-                    <div className="flex gap-10 items-center py-4">
-                      <form className="max-w-xs py-1">
-                        <div className="relative flex items-center">
-                          <button
-                            type="button"
-                            onClick={handleDecrement}
-                            className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                          >
-                            <svg
-                              className="w-2.5 h-2.5 text-white"
-                              aria-hidden="true"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 18 2"
-                            >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M1 1h16"
-                              />
-                            </svg>
-                          </button>
-                          <input
-                            type="text"
-                            id="counter-input"
-                            value={quantity}
-                            readOnly
-                            className="flex-shrink-0 text-gray-900 dark:text-white border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleIncrement}
-                            className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                          >
-                            <svg
-                              className="w-2.5 h-2.5 text-white"
-                              aria-hidden="true"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 18 18"
-                            >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 1v16M1 9h16"
-                              />
-                            </svg>
-                          </button>
+                      {/* Hiển thị giá */}
+                      {selectedProduct?.sale_price &&
+                        selectedProduct?.sale_price < selectedProduct?.price ? (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm line-through text-gray-500">
+                            {formatPrice(selectedProduct?.price)}{" "}
+                            {/* Giá gốc bị gạch bỏ */}
+                          </p>
+                          <p className="text-sm text-[#ea8025] font-semibold">
+                            {formatPrice(selectedProduct?.sale_price)} VNĐ{" "}
+                            {/* Giá giảm */}
+                          </p>
                         </div>
-                      </form>
+                      ) : (
+                        <div className="flex items-end gap-1 py-1">
+                          <p className="text-sm text-[#ea8025] font-medium">
+                            {formatPrice(selectedProduct?.price)}
+                          </p>
+                          <p className="text-[10px] text-[#ea8025] font-medium">
+                            VNĐ
+                          </p>
+                        </div>
+                      )}
 
-                      <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
-                        {inFormatPrice(
-                          selectedProduct.sale_price || selectedProduct.price,
-                          selectedSize?.priceSize || 0,
-                          quantity
-                        )}
-                        VNĐ
-                      </button>
+                      <i
+                        className="text-sm text-black"
+                        dangerouslySetInnerHTML={{
+                          __html: selectedProduct.description,
+                        }}
+                      ></i>
+
+                      <div className="flex gap-10 items-center py-4">
+                        <form className="max-w-xs py-1">
+                          <div className="relative flex items-center">
+                            <button
+                              type="button"
+                              onClick={handleDecrement}
+                              className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                            >
+                              <svg
+                                className="w-2.5 h-2.5 text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 18 2"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M1 1h16"
+                                />
+                              </svg>
+                            </button>
+                            <input
+                              type="text"
+                              id="counter-input"
+                              value={quantity}
+                              readOnly
+                              className="flex-shrink-0 text-gray-900 dark:text-white border-0 bg-transparent text-sm font-normal focus:outline-none focus:ring-0 max-w-[2.5rem] text-center"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleIncrement}
+                              className="flex-shrink-0 bg-[#ea8025] inline-flex items-center justify-center border border-[#ea8025] rounded-2xl h-5 w-5 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                            >
+                              <svg
+                                className="w-2.5 h-2.5 text-white"
+                                aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 18 18"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M9 1v16M1 9h16"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </form>
+
+                        <button className="bg-[#ea8025] border-[#ea8025] text-white border-2 h-[30px] px-3 rounded-2xl transform transition-transform duration-500 hover:scale-105">
+                          {inFormatPrice(
+                            selectedProduct.sale_price || selectedProduct.price,
+                            selectedSize?.priceSize || 0,
+                            quantity
+                          )}
+                          VNĐ
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Size Selection */}
-                <div className="my-3">
-                  <h2 className="font-medium px-6">Chọn size</h2>
-                  <form className="flex justify-between bg-white shadow-xl my-1 rounded-md">
-                    {selectedProduct.product_sizes.map((size) => {
-                      return (
-                        <div className="flex items-center gap-2 px-6 py-2">
-                          <input
-                            key={size?.size_id?._id}
-                            type="radio"
-                            name="size"
-                            checked={selectedSize === size}
-                            onChange={() => handleSizeChange(size)}
-                            disabled={size.status === "unavailable"}
-                            className="text-[#ea8025] border-[#ea8025] border-2"
-                          />
-                          <label htmlFor="">{size.size_id.name}</label>
-                        </div>
-                      );
-                    })}
-                  </form>
-                </div>
+                  {/* Size Selection */}
+                  <div className="my-3">
+                    <h2 className="font-medium px-6">Chọn size</h2>
+                    <form className="flex justify-between bg-white shadow-xl my-1 rounded-md">
+                      {selectedProduct.product_sizes.map((size) => {
+                        return (
+                          <div className="flex items-center gap-2 px-6 py-2">
+                            <input
+                              key={size?.size_id?._id}
+                              type="radio"
+                              name="size"
+                              checked={selectedSize === size}
+                              onChange={() => handleSizeChange(size)}
+                              disabled={size.status === "unavailable"}
+                              className="text-[#ea8025] border-[#ea8025] border-2"
+                            />
+                            <label htmlFor="">{size.size_id.name}</label>
+                          </div>
+                        );
+                      })}
+                    </form>
+                  </div>
 
-                {/* Topping Selection */}
-                <div className="">
-                  <h2 className="font-medium px-6">Topping</h2>
-                  <form className="bg-white shadow-xl my-1 rounded-md">
-                    {selectedProduct.product_toppings.length === 0 ? (
-                      <p className="px-6 py-2 text-gray-500">
-                        Không có topping
-                      </p> // Hiển thị thông báo nếu không có topping
-                    ) : (
-                      selectedProduct.product_toppings.map((topping) => (
-                        <div
-                          key={topping?.topping_id?._id}
-                          className="flex items-center gap-2 px-6 py-2"
-                        >
-                          <input
-                            type="checkbox"
-                            name="topping"
-                            checked={selectedToppings.includes(topping)}
-                            onChange={() => handleToppingChange(topping)}
-                            className="text-[#ea8025] border-[#ea8025] border-2 focus:ring-[#ea8025] focus:ring-opacity-50"
-                          />
-                          <label>
-                            {topping?.topping_id?.nameTopping}{" "}
-                            {topping?.priceTopping &&
-                              `(+${topping?.priceTopping} đ)`}
-                          </label>
-                        </div>
-                      ))
-                    )}
-                  </form>
-                </div>
+                  {/* Topping Selection */}
+                  <div className="">
+                    <h2 className="font-medium px-6">Topping</h2>
+                    <form className="bg-white shadow-xl my-1 rounded-md">
+                      {selectedProduct.product_toppings.length === 0 ? (
+                        <p className="px-6 py-2 text-gray-500">
+                          Không có topping
+                        </p> // Hiển thị thông báo nếu không có topping
+                      ) : (
+                        selectedProduct.product_toppings.map((topping) => (
+                          <div
+                            key={topping?.topping_id?._id}
+                            className="flex items-center gap-2 px-6 py-2"
+                          >
+                            <input
+                              type="checkbox"
+                              name="topping"
+                              checked={selectedToppings.includes(topping)}
+                              onChange={() => handleToppingChange(topping)}
+                              className="text-[#ea8025] border-[#ea8025] border-2 focus:ring-[#ea8025] focus:ring-opacity-50"
+                            />
+                            <label>
+                              {topping?.topping_id?.nameTopping}{" "}
+                              {topping?.priceTopping &&
+                                `(+${topping?.priceTopping} đ)`}
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </form>
+                  </div>
 
-                <div className="flex mt-4">
-                  <button
-                    onClick={() => {
-                      addToCart(selectedProduct?._id);
-                    }}
-                    className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
-                  >
-                    <span className="relative z-10 transition duration-300 group-hover:text-white">
-                      <p className="text-base">Thêm giỏ hàng</p>
-                    </span>
-                    <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
-                    <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
-                  </button>
-                </div>
-              </Modal.Body>
-            </Modal>
-          )}
-        </Drawer.Items>
-      </Drawer>
+                  <div className="flex mt-4">
+                    <button
+                      onClick={() => {
+                        addToCart(selectedProduct?._id);
+                      }}
+                      className="relative bg-white  px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                    >
+                      <span className="relative z-10 transition duration-300 group-hover:text-white">
+                        <p className="text-base">Thêm giỏ hàng</p>
+                      </span>
+                      <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                      <span className="absolute inset-0 bg-[#ea8025] opacity-0  transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                    </button>
+                  </div>
+                </Modal.Body>
+              </Modal>
+            )
+          }
+        </Drawer.Items >
+      </Drawer >
     </>
   );
 };

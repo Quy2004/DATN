@@ -20,7 +20,6 @@ body:not(.home) header {
   opacity: 1;
 }
 .containerAll {
-  margin-top: 60px;
   max-width: 1124px;
   overflow: visible;
 }

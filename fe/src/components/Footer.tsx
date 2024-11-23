@@ -18,6 +18,24 @@ const Footer: React.FC = () => {
                                     Cổng số 2, Tòa nhà FPT Polytechnic, 13 phố Trịnh Văn Bô, Km12 Cầu Diễn, Phường Phúc Diễn, Quận Bắc Từ Liêm, Hà Nội
                                 </p>
                             </div>
+                            <div className="col-span-2 md:hidden">
+                                <iframe
+                                    width="100%"
+                                    height="150"
+                                    src="https://www.youtube.com/embed/zEWSSod0zTY?si=likpXujK9JxLrOVl"
+                                    title="YouTube video player"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    className="rounded-md"
+                                ></iframe>
+                                <div className="flex mt-4 space-x-3">
+                                    <a href="https://www.facebook.com/choe.quy1412/" target="_blank" rel="noopener noreferrer">
+                                        <i className="fa-brands fa-square-facebook fa-2xl"></i>
+                                    </a>
+                                    <a href="#">
+                                        <i className="fa-brands fa-instagram fa-2xl"></i>
+                                    </a>
+                                </div>
+                            </div>
                             {/* Giới thiệu */}
                             <div>
                                 <h4 className="font-bold text-base pb-3">Giới thiệu</h4>
