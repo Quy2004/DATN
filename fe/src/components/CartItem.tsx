@@ -10,7 +10,6 @@ const CartItem: React.FC<{
   onSelect: (id: number, isSelected: boolean) => void; // Hàm xử lý khi chọn checkbox
 }> = ({ idcart, item, quantity, onSelect }) => {
   const [product, setProduct] = useState<Product>();
-  const [deleted, setDeleted] = useState(false); // Trạng thái xóa
   const [isSelected, setIsSelected] = useState(false); // Trạng thái checkbox
 
   useEffect(() => {
@@ -23,26 +22,34 @@ const CartItem: React.FC<{
         toast.error("Không thể tải sản phẩm.");
       }
     };
-    fetchProduct();
+    if (item?._id) {
+      fetchProduct();
+    }
   }, [item]);
 
   const handleCheckboxChange = (checked: boolean) => {
-    setIsSelected(checked);
-    onSelect(item?._id, checked); // Gửi trạng thái checkbox ra ngoài
+    setIsSelected(checked); // Cập nhật trạng thái checkbox
+    onSelect(item?._id, checked); // Gửi trạng thái checkbox lên component cha
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await instance.patch(`/cart/${idcart}/product/${id}`);
-      toast.success("Đã xóa sản phẩm khỏi giỏ hàng.");
-      setDeleted(true);
-    } catch (error) {
-      console.error("Lỗi khi xóa sản phẩm:", error);
+  const deleteSelectedItems = async () => {
+    if (!item) {
       toast.error("Không thể xóa sản phẩm.");
+      return;
+    }
+
+    try {
+      const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
+      await instance.patch(`/cart/${userId}/delete-selected`, {
+        productIds: [item?._id], // Chỉ gửi sản phẩm hiện tại để xóa
+      });
+
+      toast.success("Đã xóa sản phẩm thành công.");
+    } catch (error) {
+      toast.error("Không thể xóa sản phẩm.");
+      console.error("Delete selected error:", error);
     }
   };
-
-  if (deleted) return null;
 
   // Tính tổng giá
   const priceSize =
@@ -103,7 +110,7 @@ const CartItem: React.FC<{
           <div className="w-1/5">
             <button
               className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400"
-              onClick={() => handleDelete(item?._id)}
+              onClick={deleteSelectedItems}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

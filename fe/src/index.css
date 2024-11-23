@@ -65,7 +65,7 @@
     }
     
     .item h3 {
-        padding-top: 0.5rem;
+        /* padding-top: 0.5rem; */
         font-weight: 600;
         font-size: 16px;
     }
