@@ -142,8 +142,8 @@ const DetailPage = () => {
     <>
       {product && (
         <div>
-          <div className="containerAll mt-[60px] mx-4 py-8 md:mx-auto md:px-4">
-            <div className="border">
+          <div className="containerAll mt-[60px] py-8 md:mx-auto md:px-4">
+            <div className="py-4 px-4 border-b-2 md:px-0 md:border">
               <div className="flex flex-wrap mx-0 md:mx-4 my-2">
                 {/* Product Images */}
                 <div className="w-full mb-4 p-0 md:w-2/5 md:px-4">
@@ -157,7 +157,7 @@ const DetailPage = () => {
                     <img
                       src={product.image} // Hiển thị ảnh chính trong thumbnail
                       alt="Main Product Thumbnail"
-                      className="w-[100px] h-[100px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
+                      className="w-[75px] h-[75px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
                       onClick={() => changeImage(product.image)} // Có thể click để xem ảnh chính
                     />
                     {Array.isArray(product.thumbnail) &&
@@ -166,7 +166,7 @@ const DetailPage = () => {
                           key={index}
                           src={thumb}
                           alt={`Thumbnail ${index + 1}`}
-                          className="w-[100px] h-[100px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
+                          className="w-[75px] h-[75px] md:w-20 md:h-20 object-cover rounded-md cursor-pointer opacity-60 hover:opacity-100 transition duration-300 border-2"
                           onClick={() => changeImage(thumb)} // Thay đổi ảnh chính khi nhấp vào thumbnail
                         />
                       ))}
@@ -175,7 +175,7 @@ const DetailPage = () => {
 
                 {/* Product Info */}
                 <div className="w-full px-0 md:px-4 md:w-3/5">
-                  <h2 className="text-lg md:text-4xl font-semibold md:font-bold mb-2">{product.name}</h2>
+                  <h2 className="mt-2 text-lg font-semibold md:font-bold mb-2 md:mt-0 md:text-4xl">{product.name}</h2>
                   <div className="mb-4">
                     <span className="text-2xl md:text-lg text-[#ea8025] font-semibold md:text-black md:font-medium mr-2">
                       {formatPrice(
@@ -302,11 +302,11 @@ const DetailPage = () => {
                 ></p>
               </div>
             </div>
-            <div className="my-2">
+            <div className="my-2  md:my-2 md:px-0">
               <CommentDetail />
             </div>
-            <div className="border">
-              <div className="mx-0 md:mx-4">
+            <div className="border-t-2 px-4 md:border md:my-2">
+              <div className="mx-0 md:mx-4 ">
                 <h1 className="text-lg mb-[2px] md:my-2 font-medium md:text-xl">Sản phẩm khác</h1>
                 <div className="flex flex-wrap justify-center md:grid md:grid-cols-6 gap-x-4">
                   {products.slice(0, 6).map((item) =>
