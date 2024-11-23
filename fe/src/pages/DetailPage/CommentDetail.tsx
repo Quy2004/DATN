@@ -40,7 +40,7 @@ const CommentDetail: React.FC = () => {
 
     return (
         <div className="bg-white rounded shadow-sm">
-            <div className="border p-4">
+            <div className="border-y p-4 md:border">
                 <h1 className="font-medium text-xl">Đánh giá sản phẩm</h1>
                 {/* Star Rating */}
                 <div className="stars flex justify-center space-x-1 mb-4">
@@ -93,7 +93,7 @@ const CommentDetail: React.FC = () => {
             </div>
 
             {/* Tổng đánh giá */}
-            <div className="border mt-2 p-4">
+            <div className="border-y mt-2 p-4 md:border">
                 <div className="flex items-center space-x-4 mb-6">
                     <div>
                         <p className="text-3xl font-bold text-red-500">5 trên 5</p>
@@ -149,7 +149,6 @@ const CommentDetail: React.FC = () => {
                         </div>
                     ))}
                 </div>
-
 
                 {/* Phân trang */}
                 <div className="flex justify-center mt-6">
