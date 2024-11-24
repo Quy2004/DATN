@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import instance from "../../services/api";
 import { Category } from "../../types/category";
@@ -8,7 +8,15 @@ import { Link } from "react-router-dom";
 const MenuPage: React.FC = () => {
     const [activeItem, setActiveItem] = useState<string | null>(null);
     const [activeCategoryName, setActiveCategoryName] = useState<string>("Tất cả"); // Biến lưu tên danh mục hiện tại
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        // Lắng nghe sự thay đổi kích thước màn hình
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize(); // Kiểm tra ngay khi render
+        window.addEventListener("resize", handleResize);
 
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
     // Sử dụng useQuery để fetch dữ liệu danh mục từ API
     const { data: categories, isLoading: loadingCategories, isError: errorCategories, error } = useQuery({
         queryKey: ["categories"],
@@ -75,9 +83,9 @@ const MenuPage: React.FC = () => {
         return totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
     return (
-        <div className="containerAll flex items-start mx-auto py-8">
+        <div className="containerAll flex items-start mx-auto mt-8 md:mt-[60px] py-8">
             {/* Sidebar với danh mục cha và con */}
-            <div className="sidebar sticky top-[60px] w-[18%] px-4">
+            <div className="hidden md:block sidebar  sticky top-[60px] w-[18%] px-4">
                 <ul className="text-left">
                     {/* Mục "Tất cả" */}
                     <li>
@@ -142,29 +150,49 @@ const MenuPage: React.FC = () => {
             </div>
 
             {/* Nội dung sản phẩm tương ứng */}
-            <div className="allproduct flex-1 w-[82%] px-12 bg-white border-l-[3px] border-gray-300">
-                <h2 className="text-2xl font-semibold mb-4">{activeCategoryName}</h2> {/* Tên danh mục */}
-                {loadingProducts ? (
-                    <div>Đang tải sản phẩm...</div> // Hiển thị trạng thái đang tải sản phẩm
-                ) : (
-                    <div className="grid grid-cols-3 gap-y-8">
-                        {products && products.length > 0 ? (
-                            products.map((product: Product) => (
-                                <div key={product._id} className="">
-                                    <Link to={`/detail/${product._id}`}>
-                                        <img src={`${product.image}`} className="w-[250px] h-[250px] border object-cover rounded-xl" alt={product.name} />
-                                    </Link>
-                                    <Link to={`/detail/${product._id}`}>
-                                        <h3 className="mt-2 text-md font-medium">{product.name}</h3>
-                                    </Link>
-                                    <p className="text-gray-500 text-md">{formatPrice(product.price)} đ</p>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="w-max">Không có sản phẩm nào trong danh mục này.</div>
-                        )}
-                    </div>
-                )}
+            <div className="allproduct flex-1 w-full md:w-[82%]px-0 md:px-12 bg-white md:border-l-[3px] border-gray-300">
+                <div className="md:hidden p-2 shadow-xl">
+                    <form action="max-w-sm mx-auto">
+                        <select className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            value={activeItem || ""} // Giá trị mặc định là ""
+                            onChange={(e) => {
+                                const selectedId = e.target.value || null;
+                                const selectedTitle = e.target.options[e.target.selectedIndex].text;
+                                handleClick(selectedId!, selectedTitle);
+                            }}
+
+                        >
+                            <option value="" className="mt-2">Tất cả</option> {/* Mục mặc định */}
+                            {parentCategories.map((parent) => (
+                                <option value={parent._id}>{parent.title}</option>
+                            ))}
+                        </select>
+                    </form>
+                </div>
+                <div className="mx-4 md:mx-0 mt-4 md:mt-0">
+                    <h2 className="text-2xl font-semibold mb-4">{activeCategoryName}</h2> {/* Tên danh mục */}
+                    {loadingProducts ? (
+                        <div>Đang tải sản phẩm...</div> // Hiển thị trạng thái đang tải sản phẩm
+                    ) : (
+                        <div className="grid grid-cols-3 gap-y-8">
+                            {products && products.length > 0 ? (
+                                products.map((product: Product) => (
+                                    <div key={product._id} className="">
+                                        <Link to={`/detail/${product._id}`}>
+                                            <img src={`${product.image}`} className="w-[250px] h-[250px] border object-cover rounded-xl" alt={product.name} />
+                                        </Link>
+                                        <Link to={`/detail/${product._id}`}>
+                                            <h3 className="mt-2 text-md font-medium">{product.name}</h3>
+                                        </Link>
+                                        <p className="text-gray-500 text-md">{formatPrice(product.price)} đ</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="w-max">Không có sản phẩm nào trong danh mục này.</div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

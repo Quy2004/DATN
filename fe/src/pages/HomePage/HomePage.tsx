@@ -288,7 +288,7 @@ const HomePage: React.FC = () => {
               <img
                 src="/src/assets/images/banner/banner4.jpg"
                 alt=""
-                className="w-[542px] h-[200px] rounded-[10px] object-cover md:w-[542px] md:h-[333px] md:mb-10 mb-4"
+                className="w-[542px] h-[200px] rounded-[10px] object-cover md:w-[542px] md:h-[333px] md:mb-0 mb-4"
               />
             </div>
             {products.slice(0, 2).map((product: Product) => (
@@ -451,7 +451,7 @@ const HomePage: React.FC = () => {
               ))}
             </Slider>
           ) : (
-            <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-10">
+            <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-0">
               {products.map((product: Product, index) => (
                 <div key={`${product._id}-${index}`} className="item mx-[1px] md:mx-2">
                   <div className="mx-4 md:mx-0 md:my-4">
