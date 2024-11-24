@@ -68,11 +68,11 @@ const CartItem: React.FC<{
   const totalPrice =
     ((item?.sale_price || 0) + priceSize + priceTopping) * quantity;
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+    const formatCurrency = (amount: number) => {
+      return `${new Intl.NumberFormat("vi-VN", {
+        maximumFractionDigits: 0, // Bỏ phần thập phân nếu không cần
+      }).format(amount)} VND`;
+    };
 
   return (
     <div className="flex items-center border-b-2 pb-2">
