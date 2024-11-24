@@ -72,21 +72,16 @@ const Header: React.FC = () => {
 		return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
 	//cart
-	const fetchCart = async () => {
-		try {
+	const { data: cartData, refetch: refetchCart } = useQuery({
+		queryKey: ["cart", user._id],
+		queryFn: async () => {
 			const { data } = await instance.get(`/cart/${user._id}`);
-			setIdCart(data.cart_id)
-			// Gọi API từ backend 
-			setCart(data.cart); // Lưu dữ liệu sản phẩm vào state
-			// setLoading(false); // Tắt trạng thái loading
-		} catch (error) {
-			console.error("Lỗi khi lấy sản phẩm:", error);
-			// setLoading(false); // Tắt trạng thái loading trong trường hợp lỗi
-		}
-	};
-	useEffect(() => {
-		fetchCart();
-	}, []);
+			return data;
+		},
+		enabled: !!user._id,
+		refetchInterval: 800,
+		refetchOnWindowFocus: true,
+	});
 	// const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [userName, setUserName] = useState('');
 	useEffect(() => {
@@ -113,7 +108,8 @@ const Header: React.FC = () => {
 		navigate("/login");
 	};
 
-	const data_cart = cart?.map((value: any) => value?.isDeleted !== true && value)
+	const cartItems =
+		cartData?.cart?.filter((item: any) => !item.isDeleted) || [];
 	return (
 		<>
 			<header className="absolute z-10 w-full">
@@ -315,9 +311,10 @@ const Header: React.FC = () => {
 											d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
 										/>
 									</svg>
-									<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white">
-										{data_cart[0] === false ? 0 : data_cart?.length}
+									<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+										{cartItems?.length ? cartItems.length : 0}
 									</span>
+
 								</button>
 							</div>
 						</div>
@@ -412,24 +409,25 @@ const Header: React.FC = () => {
 				</Drawer.Items>
 			</Drawer>
 			{/* Cart */}
-			<Drawer
-				open={isOpen}
-				onClose={handleClose}
-				position="right"
-				className=""
-			>
+			<Drawer open={isOpen} onClose={handleClose} position="right">
 				<Drawer.Header title="Cart" />
 				<Drawer.Items>
-
-					{data_cart?.map((item: any) => (
-						<CartItem item={item?.product} idcart={idCart!} quantity={item.quantity} />
+					{cartItems.map((item: any) => (
+						<CartItem
+							key={item._id}
+							item={item?.product}
+							idcart={cartData?.cart_id}
+							quantity={item.quantity}
+							onUpdate={refetchCart}
+						/>
 					))}
 
 					<div className="flex gap-2">
-						<Link to={'cart'}>
-							<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 ">
+						<Link to={"cart"}>
+							<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600">
 								Checking
-							</Button></Link>
+							</Button>
+						</Link>
 						<Button
 							onClick={toggleModal}
 							className="inline-flex w-full rounded-lg bg-cyan-700 px-4 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
@@ -439,6 +437,7 @@ const Header: React.FC = () => {
 					</div>
 				</Drawer.Items>
 			</Drawer>
+
 		</>
 	);
 };
