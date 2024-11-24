@@ -5,7 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import instance from "../../services/api";
 import { Product, ProductSize, ProductTopping } from "../../types/product";
 import toast from "react-hot-toast";
-import CommentDetail from "./commentDetail";
+import CommentDetail from "./CommentDetail";
 
 const DetailPage = () => {
   const user = JSON.parse(localStorage.getItem("user") || "");
