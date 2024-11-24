@@ -29,8 +29,8 @@ const TeaPage: React.FC = () => {
     };
 
     return (
-        <div className="containerAll mx-4 md:px-4 md:mx-auto ">
-            <div className="*:mx-auto mb-6 md:mb-8">
+        <div className="containerAll mt-[60px] mx-4 md:px-4 md:mx-auto ">
+            <div className=" *:mx-auto mb-6 *:md:mx-0 md:mb-8">
                 <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">Trà</h1>
                 <p className=" border-b-orange-400 w-[26px] border-b-[4px]"></p>
             </div>

@@ -5,7 +5,7 @@ const Homes: React.FC = () => {
             <div className="containerAll mx-auto">
                 {/* COFFEEHOLIC */}
                 <h1 className="text-3xl text-center md:text-left font-semibold pt-8 md:pt-0">Chuyện Nhà</h1>
-                <div className="mx-4 md:mx-0">
+                <div className="mx-3 md:mx-0">
                     <h2 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Coffeholic</h2>
                     <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
@@ -93,16 +93,16 @@ const Homes: React.FC = () => {
                 </div>
 
                 {/* TEAHOLIC */}
-                <div className="mx-4 md:mx-0">
+                <div className="mx-3 md:mx-0">
                     <h3 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Techolic</h3>
                     <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li>
-                                    <a href="">
+                                    <Link to="">
                                         <img src="https://file.hstatic.net/1000075078/article/an_banh_uong_nuoc_nhom_03_d499c0cab14746588fff6fe0dee678ad_grande.jpg" alt=""
                                             className="hover:scale-110 ease-in-out duration-300 object-cover" />
-                                    </a>
+                                    </Link>
                                 </li>
                             </ul>
                             <nav className="mx-3 md:mx-0">
@@ -130,10 +130,10 @@ const Homes: React.FC = () => {
                         <div className="cow *:truncate *:rounded-[10px]">
                             <ul className="img_homes">
                                 <li className="">
-                                    <a href="">
+                                    <Link to="">
                                         <img src="https://file.hstatic.net/1000075078/article/cautoankeothom_thecoffeehouse_03_29cd435c9a574e1a867ac36f2c863bb6_grande.jpg" alt=""
                                             className="hover:scale-110 ease-in-out duration-300 object-cover" />
-                                    </a>
+                                    </Link>
                                 </li>
                             </ul>
                             <nav className="mx-3 md:mx-0">
@@ -193,7 +193,7 @@ const Homes: React.FC = () => {
                 </div>
 
                 {/* BLOG */}
-                <div className="mx-4 pb-8 md:mx-0 ">
+                <div className="mx-3 pb-8 md:mx-0 ">
                     <h2 className="border-l-[6px] text-left text-2xl font-semibold px-3 py-0.5 mb-5 mt-10 border-l-orange-400">Blog</h2>
                     <div className="row grid grid-cols-1  md:grid-cols-3 gap-5 ">
                         <div className="cow *:truncate *:rounded-[10px]">
