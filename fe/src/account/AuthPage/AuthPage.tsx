@@ -185,23 +185,23 @@ const AuthPage = () => {
                 <main className="relative mt-20 mb-10 mx-auto z-50 w-[350px] h-[500px] overflow-hidden rounded-lg bg-[url('src/account/AuthPage/Bg-coffee.jpg')] bg-cover bg-no-repeat">
                     <input type="checkbox" id="chk" aria-hidden="true" className="hidden" />
                     <div className="register relative w-full h-full ">
-                        <form action="">
+                        <form action="" onSubmit={handleRegisterSubmit}>
                             <label htmlFor="chk" aria-hidden="true" className="flex justify-center m-[60px] text-[#fff] text-[25px] font-bold cursor-pointer transition ease-in-out duration-700 ">Đăng ký</label>
-                            <input type="text" name="userName" placeholder="Tên người dùng"
+                            <input type="text" name="userName" placeholder="Tên người dùng" value={registerData.userName} onChange={handleRegisterChange}
                                 className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="email" name="email" placeholder="Email"
+                            <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleRegisterChange}
                                 className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="password" name="password" placeholder="Mật khẩu"
+                            <input type="password" name="password" placeholder="Mật khẩu" value={registerData.password} onChange={handleRegisterChange}
                                 className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
                             <button className="w-[50%] h-[40px] mx-auto my-[10px] block justify-center text-[#fff] bg-[#ea8025] text-[1em] font-bold mt-5 cursor-pointer transition ease-in-out outline-none border-none duration-700">Đăng ký</button>
                         </form>
                     </div>
                     <div className="login h-[460px] bg-[#fff] rounded-custum tranform -translate-y-[180px] transition ease-in-out duration-700 ">
-                        <form action="">
+                        <form action="" onSubmit={handleLoginSubmit}>
                             <label htmlFor="chk" aria-hidden="true" className="flex justify-center m-[60px] py-3 text-[25px] font-bold transition ease-in-out duration-700 cursor-pointer">Đăng nhập</label>
-                            <input type="email" name="email" placeholder="Email"
+                            <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange}
                                 className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="password" name="password" placeholder="Mật khẩu"
+                            <input type="password" name="password" placeholder="Mật khẩu" value={loginData.password} onChange={handleLoginChange}
                                 className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
                             <button className="w-[50%] h-[40px] mx-auto my-[10px] block justify-center text-[#fff] bg-[#ea8025] text-[1em] font-bold mt-5 cursor-pointer transition ease-in-out outline-none border-none duration-700">Đăng nhập</button>
 
