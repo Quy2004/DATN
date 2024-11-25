@@ -19,15 +19,23 @@ const CartPage: React.FC<{
     try {
       const { data } = await instance.get(`/cart/${user._id}`);
       setCart(data.cart);
-
+  
       const total = data.cart.reduce((acc: number, item: any) => {
+        const itemId = `${item.product._id}-${
+          item.product_sizes?._id
+        }-${item.product_toppings
+          ?.map((topping: any) => topping.topping_id._id)
+          .join(",")}`;
+  
+        if (!selectedItems.includes(itemId)) {
+          return acc; // Nếu sản phẩm chưa được chọn thì không tính vào tổng
+        }
+  
         const productPrice =
           item?.product?.sale_price || item?.product?.price || 0; // Sale price or original price
-
-        // If product_sizes is an object, get its price directly
-        const sizePrice = item?.product_sizes?.priceSize || 0; // No need for reduce, just access priceSize directly
-
-        // Ensure product_toppings is an array and reduce to get total topping price
+  
+        const sizePrice = item?.product_sizes?.priceSize || 0; // Size price
+  
         const toppingPrice = Array.isArray(item?.product_toppings)
           ? item.product_toppings.reduce(
               (total: number, topping: any) =>
@@ -35,24 +43,29 @@ const CartPage: React.FC<{
               0
             )
           : 0;
-
+  
         // Total price for this item (including size, toppings, and quantity)
         const itemTotalPrice =
           (productPrice + sizePrice + toppingPrice) * item.quantity;
-
+  
+        console.log("Item ID:", itemId);
+        console.log("Item Total Price:", itemTotalPrice);
+  
         return acc + itemTotalPrice;
       }, 0);
-
+  
+      console.log("Calculated Total Price:", total);
       setTotalPrice(total); // Update total price
-      console.log("Total Price:", total); // This will log the total price to the console
     } catch (error) {
       console.error("Error fetching cart:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [selectedItems]); // Re-fetch khi selectedItems thay đổi
+  
 
   // Handle increasing or decreasing the product quantity
   const handleQuantityChange = async (productId: string, increase: boolean) => {
@@ -82,10 +95,9 @@ const CartPage: React.FC<{
 
   // Format currency for display
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+    return `${new Intl.NumberFormat("vi-VN", {
+      maximumFractionDigits: 0, // Bỏ phần thập phân nếu không cần
+    }).format(amount)} VND`;
   };
 
   // Delete single item
@@ -103,31 +115,30 @@ const CartPage: React.FC<{
   };
 
   // Delete selected items
-const deleteSelectedItems = async () => {
-  if (selectedItems.length === 0) {
-    toast.error("Chưa chọn sản phẩm để xóa");
-    return;
-  }
+  const deleteSelectedItems = async () => {
+    if (selectedItems.length === 0) {
+      toast.error("Chưa chọn sản phẩm để xóa");
+      return;
+    }
 
-  try {
-    const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
+    try {
+      const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
 
-    // Trích xuất productId từ itemId
-    const productIds = selectedItems.map((itemId) => itemId.split("-")[0]);
+      // Trích xuất productId từ itemId
+      const productIds = selectedItems.map((itemId) => itemId.split("-")[0]);
 
-    await instance.patch(`/cart/${userId}/delete-selected`, {
-      productIds,
-    });
+      await instance.patch(`/cart/${userId}/delete-selected`, {
+        productIds,
+      });
 
-    fetchCart();
-    setSelectedItems([]);
-    toast.success("Đã xóa các sản phẩm đã chọn");
-  } catch (error) {
-    toast.error("Không thể xóa sản phẩm");
-    console.error("Delete selected error:", error);
-  }
-};
-
+      fetchCart();
+      setSelectedItems([]);
+      toast.success("Đã xóa các sản phẩm đã chọn");
+    } catch (error) {
+      toast.error("Không thể xóa sản phẩm");
+      console.error("Delete selected error:", error);
+    }
+  };
 
   // Delete all items
   const deleteAllItems = async () => {
@@ -159,21 +170,20 @@ const deleteSelectedItems = async () => {
   };
 
   // Item selection handling
-const toggleItemSelection = (item: any) => {
-  const itemId = `${item.product._id}-${
-    item.product_sizes?._id
-  }-${item.product_toppings
-    ?.map((topping: any) => topping.topping_id._id)
-    .join(",")}`;
+  const toggleItemSelection = (item: any) => {
+    const itemId = `${item.product._id}-${
+      item.product_sizes?._id
+    }-${item.product_toppings
+      ?.map((topping: any) => topping.topping_id._id)
+      .join(",")}`;
 
-  setSelectedItems(
-    (prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId) // Nếu đã chọn thì bỏ chọn
-        : [...prev, itemId] // Nếu chưa chọn thì thêm vào
-  );
-};
-
+    setSelectedItems(
+      (prev) =>
+        prev.includes(itemId)
+          ? prev.filter((id) => id !== itemId) // Nếu đã chọn thì bỏ chọn
+          : [...prev, itemId] // Nếu chưa chọn thì thêm vào
+    );
+  };
 
   // Filter selected items based on selected item IDs
   const selectedItemsData = cart.filter((item) =>
@@ -191,20 +201,21 @@ const toggleItemSelection = (item: any) => {
         : [...prevSelectedItems, productId]
     );
   };
-const toggleAllItemsSelection = () => {
-  if (selectedItems.length === cart.length) {
-    setSelectedItems([]); // Nếu tất cả đã được chọn, bỏ chọn tất cả
-  } else {
-    const allItemIds = cart.map(
-      (item: any) =>
-        `${item.product._id}-${item.product_sizes?._id}-${item.product_toppings
-          ?.map((topping) => topping.topping_id._id)
-          .join(",")}`
-    );
-    setSelectedItems(allItemIds); // Chọn tất cả
-  }
-};
-
+  const toggleAllItemsSelection = () => {
+    if (selectedItems.length === cart.length) {
+      setSelectedItems([]); // Nếu tất cả đã được chọn, bỏ chọn tất cả
+    } else {
+      const allItemIds = cart.map(
+        (item: any) =>
+          `${item.product._id}-${
+            item.product_sizes?._id
+          }-${item.product_toppings
+            ?.map((topping) => topping.topping_id._id)
+            .join(",")}`
+      );
+      setSelectedItems(allItemIds); // Chọn tất cả
+    }
+  };
 
   const calculateItemTotal = (item) => {
     const basePrice = item?.product?.sale_price || 0; // Giá sản phẩm
@@ -416,7 +427,7 @@ const toggleAllItemsSelection = () => {
                       Tổng giá
                     </span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatCurrency(totalPrice)}
+                      {formatCurrency(totalPrice || 0)}
                     </span>
                   </div>
                 </div>
@@ -424,8 +435,14 @@ const toggleAllItemsSelection = () => {
                   to={{
                     pathname: "/checkout",
                     state: {
-                      selectedItems: cart.filter((item) =>
-                        selectedItems.includes(item.product._id)
+                      selectedItems: cart.filter((item: any) =>
+                        selectedItems.includes(
+                          `${item.product._id}-${
+                            item.product_sizes?._id
+                          }-${item.product_toppings
+                            ?.map((topping: any) => topping.topping_id._id)
+                            .join(",")}`
+                        )
                       ),
                     },
                   }}
@@ -436,10 +453,18 @@ const toggleAllItemsSelection = () => {
                   } px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#ff8e37] transition-colors duration-200 transform ${
                     selectedItems.length > 0 ? "hover:scale-[1.02]" : ""
                   }`}
-                  disabled={selectedItems.length === 0}
+                  onClick={(e) => {
+                    if (selectedItems.length === 0) {
+                      e.preventDefault(); // Ngăn chặn hành động mặc định
+                      toast.error(
+                        "Vui lòng chọn ít nhất một sản phẩm để tiếp tục thanh toán!"
+                      );
+                    }
+                  }}
                 >
                   Tiến hành thanh toán
                 </Link>
+
                 <div className="mt-4 flex items-center justify-center gap-3">
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     hoặc
