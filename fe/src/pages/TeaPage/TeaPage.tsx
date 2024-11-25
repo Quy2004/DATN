@@ -32,7 +32,7 @@ const TeaPage: React.FC = () => {
         <div className="containerAll mt-[60px] mx-4 md:px-4 md:mx-auto ">
             <div className=" *:mx-auto mb-6 *:md:mx-0 md:mb-8">
                 <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">Trà</h1>
-                <p className=" border-b-orange-400 w-[26px] border-b-[4px]"></p>
+                <p className=" border-b-orange-400 w-[26px] md:w-[40px] border-b-[4px]"></p>
             </div>
             <div className="flex flex-wrap gap-x-5 gap-y-4 justify-center md:gap-5 text-left mb-4 md:justify-start md:grid-cols-4">
                 {productsData?.map((tea: Product) => (
