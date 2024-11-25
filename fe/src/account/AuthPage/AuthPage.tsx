@@ -4,6 +4,7 @@ import * as Components from "./AuthComponents";
 import instance from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
+
 interface RegisterData {
     userName: string;
     email: string;
@@ -95,7 +96,7 @@ const AuthPage = () => {
 
     return (
         <>
-            <Components.Section className="">
+            <Components.Section className="hidden md:block">
                 <Components.MidContainer>
                     <Components.RegisterContainer $signinIn={signIn}>
                         <Components.Form onSubmit={handleRegisterSubmit}>
@@ -180,7 +181,7 @@ const AuthPage = () => {
                     )}
                 </Components.MidContainer>
             </Components.Section>
-            <Components.NavMobile className="">
+            <Components.NavMobile className="md:hidden">
                 <main className="relative mt-20 mb-10 mx-auto z-50 w-[350px] h-[500px] overflow-hidden rounded-lg bg-[url('src/account/AuthPage/Bg-coffee.jpg')] bg-cover bg-no-repeat">
                     <input type="checkbox" id="chk" aria-hidden="true" className="hidden" />
                     <div className="register relative w-full h-full ">
