@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import {Link} from "react-router-dom";
 import { toast } from "react-hot-toast";
 import * as Components from "./AuthComponents";
 import instance from "../../services/api";
@@ -143,7 +144,7 @@ const AuthPage = () => {
                                 value={loginData.password}
                                 onChange={handleLoginChange}
                             />
-                            <Components.Anchor href="#">Quên mật khẩu?</Components.Anchor>
+                            <Link className="my-5 hover:text-blue-700" to="/forgot">Quên mật khẩu?</Link>
                             <Components.Button type="submit">Đăng Nhập</Components.Button>
                         </Components.Form>
                     </Components.LoginContainer>
