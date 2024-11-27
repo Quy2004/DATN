@@ -18,24 +18,35 @@ const CartPage: React.FC<{
   const fetchCart = async () => {
     try {
       const { data } = await instance.get(`/cart/${user._id}`);
-      setCart(data.cart);
-  
-      const total = data.cart.reduce((acc: number, item: any) => {
+      const mergedCart = data.cart.reduce((acc: any[], item: any) => {
         const itemId = `${item.product._id}-${
           item.product_sizes?._id
         }-${item.product_toppings
           ?.map((topping: any) => topping.topping_id._id)
           .join(",")}`;
-  
-        if (!selectedItems.includes(itemId)) {
-          return acc; // Nếu sản phẩm chưa được chọn thì không tính vào tổng
+        const existingItem = acc.find((cartItem: any) => cartItem.itemId === itemId);
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+        } else {
+          acc.push({ ...item, itemId });
         }
+        return acc;
+      }, []);
+      setCart(mergedCart);
+      updateTotalPrice(mergedCart, selectedItems);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    }
+  };
   
-        const productPrice =
-          item?.product?.sale_price || item?.product?.price || 0; // Sale price or original price
+
   
-        const sizePrice = item?.product_sizes?.priceSize || 0; // Size price
-  
+
+  const updateTotalPrice = (cart: any[], selectedItems: string[]) => {
+    const total = cart.reduce((acc: number, item: any) => {
+      if (selectedItems.includes(item.itemId)) {
+        const productPrice = item?.product?.sale_price || item?.product?.price || 0;
+        const sizePrice = item?.product_sizes?.priceSize || 0;
         const toppingPrice = Array.isArray(item?.product_toppings)
           ? item.product_toppings.reduce(
               (total: number, topping: any) =>
@@ -43,55 +54,47 @@ const CartPage: React.FC<{
               0
             )
           : 0;
-  
-        // Total price for this item (including size, toppings, and quantity)
-        const itemTotalPrice =
-          (productPrice + sizePrice + toppingPrice) * item.quantity;
-  
-        console.log("Item ID:", itemId);
-        console.log("Item Total Price:", itemTotalPrice);
-  
-        return acc + itemTotalPrice;
-      }, 0);
-  
-      console.log("Calculated Total Price:", total);
-      setTotalPrice(total); // Update total price
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-    }
+        return acc + (productPrice + sizePrice + toppingPrice) * item.quantity;
+      }
+      return acc;
+    }, 0);
+    setTotalPrice(total);
   };
   
 
   useEffect(() => {
     fetchCart();
-  }, [selectedItems]); // Re-fetch khi selectedItems thay đổi
+  }, []);
+
+  useEffect(() => {
+    updateTotalPrice(cart, selectedItems); // Recalculate when selectedItems change
+  }, [selectedItems]);
   
 
   // Handle increasing or decreasing the product quantity
-  const handleQuantityChange = async (productId: string, increase: boolean) => {
+  const handleQuantityChange = async (
+    cartItemId: string,
+    increase: boolean
+  ) => {
     console.log(
-      `Handling quantity change for product: ${productId}, increase: ${increase}`
+      `Handling quantity change for cart item: ${cartItemId}, increase: ${increase}`
     );
     try {
       const response = await instance.patch(
-        `/cart/${idcart}/product/${productId}/quantity/change`,
-        {
-          userId: user._id,
-          productId: productId,
-          increase: increase,
-        }
+        `/cart/${user._id}/item/${cartItemId}/quantity`,
+        { increase }
       );
 
       if (response.status === 200) {
         fetchCart();
       } else {
-        toast.error("Không thể cập nhật số lượng sản phẩm.");
+        console.error("Không thể cập nhật số lượng sản phẩm.");
       }
     } catch (error) {
-      console.error("Error updating quantity:", error);
-      toast.error("Không thể cập nhật số lượng sản phẩm.");
+      console.error("Không thể cập nhật số lượng sản phẩm.");
     }
   };
+
 
   // Format currency for display
   const formatCurrency = (amount: number) => {
@@ -100,37 +103,18 @@ const CartPage: React.FC<{
     }).format(amount)} VND`;
   };
 
-  // Delete single item
-  const deleteItem = async (productId: string) => {
-    try {
-      const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-      await instance.patch(`/cart/${userId}/${productId}/delete`);
-
-      fetchCart();
-      toast.success("Đã xóa sản phẩm");
-    } catch (error) {
-      toast.error("Không thể xóa sản phẩm");
-      console.error("Delete item error:", error);
-    }
-  };
-
   // Delete selected items
   const deleteSelectedItems = async () => {
     if (selectedItems.length === 0) {
       toast.error("Chưa chọn sản phẩm để xóa");
       return;
     }
-
+  
     try {
       const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-
-      // Trích xuất productId từ itemId
       const productIds = selectedItems.map((itemId) => itemId.split("-")[0]);
-
-      await instance.patch(`/cart/${userId}/delete-selected`, {
-        productIds,
-      });
-
+      await instance.patch(`/cart/${userId}/delete-selected`, { productIds });
+  
       fetchCart();
       setSelectedItems([]);
       toast.success("Đã xóa các sản phẩm đã chọn");
@@ -139,6 +123,38 @@ const CartPage: React.FC<{
       console.error("Delete selected error:", error);
     }
   };
+   // Xóa sản phẩm
+   const deleteCartItem = async (cartItemId: any) => {
+    try {
+      const response = await instance.delete(`/cart/item/${cartItemId}`);
+      const updatedCart = response.data?.cart;
+
+      if (updatedCart) {
+        fetchCart();
+        toast.success("Đã xóa sản phẩm");
+      } else {
+        console.warn("Không có dữ liệu giỏ hàng nào được trả về sau khi xóa.");
+      }
+
+      return updatedCart; // Trả về giỏ hàng đã cập nhật
+    } catch (error) {
+      console.error("Failed to delete cart item:", error);
+      toast.error("Không thể xóa sản phẩm, vui lòng thử lại.");
+      throw error;
+    }
+  };
+
+  // Hàm xử lý xóa giỏ hàng trên frontend
+  const handleDeleteCartItem = async (cartItemId) => {
+    try {
+      await deleteCartItem(cartItemId);
+      const updatedCart = cart.filter((item : any) => item._id !== cartItemId);
+      setCart(updatedCart);
+    } catch (error) {
+      alert("Có lỗi xảy ra khi xóa mục giỏ hàng.");
+    }
+  };
+
 
   // Delete all items
   const deleteAllItems = async () => {
@@ -176,52 +192,33 @@ const CartPage: React.FC<{
     }-${item.product_toppings
       ?.map((topping: any) => topping.topping_id._id)
       .join(",")}`;
-
-    setSelectedItems(
-      (prev) =>
-        prev.includes(itemId)
-          ? prev.filter((id) => id !== itemId) // Nếu đã chọn thì bỏ chọn
-          : [...prev, itemId] // Nếu chưa chọn thì thêm vào
+    setSelectedItems((prev) =>
+      prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId]
     );
   };
 
-  // Filter selected items based on selected item IDs
-  const selectedItemsData = cart.filter((item) =>
-    selectedItems.includes(item.product._id)
-  );
-
-  // Determine if any items are selected
-  const isDisabled = selectedItems.length === 0;
-
-  // Handle checkbox change
-  const handleCheckboxChange = (productId) => {
-    setSelectedItems((prevSelectedItems) =>
-      prevSelectedItems.includes(productId)
-        ? prevSelectedItems.filter((id) => id !== productId)
-        : [...prevSelectedItems, productId]
-    );
-  };
   const toggleAllItemsSelection = () => {
     if (selectedItems.length === cart.length) {
-      setSelectedItems([]); // Nếu tất cả đã được chọn, bỏ chọn tất cả
+      setSelectedItems([]);
     } else {
       const allItemIds = cart.map(
         (item: any) =>
           `${item.product._id}-${
             item.product_sizes?._id
           }-${item.product_toppings
-            ?.map((topping) => topping.topping_id._id)
+            ?.map((topping : any) => topping.topping_id._id)
             .join(",")}`
       );
-      setSelectedItems(allItemIds); // Chọn tất cả
+      setSelectedItems(allItemIds);
     }
   };
-
-  const calculateItemTotal = (item) => {
+  const calculateItemTotal = (item : any) => {
     const basePrice = item?.product?.sale_price || 0; // Giá sản phẩm
     const sizePrice = item?.product_sizes?.priceSize || 0; // Giá kích thước
     const toppingsPrice = (item?.product_toppings || []).reduce(
-      (total, topping) => {
+      (total : any, topping : any) => {
         return total + (topping?.topping_id?.priceTopping || 0); // Tổng giá topping
       },
       0
@@ -279,7 +276,7 @@ const CartPage: React.FC<{
                 </div>
 
                 {/* Cart Items */}
-                {cart.map((item) => (
+                {cart.map((item : any) => (
                   <div
                     key={item.product._id}
                     className="mb-4 rounded-xl border border-gray-200 bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 dark:border-gray-700 dark:bg-gray-800"
@@ -293,7 +290,7 @@ const CartPage: React.FC<{
                             `${item.product._id}-${
                               item.product_sizes?._id
                             }-${item.product_toppings
-                              ?.map((topping) => topping.topping_id._id)
+                              ?.map((topping : any) => topping.topping_id._id)
                               .join(",")}`
                           )}
                           onChange={() => toggleItemSelection(item)}
@@ -348,7 +345,8 @@ const CartPage: React.FC<{
                           </p>
                         </div>
                         <button
-                          onClick={() => deleteItem(item.product._id)}
+                         onClick={() => handleDeleteCartItem(item._id)}
+
                           className="mt-2 border-2 border-red-500 px-2 rounded-lg hover:bg-red-500 text-sm font-medium text-red-500 hover:text-white transition-colors duration-200"
                         >
                           Xóa
@@ -358,9 +356,9 @@ const CartPage: React.FC<{
                       {/* Quantity Controls and Price */}
                       <div className="mt-4 flex items-center justify-between gap-6 md:order-3 md:mt-0">
                         <div className="flex items-center space-x-3">
-                          <button
+                        <button
                             onClick={() =>
-                              handleQuantityChange(item.product._id, false)
+                              handleQuantityChange(item._id, false)
                             }
                             className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
                           >
@@ -372,13 +370,12 @@ const CartPage: React.FC<{
                             className="w-12 h-10 text-center bg-white border-2 border-gray-200 rounded-lg shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                           />
                           <button
-                            onClick={() =>
-                              handleQuantityChange(item.product._id, true)
-                            }
+                            onClick={() => handleQuantityChange(item._id, true)}
                             className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
                           >
                             +
                           </button>
+
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
