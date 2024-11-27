@@ -77,10 +77,14 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
+          <Route path="login" element={<AuthPage />} />
+          <Route path="register" element={<AuthPage />} />
+          <Route path="forgot" element={<Forgot />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
+          <Route path="order-tracking/:order_id" element={<Tracking />} />
           <Route path="oder-success" element={<OrderSuccess />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
