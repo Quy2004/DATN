@@ -57,7 +57,16 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-  
+    // paymentStatus: {
+    //   type: String,
+    //   enum: [
+    //     "unpaid",      // Chưa thanh toán
+    //     "paid",        // Đã thanh toán
+    //     "failed",      // Thanh toán thất bại
+       
+    //   ],
+    //   default: "unpaid",
+    // },
     orderDetail_id: [
       {
         type: mongoose.Schema.Types.ObjectId,
