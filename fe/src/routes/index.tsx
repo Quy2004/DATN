@@ -52,6 +52,7 @@ import ResetPassword from "../account/forgotPassword/resetPassword";
 import Tracking from "../account/SettingAuth/Tracking";
 import AccountUpdate from "../account/SettingAuth/AccountUpdate";
 import OderHistory from "../account/SettingAuth/OderHistory";
+import OrderSuccess from "../pages/OrderSuccess/OderSuccess";
 
 const Router = () => {
   return (
@@ -80,6 +81,7 @@ const Router = () => {
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
+          <Route path="oder-success" element={<OrderSuccess />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>

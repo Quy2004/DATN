@@ -33,6 +33,34 @@ export const Section = styled.div`
   z-index: 2; /* Đảm bảo nội dung nằm trên lớp phủ */
 `;
 
+export const NavMobile = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-image: url("src/account/AuthPage/Bg-coffee.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+
+  /* Lớp phủ làm nhiễu */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("src/account/AuthPage/Bg-coffee.jpg"); /* Sử dụng lại ảnh nền */
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(6px) brightness(1); /* Điều chỉnh độ mờ và độ sáng */
+    z-index: 1; /* Đảm bảo lớp phủ nằm trên ảnh nền */
+  }
+
+  /* Nội dung bên trong */
+  z-index: 2; /* Đảm bảo nội dung nằm trên lớp phủ */
+`;
+
 export const MidContainer = styled.div`
   background-color: #eee;
   border-radius: 40px;

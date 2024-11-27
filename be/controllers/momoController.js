@@ -22,7 +22,7 @@ class MomoController {
       const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
       const requestId = `${partnerCode}${Date.now()}`;
       const orderInfo = `Thanh toán đơn hàng ${order.orderNumber}`;
-      const redirectUrl = "https://momo.vn/return";
+      const redirectUrl = "http://localhost:5173/oder-success"; 
       const ipnUrl = "https://callback.url/notify"; // URL nhận thông báo từ MoMo
       const amount = order.totalPrice.toString(); // Chuyển tổng giá trị đơn hàng thành chuỗi
       const requestType = "captureWallet";
@@ -118,9 +118,10 @@ class MomoController {
       // Cập nhật trạng thái đơn hàng
       await Order.findByIdAndUpdate(orderId, orderUpdate);
 
-      return res.status(200).json({
-        message:
-          resultCode === 0 ? "Thanh toán thành công" : "Thanh toán thất bại",
+      // Trả kết quả xác minh
+    return res.status(200).json({
+        message: resultCode === "0" ? "Thanh toán thành công" : "Thanh toán thất bại",
+       
       });
     } catch (error) {
       console.error("Lỗi trong xử lý MoMo IPN:", error);
