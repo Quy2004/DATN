@@ -1,15 +1,12 @@
-import { Drawer, Modal } from "flowbite-react";
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
-import axios from "axios";
 import Swal from "sweetalert2";
-
+import { useNavigate } from "react-router-dom";
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-  console.log("User ID:", userId);
-
+  const navigate = useNavigate();
   const {
     data: carts,
     isLoading: isCartsLoading,
@@ -74,78 +71,112 @@ const Checkout: React.FC = () => {
     mode: "onBlur", // Trigger validation when input loses focus
   });
 
+  const handleMomoPayment = async (orderData: any) => {
+    try {
+      // Tạo đơn hàng trước
+      const orderResponse = await instance.post("orders", {
+        ...orderData,
+      });
+      console.log("Order API Response:", orderResponse.data); // Kiểm tra toàn bộ data trong response
+
+      // Lấy payUrl từ phản hồi backend
+      const { payUrl } = orderResponse.data;
+
+      // Kiểm tra URL thanh toán từ MoMo
+      if (!payUrl) {
+        Swal.fire({
+          icon: "warning",
+          title: "Lỗi",
+          text: "Không nhận được URL thanh toán từ MoMo. Vui lòng thử lại sau.",
+        });
+        return;
+      }
+
+      // Chuyển hướng người dùng tới trang thanh toán MoMo
+      window.location.href = payUrl;
+    } catch (error: any) {
+      console.error("Lỗi thanh toán:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Thanh toán thất bại",
+        text:
+          error.response?.data?.message ||
+          "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
+      });
+
+      throw error;
+    }
+  };
+
   const onSubmit = async (data: Form) => {
+    // Kiểm tra phương thức thanh toán
+    if (!paymentMethod) {
+      Swal.fire({
+        icon: "warning",
+        title: "Thông báo",
+        text: "Vui lòng chọn phương thức thanh toán",
+      });
+      return;
+    }
+
+    // Kiểm tra giỏ hàng có sản phẩm không
+    if (!carts || carts.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Giỏ hàng trống",
+        text: "Vui lòng thêm sản phẩm vào giỏ hàng",
+      });
+      return;
+    }
+
     const orderData = {
       userId,
       customerInfo: data,
       paymentMethod: paymentMethod,
       note: data.note,
+      totalAmount: getTotalPrice(),
     };
 
     try {
-      // 1. Tạo đơn hàng
-      const { data: orderResponse } = await instance.post("orders", orderData);
-      console.log("Đơn hàng đã được tạo:", orderResponse);
+      setLoading(true);
 
-      // 2. Nếu phương thức thanh toán là MoMo, thực hiện thanh toán (chỉ với MoMo)
-      if (paymentMethod === "momo") {
-        setLoading(true);
-        try {
-          const response = await axios.post(
-            "http://localhost:8000/payments/momo/create-payment",
-            {
-              orderId: orderResponse._id,
+      switch (paymentMethod) {
+        case "momo":
+          await handleMomoPayment(orderData);
+          break;
+          case "cash on delivery":
+            try {
+              // Gửi yêu cầu lưu đơn hàng vào cơ sở dữ liệu
+              const response = await instance.post("/orders", orderData);
+          
+              if (response.status === 201) {
+                // Chuyển hướng đến trang thành công sau khi thêm đơn hàng thành công
+                navigate("/oder-success");
+              } else {
+                throw new Error("Không thể tạo đơn hàng");
+              }
+            } catch (error) {
+              console.error("Lỗi khi tạo đơn hàng:", error);
+              // Thêm xử lý thông báo lỗi cho người dùng (nếu cần)
             }
-          );
-
-          if (response.data?.payUrl) {
-            const { payUrl } = response.data;
-            // Chuyển hướng tới trang thanh toán MoMo
-            window.location.href = payUrl;
-          } else {
-            throw new Error("Không nhận được URL thanh toán");
-          }
-        } catch (paymentError) {
-          console.error("Lỗi thanh toán MoMo", paymentError);
-          alert("Lỗi khi kết nối với MoMo. Vui lòng thử lại sau.");
-          setLoading(false);
-        }
+            break;
+        case "bank transfer":
+          break;
+        default:
+          throw new Error("Phương thức thanh toán không hợp lệ");
       }
-
-      // 3. Hiển thị thông báo thành công và reload trang về trang chủ
-      Swal.fire({
-        title: "Đặt hàng thành công!",
-        text: "Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi. Đơn hàng của bạn đang được xử lý.",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        // Chuyển hướng về trang chủ
-        window.location.href = "/"; // Điều hướng về trang chủ (URL gốc của ứng dụng)
-      });
     } catch (error) {
-      console.error("Lỗi khi tạo đơn hàng", error);
-      // Hiển thị thông báo lỗi nếu không tạo được đơn hàng
-      Swal.fire({
-        title: "Có lỗi xảy ra!",
-        text: "Vui lòng thử lại sau.",
-        icon: "error",
-        confirmButtonText: "OK",
-      }).then(() => {
-        // Chuyển hướng về trang chủ khi có lỗi xảy ra (tùy chọn)
-        window.location.href = "/"; // Điều hướng về trang chủ
-      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Hàm xử lý khi người dùng click vào biểu tượng MoMo
+  // Handler chọn MoMo
   const handleMomoClick = () => {
     setPaymentMethod("momo");
-    setIsBankTransferSelected(false); // Ẩn phần lựa chọn khác khi chọn Momo
+    setIsBankTransferSelected(false);
   };
-  // const handleSubmit = (event: React.FormEvent) => {
-  //   event.preventDefault(); // Ngăn chặn reload trang
-  //   console.log("Form submitted");
-  // };
 
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
