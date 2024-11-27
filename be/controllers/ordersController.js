@@ -72,6 +72,7 @@ export const createOrder = async (req, res) => {
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
+      
       orderDetail_id: [],
     });
 

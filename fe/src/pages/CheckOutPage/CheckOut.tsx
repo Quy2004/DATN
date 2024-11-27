@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
-
 import instance from "../../services/api";
-
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   const navigate = useNavigate();
@@ -148,10 +145,22 @@ const Checkout: React.FC = () => {
         case "momo":
           await handleMomoPayment(orderData);
           break;
-        case "cash on delivery":
-          // Chuyển hướng đến trang thành công ngay sau khi tạo đơn hàng
-          navigate("/oder-success");
-          break;
+          case "cash on delivery":
+            try {
+              // Gửi yêu cầu lưu đơn hàng vào cơ sở dữ liệu
+              const response = await instance.post("/orders", orderData);
+          
+              if (response.status === 201) {
+                // Chuyển hướng đến trang thành công sau khi thêm đơn hàng thành công
+                navigate("/oder-success");
+              } else {
+                throw new Error("Không thể tạo đơn hàng");
+              }
+            } catch (error) {
+              console.error("Lỗi khi tạo đơn hàng:", error);
+              // Thêm xử lý thông báo lỗi cho người dùng (nếu cần)
+            }
+            break;
         case "bank transfer":
           break;
         default:
@@ -162,8 +171,6 @@ const Checkout: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Thêm một effect để xử lý sau khi quay lại từ MoMo
 
   // Handler chọn MoMo
   const handleMomoClick = () => {
