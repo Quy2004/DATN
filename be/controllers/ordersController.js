@@ -344,3 +344,50 @@ export const cancelOrder = async (req, res) => {
     });
   }
 };
+// Get order By Id
+export const getOrderById = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "orderId là bắt buộc",
+      });
+    }
+    const orders = await Order.find()
+      .populate({
+        path: "orderDetail_id",
+        populate: [
+          {
+            path: "product_id",
+            model: "Product",
+          },
+          {
+            path: "product_size",
+            model: "Size",
+          },
+          {
+            path: "product_toppings.topping_id",
+            model: "Topping",
+          },
+        ],
+      });
+      const order = orders?.filter(item => item._id = orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng nào",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: order, 
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy đơn hàng",
+      error: error.message,
+    });
+  }
+};
