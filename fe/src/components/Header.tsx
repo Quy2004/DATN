@@ -83,17 +83,20 @@ const Header: React.FC = () => {
 		refetchOnWindowFocus: true,
 	});
 	// const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [userName, setUserName] = useState('');
+	const [userName, setUserName] = useState<string>("");
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user");
 		if (storedUser) {
 			const user = JSON.parse(storedUser);
-			setUserName(user.userName); // Lấy `userName` từ `localStorage`
+			setUserName(user.userName || "");
+			setAvatarUrl(user.avatarUrl || null);
 		} else {
-			setUserName(''); // Đặt lại giá trị khi không có dữ liệu
+			setUserName("");
+			setAvatarUrl(null); 
 		}
 	}, []);
-
+	const getInitials = (name: string) => (name ? name[0].toUpperCase() : "")
 	const { isDropdownOpen, setIsDropdownOpen, dropdownRef } = useClickOutside(false);
 
 	const toggleDropdown = () => {
@@ -330,9 +333,31 @@ const Header: React.FC = () => {
 				{/* <Drawer.Header title="" className="border-b-2 px-4" /> */}
 				<Drawer.Items>
 					<nav className="py-6 border-b-2 ">
+					<Link to={"setting"} className="absolute top-3 flex items-center space-x-3 mx-6">
+							{
+								userName && (
+									<div className="flex items-center space-x-3">
+										{avatarUrl ? (
+											<img
+												src={avatarUrl}
+												alt={userName}
+												className="w-11 h-11 rounded-full object-cover"
+											/>
+										) : (
+											<span
+												className="w-10 h-10 text-lg bg-[#ea8025] flex items-center justify-center rounded-full font-semibold text-[#fff] border-2 "
+											>
+												{getInitials(userName)}
+											</span>
+										)}
+										<h3 className="font-semibold text-[#ea8025]">{userName}</h3>
+									</div>
+								)
+							}
+						</Link>
 						<button
-							onClick={handleCloseMenu} // Thay bằng hàm đóng Drawer của bạn
-							className="absolute left-5 top-8 transform -translate-y-1/2 text-black focus:outline-none"
+							onClick={handleCloseMenu}
+							className="absolute right-5 top-8 transform -translate-y-1/2 text-black focus:outline-none"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -340,7 +365,7 @@ const Header: React.FC = () => {
 								viewBox="0 0 24 24"
 								strokeWidth="1.5"
 								stroke="currentColor"
-								className="w-9 h-9"
+								className="w-7 h-auto"
 							>
 								<path
 									strokeLinecap="round"
@@ -350,23 +375,62 @@ const Header: React.FC = () => {
 							</svg>
 						</button>
 					</nav>
-					<nav className=" flex flex-col items-start ml-6 space-y-1 *:block *:w-[92.5%] *:border-b-2 *:py-4 ">
-						<Link to="/tea" className="text-lg font-semibold " onClick={toggleMenu}>
+					<nav className=" flex flex-col items-start ml-6 space-y-1 *:w-[92.5%]  *:py-4 ">
+						<Link to="/tea" className="block text-lg font-semibold border-b-2 " onClick={toggleMenu}>
 							<h3>Trà</h3>
 						</Link>
-						<Link to="/coffee" className="text-lg font-semibold" onClick={toggleMenu}>
+						<Link to="/coffee" className="block text-lg font-semibold border-b-2" onClick={toggleMenu}>
 							<h3>Cà Phê</h3>
 						</Link>
-						<Link to="/menu" className="text-lg font-semibold" onClick={toggleMenu}>
+						<Link to="/menu" className="block text-lg font-semibold border-b-2" onClick={toggleMenu}>
 							<h3>Menu </h3>
 						</Link>
-						<Link to="/chuyennha" className="text-lg font-semibold" onClick={toggleMenu}>
+						<Link to="/chuyennha" className="block text-lg font-semibold border-b-2" onClick={toggleMenu}>
 							<h3>Chuyện Nhà </h3>
 						</Link>
-						<Link to="/login" className="text-lg font-semibold" onClick={toggleMenu}>
-							<h3>Tài Khoản </h3>
-						</Link>
+						{
+							userName ? (
+								<nav className="flex justify-center">
+									<Link to={"cart"} className="p-2 rounded-full border-gray-400 border-2">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth="1.5"
+											stroke="currentColor"
+											className="w-6 h-atuo text-gray-700"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+											/>
+										</svg>
+										<span className="absolute bg-red-500 top-[367px] left-[39%] rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+											{cartItems?.length ? cartItems.length : 0}
+										</span>
+									</Link>
+									<div className="px-2"></div>
+									<button onClick={handleLogout}
+										className="p-2 rounded-full border-gray-400 border-2">
+										<svg xmlns="http://www.w3.org/2000/svg"
+											fill="none" viewBox="0 0 24 24"
+											strokeWidth="1.5" stroke="currentColor"
+											className="w-7 h-auto text-gray-700">
+											<path strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+										</svg>
+									</button>
+								</nav>
+							) : (
+								<Link to="/login" className="text-lg font-semibold" onClick={toggleMenu}>
+									<h3>Tài Khoản </h3>
+								</Link>
+							)
+						}
 					</nav>
+					
 					<div className="flex justify-center mb:hidden mt-4">
 						<div className="relative flex items-center  ">
 							<input

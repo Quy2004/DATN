@@ -51,28 +51,27 @@ const CartItem: React.FC<{
     }
   };
 
-  // Tính tổng giá
-  const priceSize =
-    product?.product_sizes?.reduce(
-      (total: number, current: any) => total + (current?.size_id?.priceSize || 0),
-      0
-    ) || 0;
+  const priceSize = (item?.product_sizes || []).reduce(
+    (total: number, size: any) => total + (size?.size_id?.priceSize || 0), // Tổng giá kích thước
+    0
+  );
+  
+  const priceTopping = (item?.product_toppings || []).reduce(
+    (total: number, topping: any) => total + (topping?.topping_id?.priceTopping || 0), // Tổng giá topping
+    0
+  );
+  
+  const basePrice = item?.product?.sale_price || item?.sale_price || 0; // Giá cơ bản của sản phẩm (ưu tiên lấy từ product nếu tồn tại)
+  const totalPrice = (basePrice + priceSize + priceTopping) * quantity; // Tính tổng giá
+  
+  
 
-  const priceTopping =
-    product?.product_toppings?.reduce(
-      (total: number, current: any) =>
-        total + (current?.topping_id?.priceTopping || 0),
-      0
-    ) || 0;
 
-  const totalPrice =
-    ((item?.sale_price || 0) + priceSize + priceTopping) * quantity;
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+  const formatCurrency = (amount: number) => {
+    return `${new Intl.NumberFormat("vi-VN", {
+      maximumFractionDigits: 0, // Bỏ phần thập phân nếu không cần
+    }).format(amount)} VND`;
+  };
 
   return (
     <div className="flex items-center border-b-2 pb-2">
@@ -97,7 +96,7 @@ const CartItem: React.FC<{
           <div className="w-3/5">
             <h3 className="text-base font-semibold">{item?.name}</h3>
             <p className="text-xs text-red-500 font-semibold">
-              {formatCurrency(totalPrice)}
+              Tổng:{formatCurrency(totalPrice)} {/* Hiển thị tổng giá */}
             </p>
           </div>
 

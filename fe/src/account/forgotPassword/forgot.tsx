@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { Link } from "react-router-dom";
-import axios from 'axios';
-
+import instance from '../../services/api';
 const Forgot = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
 
-    const handleForgotPassword = async (e) => {
+    const handleForgotPassword = async (e: any) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/auth/forgot-password', { email });
+            const response = await instance.post('/auth/forgot-password', { email });
             setMessage(response.data.message);
-        } catch (error) {
+        } catch (error: any) {
             setMessage(error.response?.data?.message || 'Lỗi khi gửi yêu cầu quên mật khẩu');
         }
     };
@@ -43,7 +42,7 @@ const Forgot = () => {
                                 <p className="text-sm text-green-500">{message}</p>
                                 <div className="text-right">
                                     <button type="submit" className="text-xs py-3 px-6 rounded-lg bg-red-500 text-white shadow-md hover:shadow-lg">Xác nhận</button>
-                                    <button type="button" className="text-xs py-3 px-6 rounded-lg bg-gray-400 text-white shadow-md hover:shadow-lg"><Link to={'/signin'}>Quay lại</Link></button>
+                                    <button type="button" className="text-xs py-3 px-6 rounded-lg bg-gray-400 text-white shadow-md hover:shadow-lg"><Link to={'/login'}>Quay lại</Link></button>
                                 </div>
                             </form>
                         </div>
