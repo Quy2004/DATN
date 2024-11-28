@@ -366,15 +366,15 @@ const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="my-4"></div>
+          <div className="my-2 md:my-4"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
               {products.slice(0, 10).map((product: Product, index) => (
                 <div className="flex mx-2 md:mx-0 ">
-                  <div key={`${product._id}-${index}`} className="item mx-2">
-                    <div className="my-4">
-                      <div className="relative group w-[180px] mb-2 rounded-xl place-items-center md:w-[300px]">
+                  <div key={`${product._id}-${index}`} className="item mx-2 md:mx-1">
+                    <div className="my-2">
+                      <div className="relative group w-[180px] mb-2 rounded-xl  md:w-[300px]">
                         <img
                           src={`${product.image}`}
                           alt=""
@@ -492,7 +492,7 @@ const HomePage: React.FC = () => {
           )}
 
           {/*  */}
-          <div className="banner-mid mt-0 md:my-5">
+          <div className="banner-mid mt-4 md:my-5">
             <img src="/src/assets/images/banner/Banner_TX.jpg" className="h-auto md:h-[600px]" alt="" />
           </div>
         </div>
