@@ -33,6 +33,7 @@ export interface Order {
     totalPrice: number | { $numberDecimal: string };
     orderStatus: OrderStatus;
     orderDetail_id: Array<{
+        product_id: Product;
         _id: string;
         product: Product;
         quantity: number;

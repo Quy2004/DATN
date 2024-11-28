@@ -1,6 +1,7 @@
 import Order from "../models/OderModel.js";
 import Cart from "../models/Cart.js";
 import OrderDetail from "../models/OrderDetailModel.js";
+import axios from "axios";
 
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
@@ -71,11 +72,29 @@ export const createOrder = async (req, res) => {
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
-      orderStatus: "pending", // Đặt trạng thái đơn hàng là "pending" nếu thanh toán MoMo
+      paymentStatus: "unpaid",  // Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
 
     await order.save();
+    console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
+
+    // Giả sử sau 5 phút trạng thái đơn hàng không được thanh toán và cần hủy
+    setTimeout(async () => {
+      const foundOrder = await Order.findById(order._id);
+
+      if (foundOrder && foundOrder.paymentStatus === "failed") {
+        console.log(`Đơn hàng ${order._id} đang bị xóa...`);
+        
+        // Thực hiện xóa đơn hàng và chi tiết
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+        
+        console.log(`Đơn hàng ${order._id} đã bị xóa.`);
+      } else {
+        console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+      }
+    }, 5 * 60 * 1000); // 5 phút = 300.000ms
 
     // Create order details including size and topping
     const orderDetailPromises = cart.products.map(async (item) => {
@@ -83,11 +102,9 @@ export const createOrder = async (req, res) => {
         throw new Error("Thông tin sản phẩm không hợp lệ");
       }
 
-      // Lấy thông tin size và topping từ giỏ hàng
-      const product_size = item.product_sizes; // Size
-      const product_toppings = item.product_toppings; // Topping
+      const product_size = item.product_sizes;
+      const product_toppings = item.product_toppings;
 
-      // Tạo chi tiết đơn hàng
       const orderDetail = new OrderDetail({
         order_id: order._id,
         product_id: item.product._id,
@@ -114,17 +131,24 @@ export const createOrder = async (req, res) => {
     // Nếu phương thức thanh toán là MoMo
     if (paymentMethod === "momo") {
       try {
-        // Gửi yêu cầu thanh toán MoMo và nhận URL thanh toán
+        // Thông tin thanh toán MoMo
+        const paymentData = {
+          orderId: order._id.toString(),
+          amount: Math.round(order.totalPrice), // Làm tròn số tiền
+          orderInfo: `Thanh toán đơn hàng ${order._id}`,
+        };
+
+        // Gửi yêu cầu thanh toán MoMo
         const paymentResponse = await axios.post(
-          "http://localhost:8000/payments/momo/create-payment",
-          {
-            orderId: order._id, // Sử dụng orderId của đơn hàng đã tạo
-          }
+          "http://localhost:8000/payments/momo/create-payment", 
+          paymentData
         );
 
         // Lấy URL thanh toán từ phản hồi
         const { payUrl } = paymentResponse.data;
 
+        order.paymentStatus = "unpaid"; 
+        await order.save();
         return res.status(201).json({
           success: true,
           message: "Tạo đơn hàng thành công",
@@ -132,6 +156,10 @@ export const createOrder = async (req, res) => {
           payUrl, // Trả về URL thanh toán MoMo cho frontend
         });
       } catch (paymentError) {
+        // Nếu tạo thanh toán MoMo thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
         console.error(
           "Lỗi khi tạo thanh toán MoMo",
           paymentError.response?.data || paymentError.message
@@ -333,6 +361,53 @@ export const cancelOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Lỗi khi hủy đơn hàng.",
+      error: error.message,
+    });
+  }
+};
+// Get order By Id
+export const getOrderById = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: "orderId là bắt buộc",
+      });
+    }
+    const orders = await Order.find()
+      .populate({
+        path: "orderDetail_id",
+        populate: [
+          {
+            path: "product_id",
+            model: "Product",
+          },
+          {
+            path: "product_size",
+            model: "Size",
+          },
+          {
+            path: "product_toppings.topping_id",
+            model: "Topping",
+          },
+        ],
+      });
+      const order = orders?.filter(item => item._id = orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng nào",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: order, 
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy đơn hàng",
       error: error.message,
     });
   }

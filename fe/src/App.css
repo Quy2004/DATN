@@ -1,7 +1,7 @@
 #root {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 :root {
   --vh: 100%;
@@ -9,7 +9,7 @@
 body {
   opacity: 1 !important;
   filter: none !important;
-  height: calc(var(--vh) - 1px); 
+  height: calc(var(--vh) - 1px);
   overflow-y: auto;
   min-height: 100%;
   margin: 0;
@@ -77,17 +77,15 @@ header {
 }
 
 header.sticky {
-  position: fixed; 
+  position: fixed;
   top: 0;
-  width: 100%; 
-  z-index: 10; 
-  box-sizing: border-box; 
+  width: 100%;
+  z-index: 10;
+  box-sizing: border-box;
 }
 .no-scroll {
   overflow: hidden; /* Vô hiệu hóa cuộn */
 }
-
-
 
 header .sticky #main-menu p {
   color: #000;
@@ -126,4 +124,15 @@ header .sticky #main-menu p {
   /* Đảm bảo bo góc */
   @apply border-custom !important;
   /* Đảm bảo màu viền */
+}
+#chk:checked ~ .login {
+  transform: translateY(-500px);
+}
+
+#chk:checked ~ .login label {
+  transform: scale(1);
+}
+
+#chk:checked ~ .signup label {
+  transform: scale(1);
 }

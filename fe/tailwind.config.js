@@ -24,7 +24,8 @@ export default {
       },
       borderRadius: {
         lg: '0.4rem',  // Giữ nguyên giá trị rounded-lg hoặc tùy chỉnh nếu cần
-      },
+        'custum':'60%/10%'
+      }, 
     },
   },
   plugins: [

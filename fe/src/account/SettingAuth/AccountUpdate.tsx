@@ -41,7 +41,7 @@ const AccountUpdate = () => {
                 userName: userData.userName,
                 email: userData.email,
             });
-    
+
             // Kiểm tra nếu avatar có tồn tại và là blob URL, sau đó thay thế bằng URL thật
             const avatarUrl = userData.avatars[0]?.url;
             if (avatarUrl && avatarUrl.startsWith("blob:")) {
@@ -51,18 +51,18 @@ const AccountUpdate = () => {
             } else {
                 setAvatar(avatarUrl || ""); // Nếu URL hợp lệ, sử dụng trực tiếp
             }
-    
+
             // Cập nhật danh sách avatars
             setAvatarsList(
                 userData.avatars.length > 0
                     ? [
-                          {
-                              uid: "0",
-                              name: "avatar.jpg",
-                              status: "done",
-                              url: avatarUrl, // Đảm bảo URL là ổn định, không phải blob URL
-                          },
-                      ]
+                        {
+                            uid: "0",
+                            name: "avatar.jpg",
+                            status: "done",
+                            url: avatarUrl, // Đảm bảo URL là ổn định, không phải blob URL
+                        },
+                    ]
                     : []
             );
         }
@@ -84,7 +84,7 @@ const AccountUpdate = () => {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", "duan_totnghiep");
-    
+
         try {
             // Upload lên Cloudinary hoặc dịch vụ lưu trữ khác
             const res = await axios.post(
@@ -162,7 +162,7 @@ const AccountUpdate = () => {
     const firstAddress = addressData?.[0];
 
     return (
-        <div className="mt-20 mb-8 flex justify-center mx-auto">
+        <div className="mt-14 mb-8 flex justify-center mx-auto md:mt-20">
             <div className="w-[1200px] *:mx-auto">
                 <section className="md:w-1/2 bg-white rounded-lg shadow-2xl p-6">
                     <Form
@@ -176,14 +176,13 @@ const AccountUpdate = () => {
                         onFinish={onFinish}
                         form={form}
                     >
-                        <h1 className="text-2xl font-semibold mb-4">Cập nhật thông tin</h1>
-                            <div className="space-y-2 flex items-start gap-3 h-[230px]">
-                                <div className="flex-1">
-                                <label className="mb-2">Avatar</label>
-                                <Form.Item name="avatars">
+                        <h1 className="text-xl md:text-2xl font-semibold mb-4">Cập nhật thông tin</h1>
+                        <div className="space-y-2 h-[230px] md:flex md:items-start md:gap-3">
+                            <div className=" md:flex-1">
+                                <label className="hidden md:block mb-2">Avatar</label>
+                                <Form.Item name="avatars" className="flex justify-center md:flex-none md:justify-start">
                                     <Upload
                                         name="file"
-                                        
                                         listType="picture-card"
                                         multiple={false}
                                         fileList={avatarsList}
@@ -204,33 +203,33 @@ const AccountUpdate = () => {
                             </div>
                             <div className="flex-1">
                                 <label className="space-y-2 mb-4">Họ và tên</label>
-                                <Form.Item name="userName">
-                                    <Input placeholder="Nhập họ tên" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                                <Form.Item className="mt-1 md:mt-0" name="userName">
+                                    <Input placeholder="Nhập họ tên" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                                 </Form.Item>
                             </div>
                         </div>
-                        <label>Email</label>
-                        <Form.Item name="email">
+                        <label className="">Email</label>
+                        <Form.Item className="mt-1 md:mt-0" name="email">
                             <Input placeholder="Nhập email" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </Form.Item>
-                        <label>Địa chỉ</label>
-                        <Form.Item name="address">
+                        <label className="">Địa chỉ</label>
+                        <Form.Item className="mt-1 md:mt-0" name="address">
                             <Input placeholder="Nhập địa chỉ" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </Form.Item>
-                        <label>Tên người nhận</label>
-                        <Form.Item name="name">
+                        <label className="">Tên người nhận</label>
+                        <Form.Item className="mt-1 md:mt-0" name="name">
                             <Input placeholder="Nhập tên người nhận" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </Form.Item>
-                        <label>Số điện thoại người nhận</label>
-                        <Form.Item name="phone">
+                        <label className="">Số điện thoại người nhận</label>
+                        <Form.Item className="mt-1 md:mt-0" name="phone">
                             <Input placeholder="Nhập số điện thoại" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
                         </Form.Item>
                         <Button
-                                htmlType="submit"
-                                className="w-full h-12 my-7 p-3 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                            >
-                                Lưu thay đổi
-                            </Button>
+                            htmlType="submit"
+                            className="w-full h-12 my-7 p-3 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                        >
+                            Lưu thay đổi
+                        </Button>
                     </Form>
                 </section>
             </div>
