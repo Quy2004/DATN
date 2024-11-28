@@ -18,9 +18,9 @@ const OderHistory = () => {
   return (
     <>
       <section className="bg-gray-100">
-        <div className="containerAll mx-auto py-5 *:bg-white">
-          <div className="">
-            <ul className="flex shadow-md font-[500]">
+        <div className="containerAll mt-[60px] mx-auto py-5 *:bg-white">
+          <div className="overflow-x-auto scrollbar-hide">
+            <ul className="flex text-sm md:text-base text-gray-600 shadow-md font-medium  whitespace-nowrap">
               {tabs.map((tab) => (
                 <li
                   key={tab}
@@ -28,31 +28,34 @@ const OderHistory = () => {
                   className={`${activeTab === tab ? 'border-b-2 border-red-500 text-red-500' : ''
                     }`}
                 >
-                  <Link to="" className="block py-3 px-[35.3px] w-full h-full text-center">
+                  <Link to="" className="block py-3 px-2 md:px-[35.3px] w-full h-full text-center">
                     {tab}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="my-3">
+
+          <div className="hidden my-3 md:block">
             <input type="search" className="w-full bg-gray-200 border-[#ccc] rounded-sm text-sm  focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" name="" id="" placeholder="Bạn có thể tìm kiếm theo tên sản phẩm" />
           </div>
           <div className="shadow-md rounded-b-lg  border-[1px]">
             <div className="flex justify-end items-center m-3">
               <p className="text-sky-500 flex items-center">
-              <TooltipArrowButton />
+                <TooltipArrowButton />
               </p>
               <div className="mx-2 text-[#d3d3d3] font-thin">|</div>
-              <h2 className="text-sm text-red-600 font-medium">HOÀN THÀNH</h2>
+              <h2 className="text-xs md:text-sm text-red-600 font-medium">HOÀN THÀNH</h2>
             </div>
             <div className="flex justify-between mx-3 border-t-2 border-gray-200 pt-3 pb-10">
               <div className="flex ">
                 <img src="Ảnh.jpg" alt="Ảnh sp" className="w-20 h-20 border-[1px]" />
                 <div className="mx-3">
                   <p>Prodcuct Cart</p>
-                  <span className="flex gap-1">Phân Loại: <p className="text-gray-500">Size XL - Topping : A, B, C, D</p></span>
-                  <span>x1</span>
+                  <div className="flex justify-between">
+                    <p className="text-gray-500 md:text-base text-xs">Size XL - Topping : A, B, C, D</p>
+                    <p className="text-xs md:text-base">x1</p>
+                  </div>
                 </div>
               </div>
               <p className="text-sm">33.000 VND</p>
@@ -60,13 +63,13 @@ const OderHistory = () => {
           </div>
           <div className="*:flex *:justify-end gap-x-2 shadow-md border-2 py-6">
             <div className="gap-x-2">
-              <p>Thành tiền:</p>
+              <p className="text-xs md:text-base">Thành tiền:</p>
               <div className="flex text-red-500 mr-3">
-                <p className=" text-2xl">33.000</p><p className="text-xs">VND</p>
+                <p className="text-xs md:text-2xl">33.000 </p><p className="text-xs"> VND</p>
               </div>
             </div>
-            <div className="py-4 mx-3">
-              <Link to={``} className="bg-red-600 text-white w-40 rounded text-center py-2">Mua lại</Link>
+            <div className="py-1 md:py-4 mx-3">
+              <Link to={``} className="bg-red-600 text-white text-sm md:text-base px-2 md:w-40 rounded text-center py-1 md:py-2">Mua lại</Link>
               {/* <Link to={``}>Lịch sử đơn mua</Link> */}
             </div>
           </div>
@@ -128,8 +131,10 @@ const OderHistory = () => {
                   <img src="Ảnh.jpg" alt="Ảnh sp" className="w-20 h-20 border-[1px]" />
                   <div className="mx-3">
                     <p>Prodcuct Cart</p>
-                    <span className="flex gap-1">Phân Loại: <p className="text-gray-500">Size XL - Topping : A, B, C, D</p></span>
-                    <span>x1</span>
+                    <div className="flex justify-between">
+                      <p className="text-gray-500 md:text-base text-xs">Size XL - Topping : A, B, C, D</p>
+                      <p className="text-xs md:text-base">x1</p>
+                    </div>
                   </div>
                 </div>
                 <p className="text-sm">33.000 VND</p>
@@ -137,13 +142,13 @@ const OderHistory = () => {
             </div>
             <div className="*:flex *:justify-end gap-x-2 shadow-md border-2 py-6">
               <div className="gap-x-2">
-                <p>Thành tiền:</p>
+                <p className="text-xs md:text-base">Thành tiền:</p>
                 <div className="flex text-red-500 mr-3">
-                  <p className=" text-2xl">33.000</p><p className="text-xs">VND</p>
+                  <p className="text-xs md:text-2xl">33.000 </p><p className="text-xs"> VND</p>
                 </div>
               </div>
               <div className="py-4 mx-3">
-                <Link to={``} className="bg-red-600 text-white w-40 rounded text-center py-2">Hủy đơn hàng</Link>
+                <Link to={``} className="bg-red-600 text-white text-sm md:text-base px-2 md:w-40 rounded text-center py-1 md:py-2">Hủy đơn hàng</Link>
                 {/* <Link to={``}>Lịch sử đơn mua</Link> */}
               </div>
             </div>
