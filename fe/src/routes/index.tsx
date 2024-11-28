@@ -53,7 +53,11 @@ import Tracking from "../account/SettingAuth/Tracking";
 import AccountUpdate from "../account/SettingAuth/AccountUpdate";
 import OderHistory from "../account/SettingAuth/OderHistory";
 import OrderSuccess from "../pages/OrderSuccess/OderSuccess";
+
+import SettingAccount from "../account/SettingAuth/SettingAccount";
+
 import OrderErr from "../pages/OrderError/OrderError";
+
 
 const Router = () => {
   return (
@@ -85,6 +89,7 @@ const Router = () => {
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
+          <Route path="setting" element={<SettingAccount />} />
           <Route path="order-tracking/:order_id" element={<Tracking />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
