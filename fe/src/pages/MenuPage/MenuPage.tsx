@@ -170,21 +170,21 @@ const MenuPage: React.FC = () => {
                     </form>
                 </div>
                 <div className="mx-4 md:mx-0 mt-4 md:mt-0">
-                    <h2 className="text-2xl font-semibold mb-4">{activeCategoryName}</h2> {/* Tên danh mục */}
+                    <h2 className="text-xl font-medium md:text-2xl md:font-semibold mb-4">{activeCategoryName}</h2> {/* Tên danh mục */}
                     {loadingProducts ? (
                         <div>Đang tải sản phẩm...</div> // Hiển thị trạng thái đang tải sản phẩm
                     ) : (
-                        <div className="grid grid-cols-3 gap-y-8">
+                        <div className="flex flex-wrap justify-between gap-y-4 md:grid md:grid-cols-3 md:gap-y-8">
                             {products && products.length > 0 ? (
                                 products.map((product: Product) => (
                                     <div key={product._id} className="">
                                         <Link to={`/detail/${product._id}`}>
-                                            <img src={`${product.image}`} className="w-[250px] h-[250px] border object-cover rounded-xl" alt={product.name} />
+                                            <img src={`${product.image}`} className="w-[190px] h-[190px] md:w-[250px] md:h-[250px] border object-cover rounded-xl" alt={product.name} />
                                         </Link>
                                         <Link to={`/detail/${product._id}`}>
-                                            <h3 className="mt-2 text-md font-medium">{product.name}</h3>
+                                            <h3 className="mt-2 text-sm md:text-base font-medium">{product.name}</h3>
                                         </Link>
-                                        <p className="text-gray-500 text-md">{formatPrice(product.price)} đ</p>
+                                        <p className="text-gray-500 md:text-base">{formatPrice(product.price)} đ</p>
                                     </div>
                                 ))
                             ) : (

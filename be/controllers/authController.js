@@ -2,7 +2,8 @@ import User from '../models/UserModel';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
-
+import nodemailer from 'nodemailer';
+import crypto from 'crypto-browserify';
 // Đăng ký người dùng
 export const register = async (req, res) => {
 
@@ -79,26 +80,39 @@ export const login = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
   }
 };
-
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "cuongbaqph35403@fpt.edu.vn",
+    pass: "fvbt fwhb vzfx nogu",
+  },
+});
 // Quên mật khẩu
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
-
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email : email });
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({ message: "Email không tồn tại trong hệ thống" });
     }
-
-    // Tạo token đặt lại mật khẩu, có thời hạn 15 phút
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "khoa-bi-mat", { expiresIn: "15m" });
-
+    const token = crypto.randomBytes(20).toString("hex");
+  
     // Lưu token vào tài khoản người dùng để xác minh trong resetPassword
-    user.resetToken = resetToken;
+    user.resetToken = token;
     user.resetTokenExpires = Date.now() + 15 * 60 * 1000; // 15 phút
     await user.save();
 
-    res.status(StatusCodes.OK).json({ message: "Đã tạo token đặt lại mật khẩu, hãy sử dụng token này để đặt lại mật khẩu của bạn.", resetToken });
+    const mailOptions = {
+      from: "cuongbaqph35403@fpt.edu.vn",
+      to: email,
+      subject: "Reset mật khẩu",
+      text: `Bạn nhận được email này vì bạn (hoặc ai đó) yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n\n
+        Vui lòng nhấp vào liên kết dưới đây hoặc sao chép và dán vào trình duyệt của bạn để hoàn tất quy trình:\n\n
+        http://localhost:5173/reset-password/${token}\n\n
+        Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này và mật khẩu của bạn sẽ không thay đổi.\n`,
+    };
+    await transporter.sendMail(mailOptions);
+    res.status(StatusCodes.OK).json({ message: "Email đặt lại mật khẩu đã được gửi!." });
   } catch (error) {
     console.error(error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
@@ -110,9 +124,7 @@ export const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "khoa-bi-mat");
-    const user = await User.findOne({ _id: decoded.id, resetToken: token, resetTokenExpires: { $gt: Date.now() } });
-
+    const user = await User.findOne({resetToken: token, resetTokenExpires: { $gt: Date.now() } });
     if (!user) {
       return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
@@ -122,7 +134,6 @@ export const resetPassword = async (req, res) => {
     user.resetToken = undefined;
     user.resetTokenExpires = undefined;
     await user.save();
-
     res.status(StatusCodes.OK).json({ message: "Đặt lại mật khẩu thành công!" });
   } catch (error) {
     console.error(error);

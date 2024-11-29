@@ -23,7 +23,8 @@ class MomoController {
       const requestId = `${partnerCode}${Date.now()}`;
       const orderInfo = `Thanh toán đơn hàng ${order.orderNumber}`;
       const redirectUrl = "http://localhost:5173/oder-success"; 
-      const ipnUrl = "https://callback.url/notify"; // URL nhận thông báo từ MoMo
+      const cancelUrl = "http://localhost:5173/order-error"; 
+      const ipnUrl = "https://6051-113-189-171-22.ngrok-free.app/payments/momo/notify"; 
       const amount = order.totalPrice.toString(); // Chuyển tổng giá trị đơn hàng thành chuỗi
       const requestType = "captureWallet";
       const extraData = ""; // Dữ liệu bổ sung (tuỳ chọn)
@@ -48,6 +49,7 @@ class MomoController {
         orderId: order._id.toString(),
         orderInfo,
         redirectUrl,
+        cancelUrl ,
         ipnUrl,
         extraData,
         requestType,
@@ -82,52 +84,85 @@ class MomoController {
 
   // Xử lý IPN (Thông báo thanh toán từ MoMo)
   handleMomoIPN = async (req, res) => {
-    const { orderId, amount, signature, resultCode } = req.body;
+    const { orderId, resultCode } = req.body;
 
     try {
-      // Kiểm tra xem các tham số có hợp lệ không
-      if (!orderId || !amount || !signature || !resultCode) {
-        return res.status(400).json({ message: "Thiếu tham số yêu cầu" });
-      }
+        // Log thông tin nhận được
+        console.log('Received IPN Data:', { 
+            orderId, 
+            resultCode,
+        });
 
-      // Khóa bí mật dùng để kiểm tra chữ ký
-      const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+        // Kiểm tra tính hợp lệ của orderId
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ 
+                message: "ID đơn hàng không hợp lệ" 
+            });
+        }
 
-      // Tạo chuỗi raw signature từ các tham số nhận được
-      const rawSignature = `amount=${amount}&orderId=${orderId}&resultCode=${resultCode}`;
+        // Xác định trạng thái paymentStatus dựa trên resultCode
+        const newPaymentStatus = 
+            resultCode === 0 
+                ? "paid"   // Thanh toán thành công
+                : "failed";   // Thanh toán thất bại
 
-      // Tạo chữ ký từ chuỗi raw signature
-      const generatedSignature = crypto
-        .createHmac("sha256", secretKey)
-        .update(rawSignature)
-        .digest("hex");
+        // Cập nhật chỉ paymentStatus của đơn hàng
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId, 
+            { 
+                paymentStatus: newPaymentStatus 
+            }, 
+            { 
+                new: true,           // Trả về document mới
+                runValidators: true  // Chạy validators
+            }
+        );
 
-      console.log("Generated Signature:", generatedSignature); // Xem chữ ký đã tạo
+        // Kiểm tra xem đơn hàng có tồn tại không
+        if (!updatedOrder) {
+            return res.status(404).json({ 
+                message: "Không tìm thấy đơn hàng" 
+            });
+        }
 
-      // Kiểm tra chữ ký
-      if (generatedSignature !== signature) {
-        return res.status(400).json({ message: "Chữ ký không hợp lệ" });
-      }
+        // Log kết quả cập nhật
+        console.log('Updated Order Payment Status:', {
+            orderId: updatedOrder._id,
+            newPaymentStatus: updatedOrder.paymentStatus
+        });
+        if (resultCode !== 0) {
+            return res.status(200).json({
+                message: "Thanh toán thất bại, đơn hàng đã bị hủy",
+                 cancelUrl : "http://localhost:5173/order-error"
+            });
+        }
 
-      // Xử lý kết quả thanh toán
-      const orderUpdate =
-        resultCode === 0
-          ? { orderStatus: "confirmed" } // Thanh toán thành công
-          : { orderStatus: "canceled" }; // Thanh toán thất bại
+        // Trả về phản hồi thành công
+        return res.status(200).json({
+            message: resultCode === 0 
+                ? "Cập nhật trạng thái thanh toán đơn hàng thành công" 
+                : "Thanh toán đơn hàng thất bại",
+            order: {
+                id: updatedOrder._id,
+                paymentStatus: updatedOrder.paymentStatus
+            }
+        });
 
-      // Cập nhật trạng thái đơn hàng
-      await Order.findByIdAndUpdate(orderId, orderUpdate);
-
-      // Trả kết quả xác minh
-    return res.status(200).json({
-        message: resultCode === "0" ? "Thanh toán thành công" : "Thanh toán thất bại",
-       
-      });
     } catch (error) {
-      console.error("Lỗi trong xử lý MoMo IPN:", error);
-      return res.status(500).json({ message: "Lỗi xử lý thông báo từ MoMo" });
+        // Ghi log lỗi chi tiết
+        console.error('Lỗi cập nhật trạng thái thanh toán đơn hàng:', {
+            message: error.message,
+            stack: error.stack
+        });
+
+        // Trả về thông báo lỗi
+        return res.status(500).json({ 
+            message: "Lỗi xử lý cập nhật trạng thái thanh toán đơn hàng",
+            errorDetails: error.message 
+        });
     }
-  };
+};
+
 }
 
 export default MomoController;
