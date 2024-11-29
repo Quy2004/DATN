@@ -110,7 +110,43 @@ const Checkout: React.FC = () => {
     }
     }
   };
-
+  const handleZaloPayPayment = async (orderData: any) => {
+    try {
+      // Tạo đơn hàng trước
+      const orderResponse = await instance.post("orders", {
+        ...orderData,
+      });
+      console.log("Order API Response:", orderResponse.data); // Kiểm tra toàn bộ data trong response
+  
+      // Lấy payUrl từ phản hồi backend
+      const { payUrl } = orderResponse.data;
+  
+      // Kiểm tra URL thanh toán từ ZaloPay
+      if (!payUrl) {
+        Swal.fire({
+          icon: "warning",
+          title: "Lỗi",
+          text: "Không nhận được URL thanh toán từ ZaloPay. Vui lòng thử lại sau.",
+        });
+        return;
+      }
+  
+      // Chuyển hướng người dùng tới trang thanh toán ZaloPay
+      window.location.href = payUrl;
+    } catch (error: any) {
+      console.error("Lỗi thanh toán:", error);
+  
+      Swal.fire({
+        icon: "error",
+        title: "Thanh toán thất bại",
+        text:
+          error.response?.data?.message ||
+          "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
+      });
+  
+      throw error;
+    }
+  };
   const onSubmit = async (data: Form) => {
     // Kiểm tra phương thức thanh toán
     if (!paymentMethod) {
@@ -148,6 +184,9 @@ const Checkout: React.FC = () => {
         case "momo":
           await handleMomoPayment(orderData);
           break;
+          case "zalopay":
+            await handleZaloPayPayment(orderData);
+            break;
           case "cash on delivery":
             try {
               // Gửi yêu cầu lưu đơn hàng vào cơ sở dữ liệu
@@ -180,7 +219,11 @@ const Checkout: React.FC = () => {
     setPaymentMethod("momo");
     setIsBankTransferSelected(false);
   };
-
+// Handler chọn ZaloPay
+const handleZaloPayClick = () => {
+  setPaymentMethod("zalopay");
+  setIsBankTransferSelected(false);
+};
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
   }
@@ -359,7 +402,7 @@ const Checkout: React.FC = () => {
                       />
                       <div className="mt-2 text-center font-medium">Momo</div>
                     </button>
-                    <button className="rounded-md">
+                    <button className="rounded-md" onClick={handleZaloPayClick}>
                       <img
                         src="src/pages/CheckOutPage/ImageBanking/ZaloPay.png"
                         alt="ZaloPay"

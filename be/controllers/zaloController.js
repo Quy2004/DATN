@@ -32,7 +32,7 @@ class zaloController {
       }
     const embed_data = {
         //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-        redirecturl: 'https://phongthuytaman.com',
+        redirecturl: 'http://localhost:5173/oder-success',
       };
     
       const items = [];
@@ -48,7 +48,7 @@ class zaloController {
         amount: orderDetail.totalPrice.toString(),
         //khi thanh toán xong, zalopay server sẽ POST đến url này để thông báo cho server của mình
         //Chú ý: cần dùng ngrok để public url thì Zalopay Server mới call đến được
-        callback_url: 'https://b074-1-53-37-194.ngrok-free.app/callback',
+        callback_url: 'http://localhost:8000/payments/zalo/callback',
         description: `Lazada - Payment for the  #${transID}`,
         bank_code: '',
       };
@@ -70,13 +70,32 @@ class zaloController {
         order.item;
       order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
     
-      try {
-        const result = await axios.post(config.endpoint, null, { params: order });
-    
-        return res.status(200).json(result.data);
-      } catch (error) {
-        console.log(error);
-      }
+     try {
+  // Gửi yêu cầu đến ZaloPay API để tạo giao dịch
+  const result = await axios.post(config.endpoint, null, { params: order });
+
+  // Kiểm tra nếu kết quả trả về có chứa 'payUrl'
+  if (result.data && result.data.order_url) {
+    // Trả về URL thanh toán ZaloPay
+    return res.status(200).json({
+      message: "Tạo URL thanh toán thành công",
+      payUrl: result.data.order_url, // URL thanh toán ZaloPay từ kết quả trả về
+    });
+  } else {
+    // Nếu không có payUrl trong kết quả trả về, trả về thông báo lỗi
+    return res.status(500).json({
+      message: "Không nhận được payUrl từ ZaloPay API",
+    });
+  }
+
+} catch (error) {
+  console.log("Lỗi khi gửi yêu cầu đến ZaloPay API: ", error);
+  return res.status(500).json({
+    message: "Đã xảy ra lỗi khi tạo giao dịch",
+    error: error.message, // Đưa thông tin lỗi vào response để dễ debug
+  });
+}
+
   }
 
   async callback(req, res) {

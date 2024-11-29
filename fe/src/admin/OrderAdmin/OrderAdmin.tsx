@@ -19,7 +19,7 @@ import { useState } from "react";
 import { Order } from "../../types/order";
 import { ProductSize, ProductTopping } from "../../types/product";
 import ExportButton from "./components/ExportButton";
-import { AimOutlined, CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined } from "@ant-design/icons";
 
 type PriceType = number | { $numberDecimal: string };
 // Kiểu dữ liệu
@@ -68,7 +68,6 @@ const OrderManagerPage = () => {
     data: orders,
     isLoading,
     isError,
-    error,
   } = useQuery<Order[]>({
     queryKey: ["orders", storedUserId],
     queryFn: async () => {
@@ -338,6 +337,10 @@ const OrderManagerPage = () => {
             return "Chuyển Khoản";
           case "cash on delivery":
             return "Thanh Toán Khi Nhận Hàng";
+          case "momo":
+            return "Momo";
+          case "zalopay":
+            return "ZaloPay";
           default:
             return method;
         }
@@ -402,6 +405,19 @@ const OrderManagerPage = () => {
         return "Thanh Toán Khi Nhận Hàng";
       case "momo":
         return "Momo";
+      case "zalopay":
+        return "ZaloPay";
+    }
+  };
+
+  const paymentStatusDisplay = (status: string) => {
+    switch (status) {
+      case "unpaid":
+        return "Chưa Thanh Toán";
+      case "paid":
+        return "Đã Thanh Toán";
+      case "failed":
+        return "Thanh Toán Thất Bại";
     }
   };
 
@@ -620,55 +636,62 @@ const OrderManagerPage = () => {
       >
         {selectedOrder && (
           <>
-            <div className="p-6 bg-white shadow-md rounded-md mb-6 transition duration-300 hover:shadow-lg hover:bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-600">
+            <div className="p-6 bg-white shadow-lg rounded-lg mb-6 transition-transform transform hover:scale-105 hover:shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cột 1 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
                     Mã đơn hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       #{selectedOrder.orderNumber}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
-                    Ngày đặt hàng:
-                    <span className="ml-1 font-semibold text-gray-800">
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày đặt hàng:{" "}
+                    <span className="font-semibold text-gray-900">
                       {new Date(selectedOrder.createdAt).toLocaleString(
                         "vi-VN"
                       )}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
-                    Ngày cập nhật:
-                    <span className="ml-1 font-semibold text-gray-800">
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày cập nhật:{" "}
+                    <span className="font-semibold text-gray-900">
                       {new Date(selectedOrder.updatedAt).toLocaleString(
                         "vi-VN"
                       )}
                     </span>
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-600">
+
+                {/* Cột 2 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
                     Tên khách hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {selectedOrder.customerInfo?.name || "N/A"}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     Email:{" "}
-                    <span className="font-semibold text-gray-800">
-                      {selectedOrder.customerInfo?.email}
+                    <span className="font-semibold text-gray-900">
+                      {selectedOrder.customerInfo?.email || "N/A"}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     Tổng đơn hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {formatPrice(selectedOrder.totalPrice)}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     PTTT:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {paymentMethodDisplay(selectedOrder.paymentMethod)}
+                    </span>{" "}
+                    - Trạng thái:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {paymentStatusDisplay(selectedOrder.paymentStatus)}
                     </span>
                   </p>
                 </div>
