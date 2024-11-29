@@ -171,7 +171,47 @@ export const createOrder = async (req, res) => {
         });
       }
     }
+// Nếu phương thức thanh toán là ZaloPay
+if (paymentMethod === "zalopay") {
+  try {
+    // Thông tin thanh toán ZaloPay
+    const paymentData = {
+      orderId: order._id.toString(),
+      amount: Math.round(order.totalPrice), // Làm tròn số tiền
+      orderInfo: `Thanh toán đơn hàng ${order._id}`,
+    };
 
+    // Gửi yêu cầu thanh toán ZaloPay
+    const paymentResponse = await axios.post(
+      "http://localhost:8000/payments/zalo/create-payment", 
+      paymentData
+    );
+
+    // Lấy URL thanh toán từ phản hồi
+    const { payUrl } = paymentResponse.data;
+
+    return res.status(201).json({
+      success: true,
+      message: "Tạo đơn hàng thành công",
+      data: order,
+      payUrl, // Trả về URL thanh toán ZaloPay cho frontend
+    });
+  } catch (paymentError) {
+    // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
+    await Order.findByIdAndDelete(order._id);
+    await OrderDetail.deleteMany({ order_id: order._id });
+
+    console.error(
+      "Lỗi khi tạo thanh toán ZaloPay",
+      paymentError.response?.data || paymentError.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi tạo thanh toán ZaloPay",
+      error: paymentError.message,
+    });
+  }
+}
     // Trả về kết quả tạo đơn hàng nếu không phải MoMo
     return res.status(201).json({
       success: true,
