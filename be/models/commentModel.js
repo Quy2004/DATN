@@ -46,11 +46,6 @@ const CommentSchema = new Schema(
   }
 );
 
-// Middleware để ẩn các bản ghi có isDeleted: true
-CommentSchema.pre(/^find/, function (next) {
-  this.where({ isDeleted: false }); // Chỉ tìm các bản ghi chưa bị xóa
-  next();
-});
 
 
 const Comment = mongoose.model("Comment", CommentSchema);
