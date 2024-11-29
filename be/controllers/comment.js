@@ -31,7 +31,7 @@ class CommentController {
 		  const comments = await Comment.find(query)
 			.populate("parent_id", "content") // Lấy thông tin bình luận cha
 			.populate("product_id", "_id name") // Lấy thông tin sản phẩm
-			.populate("user_id", "_id userName") // Lấy thông tin người dùng
+			.populate("user_id", "_id userName avatars") // Lấy thông tin người dùng
 			.skip(skip)
 			.limit(pageLimit)
 			.lean();
@@ -89,6 +89,36 @@ class CommentController {
 		  // Kiểm tra nếu không tìm thấy bình luận nào
 		  if (comments.length === 0) {
 			return res.status(404).json({ message: "No comments found for this parent_id" });
+		  }
+	  
+		  // Trả về danh sách bình luận
+		  return res.status(200).json(comments);
+		} catch (error) {
+		  console.error(error);
+		  return res.status(500).json({ message: "Server error", error });
+		}
+	  }
+	  
+	//   hiển thị theo sản phẩm
+	  async getCommentProduct(req, res) {
+		try {
+		  const { product_id } = req.params; // Lấy product_id từ URL params
+	  
+		  // Kiểm tra nếu không có product_id trong request
+		  if (!product_id) {
+			return res.status(400).json({ message: "product_id is required" });
+		  }
+	  
+		  // Tìm tất cả các bình luận có product_id tương ứng
+		  const comments = await Comment.find({ product_id })
+		  .populate("parent_id", "content") // Lấy thông tin bình luận cha
+		  .populate("product_id", "_id name") // Lấy thông tin sản phẩm
+		  .populate("user_id", "_id userName avatars") // Lấy thông tin người dùng
+			.sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo giảm dần (tùy chọn)
+	  
+		  // Kiểm tra nếu không tìm thấy bình luận nào
+		  if (comments.length === 0) {
+			return res.status(404).json({ message: "No comments found for this product_id" });
 		  }
 	  
 		  // Trả về danh sách bình luận
@@ -267,6 +297,28 @@ class CommentController {
         }
     }
 
+	// xóa vĩnh viễn
+	async deleteComment(req, res) {
+		try {
+		  // Lấy commentId từ params trong request
+		  const { id } = req.params;
+	  
+		  // Tìm và xóa bình luận theo ID
+		  const comment = await Comment.findByIdAndDelete(id);
+	  
+		  // Kiểm tra nếu không tìm thấy comment
+		  if (!comment) {
+			return res.status(404).json({ message: 'Bình luận không tồn tại' });
+		  }
+	  
+		  // Trả về thông báo thành công
+		  res.status(200).json({ message: 'Bình luận đã được xóa thành công' });
+		} catch (error) {
+		  // Xử lý lỗi và trả về thông báo lỗi
+		  res.status(400).json({ message: error.message });
+		}
+	  }
+	  
 
 
 
