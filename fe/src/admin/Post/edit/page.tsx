@@ -42,7 +42,7 @@ const PostUpdatePage: React.FC = () => {
         form.setFieldsValue({
           title: postData.title,
           excerpt: postData.excerpt,
-          categoryPost: postData.categoryPost,
+          categoryPost: postData.categoryPost.title,
           content: postData.content,
         });
         setImageUrl(postData.imagePost);
@@ -198,25 +198,7 @@ const PostUpdatePage: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
-          {/* <Form.Item
-            label="Ảnh bài viết"
-            name="imagePost"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-          >
-            <Upload
-              name="file"
-              listType="picture-card"
-              customRequest={handleUpload}
-              onRemove={handleRemoveImage}
-              maxCount={1}
-            >
-              <Button icon={<FileImageOutlined />}></Button>
-            </Upload>
-            {imageUrl && (
-              <img src={imageUrl} alt="post" className="w-[200px] mt-2.5" />
-            )}
-          </Form.Item> */}
+         
           <Form.Item
             label="Ảnh bài viết"
             name="imagePost"
