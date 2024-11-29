@@ -40,7 +40,10 @@ class PostController {
   async getPostDetail(req, res) {
     try {
       const { id } = req.params;
-      const post = await Post.findOne({ _id: id, isDeleted: false });
+      // Sử dụng populate để lấy tên danh mục từ bài viết
+      const post = await Post.findOne({ _id: id, isDeleted: false }).populate(
+        "categoryPost"
+      );
 
       if (!post) {
         return res.status(404).json({ error: "Bài viết không tồn tại." });
@@ -184,6 +187,34 @@ class PostController {
         .json({ message: "Bài viết đã được khôi phục thành công." });
     } catch (error) {
       res.status(500).json({ error: "Lỗi khi khôi phục bài viết" });
+    }
+  }
+  async getRelatedPosts(req, res) {
+    try {
+      const { id } = req.params; // ID bài viết hiện tại
+      const { limit = 5 } = req.query; // Số lượng bài viết liên quan muốn lấy
+
+      // Lấy bài viết hiện tại
+      const post = await Post.findOne({ _id: id, isDeleted: false });
+      if (!post) {
+        return res.status(404).json({ error: "Bài viết không tồn tại." });
+      }
+
+      // Tìm bài viết liên quan cùng categoryPost, loại trừ bài viết hiện tại
+      const relatedPosts = await Post.find({
+        categoryPost: post.categoryPost,
+        _id: { $ne: id }, // Loại trừ bài viết hiện tại
+        isDeleted: false,
+      })
+        .sort({ createdAt: -1 }) // Sắp xếp bài viết mới nhất
+        .limit(parseInt(limit));
+
+      res.status(200).json({
+        message: "Lấy bài viết liên quan thành công!",
+        data: relatedPosts,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Lỗi khi lấy bài viết liên quan" });
     }
   }
 }
