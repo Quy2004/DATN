@@ -77,7 +77,7 @@ const Checkout: React.FC = () => {
       const orderResponse = await instance.post("orders", {
         ...orderData,
       });
-      console.log("Order API Response:", orderResponse.data); // Kiểm tra toàn bộ data trong response
+      console.log("Order API Response:", orderResponse.data); 
 
       // Lấy payUrl từ phản hồi backend
       const { payUrl } = orderResponse.data;
@@ -104,8 +104,10 @@ const Checkout: React.FC = () => {
           error.response?.data?.message ||
           "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
       });
-
-      throw error;
+     // Chuyển hướng người dùng đến trang hủy đơn nếu thanh toán thất bại
+    if (error.response?.data?.cancelUrl) {
+      window.location.href = error.response.data.cancelUrl; // Dùng URL từ backend
+    }
     }
   };
 
@@ -136,6 +138,7 @@ const Checkout: React.FC = () => {
       paymentMethod: paymentMethod,
       note: data.note,
       totalAmount: getTotalPrice(),
+      paymentStatus: "unpaid",
     };
 
     try {
