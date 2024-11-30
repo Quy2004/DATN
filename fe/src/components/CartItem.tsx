@@ -78,14 +78,7 @@ const CartItem: React.FC<{
       {item && (
         <>
           {/* Checkbox */}
-          <div className="w-1/12">
-            <input
-              type="checkbox"
-              className="w-4 h-4 accent-gray-500 rounded-sm"
-              checked={isSelected}
-              onChange={(e) => handleCheckboxChange(e.target.checked)}
-            />
-          </div>
+         
 
           {/* Product Image */}
           <div className="w-1/5">
@@ -101,12 +94,12 @@ const CartItem: React.FC<{
           </div>
 
           {/* Quantity */}
-          <div>
+          <div >
             <span>{quantity}</span>
           </div>
 
           {/* Delete Button */}
-          <div className="w-1/5">
+          {/* <div className="w-1/5 ml-2">
             <button
               className="border p-2 rounded-lg bg-gray-200 hover:bg-gray-400"
               onClick={deleteSelectedItems}
@@ -126,7 +119,7 @@ const CartItem: React.FC<{
                 />
               </svg>
             </button>
-          </div>
+          </div> */}
         </>
       )}
     </div>
