@@ -1,6 +1,58 @@
-import React from "react";
-
 const BillPage = () => {
+    const numberToWords = (num: number) => {
+        const ones = [
+            "", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám", "Chín"
+        ];
+        const tens = [
+            "", "Mười", "Hai mươi", "Ba mươi", "Bốn mươi", "Năm mươi", "Sáu mươi", "Bảy mươi", "Tám mươi", "Chín mươi"
+        ];
+        const units = [
+            "", "nghìn", "triệu", "tỷ"
+        ];
+
+        if (num === 0) return "Không đồng";
+
+        const words = [];
+        let unitIndex = 0;
+
+        // Tách số thành các nhóm ba chữ số
+        while (num > 0) {
+            let part = num % 1000;
+            if (part > 0) {
+                const partWords = [];
+                const hundreds = Math.floor(part / 100);
+                part = part % 100;
+                const ten = Math.floor(part / 10);
+                const one = part % 10;
+
+                if (hundreds > 0) {
+                    partWords.push(ones[hundreds] + " trăm");
+                }
+
+                if (ten > 1) {
+                    partWords.push(tens[ten]);
+                } else if (ten === 1) {
+                    partWords.push("Mười");
+                }
+
+                if (one > 0) {
+                    if (ten > 1 || ten === 0) {
+                        partWords.push(ones[one]);
+                    } else {
+                        partWords.push("một");
+                    }
+                }
+
+                words.unshift(partWords.join(" ").trim() + " " + units[unitIndex]);
+            }
+
+            num = Math.floor(num / 1000);
+            unitIndex++;
+        }
+
+        return words.join(" ").trim() + " đồng";
+    };
+
     // Lấy ngày hiện tại
     const today = new Date();
     const formattedDate = today.toLocaleDateString("vi-VN", {
@@ -17,18 +69,50 @@ const BillPage = () => {
 
     const categorizedItems = {
         "Cà phê": [
-            { name: "Cà phê đen", quantity: 2, unitPrice: 30000, total: 60000 },
-            { name: "Cà phê nâu", quantity: 1, unitPrice: 89000, total: 89000 },
+            {
+                name: "Cà phê đen",
+                quantity: 2,
+                unitPrice: 20000,
+                total: 40000,
+                size: "S",
+                toppings: ["Sữa", "Đá"]
+            },
+            {
+                name: "Cà phê nâu",
+                quantity: 1,
+                unitPrice: 70000,
+                total: 70000,
+                size: "L",
+                toppings: ["Sữa đặc"]
+            },
         ],
         "Trà": [
-            { name: "Trà đào cam sả", quantity: 3, unitPrice: 40000, total: 120000 },
-            { name: "Hồng trà", quantity: 1, unitPrice: 50000, total: 50000 },
+            {
+                name: "Trà đào cam sả",
+                quantity: 3,
+                unitPrice: 40000,
+                total: 120000,
+                size: "S",
+                toppings: ["Đá", "Chanh"]
+            },
+            {
+                name: "Hồng trà",
+                quantity: 1,
+                unitPrice: 50000,
+                total: 50000,
+                size: "Lớn",
+                toppings: ["Đá"]
+            },
         ],
     };
 
+    // Tính tổng cộng
     const totalAmount = Object.values(categorizedItems)
         .flat()
         .reduce((sum, item) => sum + item.total, 0);
+
+    // Sử dụng hàm `numberToWords` để chuyển số tiền thành văn bản
+    const totalAmountInWords = numberToWords(totalAmount);
 
     return (
         <div className="containerAll mt-16 bg-slate-100 max-w-md mx-auto border p-4 text-sm font-sans first-line md:mt-20 md:mb-4">
@@ -38,13 +122,12 @@ const BillPage = () => {
                 alt="Logo"
             />
             <p className="hidden text-center text-gray-600 md:block">Liên hệ: 0987777777</p>
-            <h3 className="text-center font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN BÁN HÀNG</h3>
+            <h3 className="text-center font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN THANH TOÁN</h3>
             <p className="text-center text-gray-600 md:hidden">Liên hệ: 0987777777</p>
 
             <div className="mt-4 text-gray-800">
                 <p>Ngày: <span className="font-semibold">{formattedDate}</span></p>
                 <p>Mã đơn hàng: <span className="font-semibold">123</span></p>
-                <p>Thu ngân: <span className="font-semibold">Đinh Hải Hòa</span></p>
                 <p>Thời gian: <span className="font-semibold">{formattedTime}</span></p>
             </div>
 
@@ -57,23 +140,30 @@ const BillPage = () => {
             {/* Phân loại mặt hàng */}
             <div className="mt-4">
                 {Object.entries(categorizedItems).map(([category, items]) => (
-                    <div key={category} className="mb-4">
-                        <table className="w-full mt-2 text-gray-800 border-collapse">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2 w-1/2">{category}</th>
-                                    <th className="text-center py-2">SL</th>
-                                    <th className="text-right py-2">Đơn giá</th>
-                                    <th className="text-right py-2">Thành tiền</th>
+                    <div key={category} className="mb-6">
+                        <div className="text-lg font-semibold text-gray-700 mb-2">{category}</div>
+                        <table className="w-full text-gray-800 border-collapse shadow-md rounded-lg overflow-hidden">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Mặt hàng</th>
+                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">SL</th>
+                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Size</th>
+                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Topping</th>
+                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Đơn giá</th>
+                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Thành tiền</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="text-sm">
                                 {items.map((item, index) => (
-                                    <tr key={index} className="border-b last:border-none">
-                                        <td className="py-1">{item.name}</td>
-                                        <td className="text-center py-1">{item.quantity}</td>
-                                        <td className="text-right py-1">{item.unitPrice.toLocaleString()}</td>
-                                        <td className="text-right py-1">{item.total.toLocaleString()}</td>
+                                    <tr key={index} className="border-b hover:bg-gray-50">
+                                        <td className="py-3 px-4">{item.name}</td>
+                                        <td className="text-center py-3 px-4">{item.quantity}</td>
+                                        <td className="text-center py-3 px-4">{item.size}</td>
+                                        <td className="text-center py-3 px-4">
+                                            {item.toppings.join(", ")}
+                                        </td>
+                                        <td className="text-right py-3 px-4">{item.unitPrice.toLocaleString()}</td>
+                                        <td className="text-right py-3 px-4">{item.total.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -84,7 +174,7 @@ const BillPage = () => {
 
             <div className="mt-4 text-right text-gray-800">
                 <p className="font-bold">Tổng cộng: <span className="text-xl text-black">{totalAmount.toLocaleString()} VND</span></p>
-                <p className="italic text-gray-600">(Ba trăm mười chín nghìn đồng)</p>
+                <p className="italic text-gray-600">({totalAmountInWords})</p>
             </div>
             <p className="text-center mt-4 text-gray-800 font-medium">
                 Xin cảm ơn Quý khách! / Thank you!
