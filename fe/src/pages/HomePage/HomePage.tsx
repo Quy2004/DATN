@@ -66,7 +66,20 @@ const HomePage: React.FC = () => {
   }, [currentIndex, images.length]);
 
   //showProduct
+  const fetchData = async () => {
+    try {
+      const [productsResponse] = await Promise.all([
+        instance.get("/products"),
+      ]);
+      setProducts(productsResponse.data.data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
   // const [loading, setLoading] = useState(true); // State kiểm soát việc hiển thị trạng thái loading
   const dataLocal = localStorage.getItem("W209_USER_INFO");
   const [dataLocalStorage, setDataLocalStorage] = useState("");
@@ -483,7 +496,7 @@ const HomePage: React.FC = () => {
                           </i>
                         </div>
                       </div>
-                     
+
                     </div>
                   </div>
                 </div>
