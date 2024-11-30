@@ -488,16 +488,16 @@ const Header: React.FC = () => {
 
 					<div className="flex gap-2">
 						<Link to={"cart"}>
-							<Button className="inline-flex w-full rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600">
+							<Button className="flex w-[300px] rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600">
 								Checking
 							</Button>
 						</Link>
-						<Button
+						{/* <Button
 							onClick={toggleModal}
 							className="inline-flex w-full rounded-lg bg-cyan-700 px-4 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
 						>
 							Thanh Toán
-						</Button>
+						</Button> */}
 					</div>
 				</Drawer.Items>
 			</Drawer>

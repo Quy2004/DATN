@@ -9,6 +9,7 @@ import {
   message,
   Modal,
   Select,
+  Space,
   Spin,
   Table,
   Tag,
@@ -17,6 +18,8 @@ import Title from "antd/es/typography/Title";
 import { useState } from "react";
 import { Order } from "../../types/order";
 import { ProductSize, ProductTopping } from "../../types/product";
+import ExportButton from "./components/ExportButton";
+import { CloseOutlined } from "@ant-design/icons";
 
 type PriceType = number | { $numberDecimal: string };
 // Kiểu dữ liệu
@@ -65,7 +68,6 @@ const OrderManagerPage = () => {
     data: orders,
     isLoading,
     isError,
-    error,
   } = useQuery<Order[]>({
     queryKey: ["orders", storedUserId],
     queryFn: async () => {
@@ -215,21 +217,21 @@ const OrderManagerPage = () => {
       return;
     }
 
-    if (newStatus === "completed") {
-      // Kiểm tra người dùng đã nhận hàng chưa
-      if (currentOrder.orderStatus !== "delivered") {
-        messageApi.error(
-          "Chỉ có thể hoàn thành đơn hàng sau khi đơn hàng đã được giao."
-        );
-        return;
-      }
-    } else {
-      // Cập nhật trạng thái cho các trạng thái khác ngoài "hoàn thành"
-      updateOrderStatusMutation.mutate({
-        orderId: currentOrder._id,
-        newStatus,
-      });
-    }
+    // if (newStatus === "completed") {
+    //   // Kiểm tra người dùng đã nhận hàng chưa
+    //   if (currentOrder.orderStatus !== "delivered") {
+    //     messageApi.error(
+    //       "Chỉ có thể hoàn thành đơn hàng sau khi đơn hàng đã được giao."
+    //     );
+    //     return;
+    //   }
+    // } else {
+    // Cập nhật trạng thái cho các trạng thái khác ngoài "hoàn thành"
+    updateOrderStatusMutation.mutate({
+      orderId: currentOrder._id,
+      newStatus,
+    });
+    // }
   };
 
   const getStatusColor = (status: OrderStatus) => {
@@ -335,6 +337,10 @@ const OrderManagerPage = () => {
             return "Chuyển Khoản";
           case "cash on delivery":
             return "Thanh Toán Khi Nhận Hàng";
+          case "momo":
+            return "Momo";
+          case "zalopay":
+            return "ZaloPay";
           default:
             return method;
         }
@@ -389,6 +395,30 @@ const OrderManagerPage = () => {
     if (!orders) return [];
     if (statusFilter === "all") return orders;
     return orders.filter((order) => order.orderStatus === statusFilter);
+  };
+
+  const paymentMethodDisplay = (method: string) => {
+    switch (method) {
+      case "bank transfer":
+        return "Chuyển Khoản";
+      case "cash on delivery":
+        return "Thanh Toán Khi Nhận Hàng";
+      case "momo":
+        return "Momo";
+      case "zalopay":
+        return "ZaloPay";
+    }
+  };
+
+  const paymentStatusDisplay = (status: string) => {
+    switch (status) {
+      case "unpaid":
+        return "Chưa Thanh Toán";
+      case "paid":
+        return "Đã Thanh Toán";
+      case "failed":
+        return "Thanh Toán Thất Bại";
+    }
   };
 
   const itemColumns = [
@@ -500,7 +530,7 @@ const OrderManagerPage = () => {
     return (
       <Alert
         message="Lỗi"
-        description={`Có lỗi xảy ra khi tải dữ liệu: ${error.message}`}
+        description={`Không tìm thấy đơn hàng nào`}
         type="error"
         showIcon
       />
@@ -510,49 +540,51 @@ const OrderManagerPage = () => {
   return (
     <>
       {contextHolder}
-      <div className="flex items-center justify-between mb-5 space-x-4"></div>
-      <Title level={3} className="text-2xl font-semibold text-gray-700">
-        Danh sách đơn hàng
-      </Title>
-      <div className="mb-4 flex items-center mt-6">
-        <Select
-          style={{ width: 200 }}
-          value={statusFilter}
-          onChange={handleStatusFilterChange}
-          className="mr-2"
-        >
-          <Select.Option value="all">
-            <span className="font-semibold">Tất cả</span>
-          </Select.Option>
-          {Object.entries(OrderStatusLabels).map(([key, label]) => (
-            <Select.Option key={key} value={key}>
-              <span
-                className={`font-semibold ${getStatusColor(
-                  key as OrderStatus
-                )}`}
-              >
-                {label}
-              </span>
-            </Select.Option>
-          ))}
-        </Select>
+      <div className="flex flex-wrap items-center justify-between mb-5 space-y-4 sm:space-y-0 sm:space-x-4">
+        <Title level={3} className="text-2xl font-semibold text-gray-800">
+          Danh sách đơn hàng
+        </Title>
 
-        {statusFilter !== "all" && (
-          <Button
-            onClick={() => handleStatusFilterChange("all")}
-            size="small"
-            className="flex items-center"
-          >
-            Xóa bộ lọc
-          </Button>
-        )}
+        <Space>
+          <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+            <Select
+              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 ease-in-out"
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+            >
+              <Select.Option value="all">
+                <span className="font-semibold">Tất cả</span>
+              </Select.Option>
+              {Object.entries(OrderStatusLabels).map(([key, label]) => (
+                <Select.Option key={key} value={key}>
+                  <span
+                    className={`font-semibold ${getStatusColor(
+                      key as OrderStatus
+                    )}`}
+                  >
+                    {label}
+                  </span>
+                </Select.Option>
+              ))}
+            </Select>
+
+            {statusFilter !== "all" && (
+              <CloseOutlined
+                onClick={() => handleStatusFilterChange("all")}
+                className="w-4 h-4 text-gray-600 hover:text-red-500 transition duration-200 ease-in-out cursor-pointer"
+              />
+            )}
+          </div>
+          <ExportButton filteredOrders={getFilteredOrders()} />
+        </Space>
       </div>
+
       <Table
         className="mt-5"
         columns={columns}
         dataSource={getFilteredOrders()}
         rowKey="orderNumber"
-        scroll={{ y: 350 }}
+        scroll={{ y: 310 }}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -604,71 +636,139 @@ const OrderManagerPage = () => {
       >
         {selectedOrder && (
           <>
-            <p>Số đơn hàng: #{selectedOrder.orderNumber}</p>
-            <p>
-              Ngày đặt hàng:
-              <span className="mx-1">
-                {new Date(selectedOrder.createdAt).toLocaleString("vi-VN")}
-              </span>
-            </p>
-            <p>
-              Ngày cập nhật:
-              <span className="mx-1">
-                {new Date(selectedOrder.updatedAt).toLocaleString("vi-VN")}
-              </span>
-            </p>
-            <p>Tên khách hàng: {selectedOrder.customerInfo?.name || "N/A"} </p>
-            <p>Email: {selectedOrder.customerInfo?.email}</p>
-            <p>Tổng đơn hàng: {formatPrice(selectedOrder.totalPrice)}</p>
-            <p style={{ display: "flex", alignItems: "center" }}>
-              <span style={{ marginRight: 8 }}>Trạng thái:</span>
-              <Select
-                className="w-40 ml-2"
-                value={selectedOrder.orderStatus}
-                onChange={(newStatus) =>
-                  handleStatusChange(newStatus, selectedOrder)
-                }
-                disabled={["completed", "canceled"].includes(
-                  selectedOrder.orderStatus
-                )}
-              >
-                {Object.entries(OrderStatusLabels).map(([key, label]) => (
-                  <Select.Option key={key} value={key}>
-                    <span
-                      className={`font-semibold px-2 py-1 rounded-md ${getStatusColor(
-                        key as OrderStatus
-                      )}`}
-                    >
-                      {label}
+            <div className="p-6 bg-white shadow-lg rounded-lg mb-6 transition-transform transform hover:scale-105 hover:shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cột 1 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
+                    Mã đơn hàng:{" "}
+                    <span className="font-semibold text-gray-900">
+                      #{selectedOrder.orderNumber}
                     </span>
-                  </Select.Option>
-                ))}
-              </Select>
-            </p>
-            {selectedOrder.orderStatus === "canceled" &&
-              selectedOrder.cancellationReason && (
-                <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-md">
-                  <div className="flex items-center">
-                    <h4 className="text-lg font-semibold text-red-600">
-                      Đơn hàng bị hủy
-                    </h4>
-                  </div>
-                  <p className="mt-2 text-sm text-red-600">
-                    <strong>Lý do hủy: </strong>
-                    {selectedOrder.cancellationReason}
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày đặt hàng:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {new Date(selectedOrder.createdAt).toLocaleString(
+                        "vi-VN"
+                      )}
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày cập nhật:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {new Date(selectedOrder.updatedAt).toLocaleString(
+                        "vi-VN"
+                      )}
+                    </span>
                   </p>
                 </div>
-              )}
 
-            <h4 className="mt-4 mb-2 text-lg">Chi tiết sản phẩm:</h4>
-            <Table
-              columns={itemColumns}
-              dataSource={selectedOrder.orderDetail_id}
-              pagination={false}
-              rowKey="_id"
-              className="border border-gray-300 rounded-md shadow-md"
-              style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}
-            />
+                {/* Cột 2 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
+                    Tên khách hàng:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {selectedOrder.customerInfo?.name || "N/A"}
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Email:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {selectedOrder.customerInfo?.email || "N/A"}
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Tổng đơn hàng:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {formatPrice(selectedOrder.totalPrice)}
+                    </span>
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    PTTT:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {paymentMethodDisplay(selectedOrder.paymentMethod)}
+                    </span>{" "}
+                    - Trạng thái:{" "}
+                    <span className="font-semibold text-gray-900">
+                      {paymentStatusDisplay(selectedOrder.paymentStatus)}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-white shadow-md rounded-md mb-6 transition duration-300 hover:shadow-lg hover:bg-gray-50">
+              <p className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-600">
+                  Trạng thái:
+                </span>
+                <Select
+                  className="w-40"
+                  value={selectedOrder.orderStatus}
+                  onChange={(newStatus) =>
+                    handleStatusChange(newStatus, selectedOrder)
+                  }
+                  disabled={["completed", "canceled"].includes(
+                    selectedOrder.orderStatus
+                  )}
+                >
+                  {Object.entries(OrderStatusLabels).map(([key, label]) => (
+                    <Select.Option key={key} value={key}>
+                      <span
+                        className={`font-semibold px-2 py-1 rounded-md block w-full ${getStatusColor(
+                          key as OrderStatus
+                        )}`}
+                      >
+                        {label}
+                      </span>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </p>
+
+              {selectedOrder.orderStatus === "canceled" &&
+                selectedOrder.cancellationReason && (
+                  <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
+                    <div className="flex items-center">
+                      <svg
+                        className="w-5 h-5 text-red-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <h4 className="text-lg font-semibold text-red-700">
+                        Đơn hàng bị hủy
+                      </h4>
+                    </div>
+                    <p className="mt-2 text-gray-700">
+                      <strong className="font-medium">Lý do hủy: </strong>
+                      {selectedOrder.cancellationReason || "Chưa có lý do hủy"}
+                    </p>
+                  </div>
+                )}
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold mb-4 text-gray-800">
+                Chi tiết sản phẩm:
+              </h4>
+              <Table
+                columns={itemColumns}
+                dataSource={selectedOrder.orderDetail_id}
+                pagination={false}
+                rowKey="_id"
+                className="border border-gray-200 rounded-md shadow-md"
+                style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}
+              />
+            </div>
           </>
         )}
       </Drawer>

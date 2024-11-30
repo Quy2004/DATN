@@ -3,7 +3,7 @@ import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
+import crypto from 'crypto-browserify';
 // Đăng ký người dùng
 export const register = async (req, res) => {
 

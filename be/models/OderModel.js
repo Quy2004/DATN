@@ -57,16 +57,16 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-    // paymentStatus: {
-    //   type: String,
-    //   enum: [
-    //     "unpaid",      // Chưa thanh toán
-    //     "paid",        // Đã thanh toán
-    //     "failed",      // Thanh toán thất bại
+    paymentStatus: {
+      type: String,
+      enum: [
+        "unpaid",      // Chưa thanh toán
+        "paid",        // Đã thanh toán
+        "failed",      // Thanh toán thất bại
        
-    //   ],
-    //   default: "unpaid",
-    // },
+      ],
+      default: "unpaid",
+    },
     orderDetail_id: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,7 +75,7 @@ const orderSchema = new mongoose.Schema(
     ],
     paymentMethod: {
       type: String,
-      enum: ["bank transfer", "cash on delivery", "momo"],
+      enum: ["bank transfer", "cash on delivery", "momo","zalopay"],
       required: true 
     },
     paymentTransactionId: {

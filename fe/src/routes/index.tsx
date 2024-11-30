@@ -54,6 +54,13 @@ import AccountUpdate from "../account/SettingAuth/AccountUpdate";
 import OderHistory from "../account/SettingAuth/OderHistory";
 import OrderSuccess from "../pages/OrderSuccess/OderSuccess";
 
+import SettingAccount from "../account/SettingAuth/SettingAccount";
+
+import OrderErr from "../pages/OrderError/OrderError";
+
+import Dashboard from "../admin/Statistics/StatisticsPage";
+
+
 const Router = () => {
   return (
     <div>
@@ -84,11 +91,16 @@ const Router = () => {
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
+          <Route path="setting" element={<SettingAccount />} />
           <Route path="order-tracking/:order_id" element={<Tracking />} />
           <Route path="oder-success" element={<OrderSuccess />} />
+          <Route path="order-error" element={<OrderErr />} />
+
+        
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
           <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
