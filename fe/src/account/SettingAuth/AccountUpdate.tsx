@@ -1,6 +1,6 @@
 import { FileImageOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Form, Input, message, notification, Upload } from "antd";
+import { Button, Form, Input, message, notification, Upload, Modal } from "antd";
 import { RcFile, UploadFile } from "antd/es/upload";
 import { useEffect, useState } from "react";
 import instance from "../../services/api";
@@ -10,6 +10,8 @@ const AccountUpdate = () => {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [avatarsList, setAvatarsList] = useState<UploadFile[]>([]);
     const [avatar, setAvatar] = useState<string>("");
+    const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
+    const [password, setPassword] = useState("");
 
     const [form] = Form.useForm();
 
@@ -41,18 +43,14 @@ const AccountUpdate = () => {
                 userName: userData.userName,
                 email: userData.email,
             });
-    
-            // Kiểm tra nếu avatar có tồn tại và là blob URL, sau đó thay thế bằng URL thật
+
             const avatarUrl = userData.avatars[0]?.url;
             if (avatarUrl && avatarUrl.startsWith("blob:")) {
-                // Lưu trữ lại URL của ảnh đã tải lên (nếu cần, bạn có thể tải lại ảnh từ blob)
-                // Ở đây có thể cần chuyển đổi hoặc sử dụng một dịch vụ lưu trữ ảnh
-                setAvatar(""); // Cần xử lý với URL vĩnh viễn từ Cloudinary hoặc API khác
+                setAvatar("");
             } else {
-                setAvatar(avatarUrl || ""); // Nếu URL hợp lệ, sử dụng trực tiếp
+                setAvatar(avatarUrl || "");
             }
-    
-            // Cập nhật danh sách avatars
+
             setAvatarsList(
                 userData.avatars.length > 0
                     ? [
@@ -60,7 +58,7 @@ const AccountUpdate = () => {
                               uid: "0",
                               name: "avatar.jpg",
                               status: "done",
-                              url: avatarUrl, // Đảm bảo URL là ổn định, không phải blob URL
+                              url: avatarUrl,
                           },
                       ]
                     : []
@@ -84,23 +82,21 @@ const AccountUpdate = () => {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", "duan_totnghiep");
-    
+
         try {
-            // Upload lên Cloudinary hoặc dịch vụ lưu trữ khác
             const res = await axios.post(
                 "https://api.cloudinary.com/v1_1/duantotnghiep/image/upload",
                 formData
             );
-            const imageUrl = res.data.secure_url; // Lấy URL ổn định từ Cloudinary
-            setAvatar(imageUrl); // Cập nhật URL avatar ổn định
-            setAvatarUrl(imageUrl); // Cập nhật URL trong state
+            const imageUrl = res.data.secure_url;
+            setAvatar(imageUrl);
+            setAvatarUrl(imageUrl);
             return imageUrl;
         } catch (error) {
             message.error("Upload ảnh thất bại!");
         }
     };
 
-    // API call để cập nhật địa chỉ
     const updateAddressMutation = useMutation({
         mutationFn: async (values: any) => {
             const { address, phone, name } = values;
@@ -110,7 +106,7 @@ const AccountUpdate = () => {
             formData.append("phone", phone);
             formData.append("name", name);
 
-            const response = await instance.put(`address/${user._id}`, formData); // Cập nhật địa chỉ
+            const response = await instance.put(`address/${user._id}`, formData);
             return response.data;
         },
     });
@@ -120,7 +116,7 @@ const AccountUpdate = () => {
             const { address, phone, name } = values;
 
             const formData = new FormData();
-            formData.append("user_id", user._id); // Sử dụng user_id từ localStorage
+            formData.append("user_id", user._id);
             formData.append("address", address);
             formData.append("phone", phone);
             formData.append("name", name);
@@ -130,6 +126,12 @@ const AccountUpdate = () => {
         },
     });
 
+    const checkPasswordMutation = useMutation({
+        mutationFn: async (password: string) => {
+            const response = await instance.post(`users/${user._id}/check`, { password });
+            return response.data;
+        },
+    });
 
     const handleAvatars = ({ fileList }: { fileList: UploadFile[] }) => {
         setAvatarsList(fileList);
@@ -141,19 +143,25 @@ const AccountUpdate = () => {
         }
     };
 
-    const onFinish = async (values: any) => {
+    const handlePasswordSubmit = async () => {
         try {
+            await checkPasswordMutation.mutateAsync(password);
+            setPasswordModalOpen(false);
+            const values = await form.validateFields();
             await updateUserMutation.mutateAsync(values);
             if (!addressData || addressData.length === 0) {
                 await createAddressMutation.mutateAsync(values);
             } else {
-                // Nếu có địa chỉ, cập nhật
                 await updateAddressMutation.mutateAsync(values);
             }
             notification.success({ message: "Cập nhật thông tin thành công!" });
         } catch (error) {
-            notification.error({ message: "Cập nhật thông tin không thành công!" });
+            notification.error({ message: "Mật khẩu không đúng. Vui lòng thử lại." });
         }
+    };
+
+    const onFinish = async () => {
+        setPasswordModalOpen(true);
     };
 
     if (userLoading || addressLoading) return <p>Đang tải...</p>;
@@ -177,13 +185,12 @@ const AccountUpdate = () => {
                         form={form}
                     >
                         <h1 className="text-2xl font-semibold mb-4">Cập nhật thông tin</h1>
-                            <div className="space-y-2 flex items-start gap-3 h-[230px]">
-                                <div className="flex-1">
+                        <div className="space-y-2 flex items-start gap-3 h-[230px]">
+                            <div className="flex-1">
                                 <label className="mb-2">Avatar</label>
                                 <Form.Item name="avatars">
                                     <Upload
                                         name="file"
-                                        
                                         listType="picture-card"
                                         multiple={false}
                                         fileList={avatarsList}
@@ -205,35 +212,48 @@ const AccountUpdate = () => {
                             <div className="flex-1">
                                 <label className="space-y-2 mb-4">Họ và tên</label>
                                 <Form.Item name="userName">
-                                    <Input placeholder="Nhập họ tên" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+                                    <Input placeholder="Nhập họ tên" />
                                 </Form.Item>
                             </div>
                         </div>
                         <label>Email</label>
                         <Form.Item name="email">
-                            <Input placeholder="Nhập email" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <Input placeholder="Nhập email" />
                         </Form.Item>
                         <label>Địa chỉ</label>
                         <Form.Item name="address">
-                            <Input placeholder="Nhập địa chỉ" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <Input placeholder="Nhập địa chỉ" />
                         </Form.Item>
                         <label>Tên người nhận</label>
                         <Form.Item name="name">
-                            <Input placeholder="Nhập tên người nhận" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <Input placeholder="Nhập tên người nhận" />
                         </Form.Item>
                         <label>Số điện thoại người nhận</label>
                         <Form.Item name="phone">
-                            <Input placeholder="Nhập số điện thoại" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <Input placeholder="Nhập số điện thoại" />
                         </Form.Item>
-                        <Button
-                                htmlType="submit"
-                                className="w-full h-12 my-7 p-3 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                            >
-                                Lưu thay đổi
-                            </Button>
+                        <Button htmlType="submit" className="w-full h-12 my-7 bg-blue-600">
+                            Lưu thay đổi
+                        </Button>
                     </Form>
                 </section>
             </div>
+
+            {/* Modal kiểm tra mật khẩu */}
+            <Modal
+                title="Nhập mật khẩu"
+                visible={isPasswordModalOpen}
+                onCancel={() => setPasswordModalOpen(false)}
+                onOk={handlePasswordSubmit}
+                okText="Xác nhận"
+                cancelText="Hủy"
+            >
+                <Input.Password
+                    placeholder="Nhập mật khẩu của bạn"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </Modal>
         </div>
     );
 };

@@ -33,16 +33,20 @@ export interface Order {
     totalPrice: number | { $numberDecimal: string };
     orderStatus: OrderStatus;
     orderDetail_id: Array<{
+        product_id: Product;
         _id: string;
         product: Product;
         quantity: number;
         price: number;
         sale_price: number;
     }>;
-    paymentMethod: "bank transfer" | "cash on delivery";
+    paymentMethod: "bank transfer" | "cash on delivery" | "momo" | "zalopay";
+    paymentStatus: "unpaid" | "paid" | "failed";
     orderNumber?: string;
     note?: string;
     cancellationReason?: string;
     createdAt: Date;
     updatedAt: Date;
+
+
 }

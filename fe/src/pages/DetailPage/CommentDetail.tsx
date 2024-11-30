@@ -1,166 +1,234 @@
+import { FileImageOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
+import { Button, Form, Input, message, Upload } from "antd";
+import { RcFile } from "antd/es/upload";
+import axios from "axios";
 import React, { useState } from "react";
-
-const reviews = [
-    {
-        username: "HoaDepTrai",
-        rating: 5,
-        comment: "",
-        date: "2024-11-08 07:19",
-        option: "Hồng",
-        isHelpful: false,
-    },
-    {
-        username: "QuyDeHoa",
-        rating: 5,
-        comment: "",
-        date: "2024-11-09 16:27",
-        option: "Xanh",
-        isHelpful: false,
-    },
-];
+import { useParams } from "react-router-dom";
+import instance from "../../services/api";
+import { Comment } from "../../types/comment";
 
 const CommentDetail: React.FC = () => {
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser!) : {};
 
-    const [rating, setRating] = useState<number | null>(null);
-    const [feedback, setFeedback] = useState<string>("");
+  const [form] = Form.useForm();
+  const { id } = useParams<{ id: string }>();
+  const [messageApi, contextHolder] = message.useMessage();
+  const [images, setImages] = useState<string[]>([]); // Lưu danh sách ảnh đã tải lên
+  const [replies, setReplies] = useState<Comment[]>([]);
+  const [showReplies, setShowReplies] = useState(false);
+  const [filter, setFilter] = useState<number | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        alert(`Rating: ${rating}\nFeedback: ${feedback}`);
+  const handleFilter = (stars: number | null) => {
+    setFilter(stars);
+  };
+
+  const { data: comments, refetch } = useQuery({
+    queryKey: ["comment", id],
+    queryFn: async () => {
+      if (!id) throw new Error("Thiếu Product ID");
+      const response = await instance.get(`/comment/product/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
+
+  // Upload ảnh lên Cloudinary
+  const uploadImage = async (file: RcFile) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "duan_totnghiep");
+
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/duantotnghiep/image/upload",
+        formData
+      );
+      setImages((prev) => [...prev, res.data.secure_url]); // Thêm URL ảnh vào danh sách
+      message.success("Ảnh đã được upload thành công!");
+    } catch (error) {
+      message.error("Upload ảnh thất bại!");
+    }
+  };
+
+  // Xóa ảnh khỏi danh sách
+  const handleRemoveImage = (url: string) => {
+    setImages((prev) => prev.filter((image) => image !== url));
+    message.info("Ảnh đã được xóa.");
+  };
+
+  // Submit bình luận
+  const handleSubmit = async (values: Comment) => {
+    const commentData = {
+      ...values,
+      image: images, // Gửi danh sách ảnh
+      content: values.content,
+      user_id: user._id,
+      product_id: id,
     };
-    const [filter, setFilter] = useState<number | null>(null);
 
-    const handleFilter = (stars: number | null) => {
-        setFilter(stars);
-    };
+    try {
+      await instance.post("/comment", commentData); // Gửi dữ liệu tới server
+      messageApi.success("Thêm bình luận thành công!");
+      form.resetFields();
+      setImages([]); // Reset danh sách ảnh
+      refetch(); // Cập nhật danh sách bình luận
+    } catch (error) {
+      messageApi.error("Thêm bình luận thất bại!");
+      console.error(error);
+    }
+  };
 
-    const filteredReviews = filter
-        ? reviews.filter((review) => review.rating === filter)
-        : reviews;
+  const fetchReplies = async (parentId: string) => {
+    const response = await instance.get(`/comment/parent/${parentId}`);
+    return response.data;
+  };
 
-    return (
-        <div className="bg-white rounded shadow-sm">
-            <div className="border-y p-4 md:border">
-                <h1 className="font-medium text-xl">Đánh giá sản phẩm</h1>
-                {/* Star Rating */}
-                <div className="stars flex justify-center space-x-1 mb-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <React.Fragment key={star}>
-                            <input
-                                id={`star-${star}`}
-                                type="radio"
-                                name="star"
-                                value={star}
-                                className="hidden peer"
-                                onChange={() => setRating(star)}
-                            />
-                            <label
-                                htmlFor={`star-${star}`}
-                                className={`cursor-pointer text-3xl transition-transform duration-200 hover:scale-125 ${rating && rating >= star
-                                    ? "text-yellow-400 shadow-yellow-400"
-                                    : "text-gray-500"
-                                    }`}
-                            >
-                                ★
-                            </label>
-                        </React.Fragment>
-                    ))}
+
+
+  const handleToggleReplies = async (parentId: string) => {
+    if (!showReplies) {
+      const fetchedReplies = await fetchReplies(parentId);
+      setReplies(fetchedReplies);
+    }
+    setShowReplies(!showReplies);
+  };
+
+  
+
+
+
+
+  return (
+    <div className="bg-white rounded shadow-sm">
+      {contextHolder}
+      <div className="border-y p-4 md:border">
+        <h1 className="font-medium text-xl">Đánh giá sản phẩm</h1>
+        <Form form={form} onFinish={handleSubmit} layout="vertical" className="space-y-4">
+          {/* Nội dung bình luận */}
+          <Form.Item
+            name="content"
+            rules={[{ required: true, message: "Vui lòng nhập đánh giá của bạn!" }]}
+          >
+            <Input.TextArea placeholder="Đánh giá của bạn tại đây..." rows={4} allowClear />
+          </Form.Item>
+
+          {/* Upload nhiều ảnh */}
+          <Form.Item name="images">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Hiển thị ảnh đã upload */}
+              {images.map((image, index) => (
+                <div key={index} className="relative">
+                  <img src={image} alt={`uploaded-${index}`} className="w-20 h-20 object-cover rounded" />
+                  <button
+                    type="button"
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                    onClick={() => handleRemoveImage(image)}
+                  >
+                    ×
+                  </button>
                 </div>
+              ))}
 
-                {/* Feedback Input */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <textarea
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        placeholder="Đánh giá của bạn tại đây..."
-                        className="w-full p-2 border border-[#ccc] rounded resize-none focus:ring focus:ring-[#ea8025]"
-                        rows={4}
-                    ></textarea>
-
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={!rating}
-                            className="flex justify-center items-center w-24 bg-[#ea8025] text-white py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-500 "
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                            </svg>
-                        </button>
-                    </div>
-                </form>
+              {/* Nút tải ảnh */}
+              <Upload
+                name="file"
+                listType="picture-card"
+                multiple
+                beforeUpload={(file) => {
+                  uploadImage(file);
+                  return false;
+                }}
+                showUploadList={false}
+                className="flex flex-col items-center justify-center p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50 hover:border-gray-400 transition"
+              >
+                <div className="flex flex-col items-center">
+                  <FileImageOutlined className="text-2xl text-gray-500 mb-2" />
+                  <span className="text-sm text-gray-500">Tải ảnh lên</span>
+                </div>
+              </Upload>
             </div>
+          </Form.Item>
 
-            {/* Tổng đánh giá */}
-            <div className="border-y mt-2 p-4 md:border">
-                <div className="flex items-center space-x-4 mb-6">
-                    <div>
-                        <p className="text-3xl font-bold text-red-500">5 trên 5</p>
-                        <div className="flex text-red-500 text-xl">
-                            {Array.from({ length: 5 }, (_, i) => (
-                                <span key={i}>★</span>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap space-x-2">
-                        <button
-                            onClick={() => handleFilter(null)}
-                            className={`px-3 py-1 border ${filter === null ? "bg-red-500 text-white" : "bg-white"
-                                }`}
-                        >
-                            Tất Cả
-                        </button>
-                        {[5, 4, 3, 2, 1].map((stars) => (
-                            <button
-                                key={stars}
-                                onClick={() => handleFilter(stars)}
-                                className={`px-3 py-1 border ${filter === stars ? "bg-red-500 text-white" : "bg-white"
-                                    }`}
-                            >
-                                {stars} Sao ({reviews.filter((r) => r.rating === stars).length})
-                            </button>
-                        ))}
-                        <button className="px-3 py-1 border bg-white">Có Bình Luận (0)</button>
-                        <button className="px-3 py-1 border bg-white">
-                            Có Hình Ảnh / Video (0)
-                        </button>
-                    </div>
-                </div>
+          {/* Gửi bình luận */}
+          <div className="flex justify-end">
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="bg-red-500">
+                Gửi
+              </Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </div>
 
-                {/* Danh sách đánh giá */}
-                <div className="space-y-6">
-                    {filteredReviews.map((review, index) => (
-                        <div key={index} className="flex space-x-4 items-start border-b pb-4">
-                            <div className="w-10 h-10 rounded-full bg-gray-200"></div>
-                            <div className="flex-1">
-                                <p className="font-bold">{review.username}</p>
-                                <div className="flex text-[#ea8025] text-sm">
-                                    {Array.from({ length: review.rating }, (_, i) => (
-                                        <span key={i}>★</span>
-                                    ))}
-                                </div>
-                                <p className="text-gray-500 text-sm">{review.date} | Phân loại hàng: {review.option}</p>
-                                <p className="mt-2 text-sm">{review.comment}</p>
-                                <button className="text-gray-500 text-sm mt-2 flex items-center">
-                                    👍 Hữu ích?
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Phân trang */}
-                <div className="flex justify-center mt-6">
-                    <button className="px-3 py-1 border">❮</button>
-                    <button className="px-3 py-1 border bg-red-500 text-white">1</button>
-                    <button className="px-3 py-1 border">❯</button>
-                </div>
+      {/* Tổng đánh giá */}
+      <div className="border-y mt-2 p-4 md:border">
+        <div className="flex items-center space-x-4 mb-6">
+          <div>
+            <p className="text-3xl font-bold text-red-500">5 trên 5</p>
+            <div className="flex text-red-500 text-xl">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i}>★</span>
+              ))}
             </div>
+          </div>
+          <div className="flex flex-wrap space-x-2">
+            <button onClick={() => handleFilter(null)} className={`px-3 py-1 border ${filter === null ? "bg-red-500 text-white" : "bg-white"}`}>
+              Tất Cả
+            </button>
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <button key={stars} onClick={() => handleFilter(stars)} className={`px-3 py-1 border ${filter === stars ? "bg-red-500 text-white" : "bg-white"}`}>
+                {stars} Sao ({comments?.filter((r:any) => r.rating === stars).length})
+              </button>
+            ))}
+          </div>
         </div>
 
-    );
-};
+        {/* Danh sách đánh giá */}
+        <div className="space-y-6">
+          {comments?.map((review: Comment) => (
+            <div key={review._id} className="flex space-x-4 items-start border-b pb-4">
+              <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+              <div className="flex-1">
+                <p className="font-bold">{review.user_id.userName}</p>
+                <p className="text-gray-500 text-sm">
+                  Ngày bình luận: {new Date(review.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" })}
+                </p>
+                <p className="mt-2 text-sm">{review.content}</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {review.image?.map((img, idx) => (
+                    <img key={idx} src={img} alt="review-img" className="w-24 h-24 object-cover rounded-md" />
+                  ))}
+                </div>
+				<div className="mt-3 flex gap-2">
+                  <Button type="link" onClick={() => handleToggleReplies(review._id)}>Xem phản hồi</Button>
+                </div>
+                {showReplies && typeof replies[0]?.parent_id === 'string' && review._id === replies[0].parent_id && (
 
+                  <div className="mt-2 space-y-4">
+                    {replies.map((reply) => (
+                      <div key={reply._id} className="flex space-x-4 items-start border-b pb-4">
+                        <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+                        <div className="flex-1">
+                          <p className="font-bold">{reply.user_id?.userName}</p>
+                          <p>{reply.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                  </div>
+                )}
+
+				
+				</div>
+              </div>
+			
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default CommentDetail;

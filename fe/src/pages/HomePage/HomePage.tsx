@@ -288,7 +288,7 @@ const HomePage: React.FC = () => {
               <img
                 src="/src/assets/images/banner/banner4.jpg"
                 alt=""
-                className="w-[542px] h-[200px] rounded-[10px] object-cover md:w-[542px] md:h-[333px] md:mb-10 mb-4"
+                className="w-[542px] h-[200px] rounded-[10px] object-cover md:w-[542px] md:h-[333px] md:mb-0 mb-4"
               />
             </div>
             {products.slice(0, 2).map((product: Product) => (
@@ -366,15 +366,15 @@ const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="my-4"></div>
+          <div className="my-2 md:my-4"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
               {products.slice(0, 10).map((product: Product, index) => (
                 <div className="flex mx-2 md:mx-0 ">
-                  <div key={`${product._id}-${index}`} className="item mx-2">
-                    <div className="my-4">
-                      <div className="relative group w-[180px] mb-2 rounded-xl place-items-center md:w-[300px]">
+                  <div key={`${product._id}-${index}`} className="item mx-2 md:mx-1">
+                    <div className="my-2">
+                      <div className="relative group w-[180px] mb-2 rounded-xl  md:w-[300px]">
                         <img
                           src={`${product.image}`}
                           alt=""
@@ -451,7 +451,7 @@ const HomePage: React.FC = () => {
               ))}
             </Slider>
           ) : (
-            <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-10">
+            <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-0">
               {products.map((product: Product, index) => (
                 <div key={`${product._id}-${index}`} className="item mx-[1px] md:mx-2">
                   <div className="mx-4 md:mx-0 md:my-4">
@@ -492,7 +492,7 @@ const HomePage: React.FC = () => {
           )}
 
           {/*  */}
-          <div className="banner-mid mt-0 md:my-5">
+          <div className="banner-mid mt-4 md:my-5">
             <img src="/src/assets/images/banner/Banner_TX.jpg" className="h-auto md:h-[600px]" alt="" />
           </div>
         </div>
