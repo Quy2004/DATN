@@ -55,16 +55,16 @@ const CartItem: React.FC<{
     (total: number, size: any) => total + (size?.size_id?.priceSize || 0), // Tổng giá kích thước
     0
   );
-  
+
   const priceTopping = (item?.product_toppings || []).reduce(
     (total: number, topping: any) => total + (topping?.topping_id?.priceTopping || 0), // Tổng giá topping
     0
   );
-  
+
   const basePrice = item?.product?.sale_price || item?.sale_price || 0; // Giá cơ bản của sản phẩm (ưu tiên lấy từ product nếu tồn tại)
   const totalPrice = (basePrice + priceSize + priceTopping) * quantity; // Tính tổng giá
-  
-  
+
+
 
 
   const formatCurrency = (amount: number) => {
@@ -78,24 +78,26 @@ const CartItem: React.FC<{
       {item && (
         <>
           {/* Checkbox */}
-         
+
 
           {/* Product Image */}
           <div className="w-1/5">
-            <img src={item?.image} alt="Ảnh" className="border rounded-lg p-1" />
+            <img src={item?.image} alt="Ảnh" className="border rounded-lg mt-2 w-[50px] h-[50px] object-cover" />
           </div>
 
           {/* Product Details */}
           <div className="w-3/5">
-            <h3 className="text-base font-semibold">{item?.name}</h3>
-            <p className="text-xs text-red-500 font-semibold">
-              Tổng:{formatCurrency(totalPrice)} {/* Hiển thị tổng giá */}
+            <h4 className="text-lg font-medium mt-1">{item?.name}</h4>
+            <p className="text-sm m-1 text-red-500 font-semibold ">
+              Tổng: {formatCurrency(totalPrice)} {/* Hiển thị tổng giá */}
             </p>
           </div>
 
+
+
           {/* Quantity */}
           <div >
-            <span>{quantity}</span>
+            <span className="font-semibold">x{quantity}</span>
           </div>
 
           {/* Delete Button */}

@@ -4,7 +4,7 @@ const BillPage = () => {
             "", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám", "Chín"
         ];
         const tens = [
-            "", "Mười", "Hai mươi", "Ba mươi", "Bốn mươi", "Năm mươi", "Sáu mươi", "Bảy mươi", "Tám mươi", "Chín mươi"
+            "", "mười", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"
         ];
         const units = [
             "", "nghìn", "triệu", "tỷ"
@@ -28,13 +28,11 @@ const BillPage = () => {
                 if (hundreds > 0) {
                     partWords.push(ones[hundreds] + " trăm");
                 }
-
                 if (ten > 1) {
                     partWords.push(tens[ten]);
                 } else if (ten === 1) {
                     partWords.push("Mười");
                 }
-
                 if (one > 0) {
                     if (ten > 1 || ten === 0) {
                         partWords.push(ones[one]);
@@ -42,10 +40,8 @@ const BillPage = () => {
                         partWords.push("một");
                     }
                 }
-
                 words.unshift(partWords.join(" ").trim() + " " + units[unitIndex]);
             }
-
             num = Math.floor(num / 1000);
             unitIndex++;
         }
@@ -53,7 +49,7 @@ const BillPage = () => {
         return words.join(" ").trim() + " đồng";
     };
 
-    // Lấy ngày hiện tại
+    // Lấy ngày và giờ hiện tại
     const today = new Date();
     const formattedDate = today.toLocaleDateString("vi-VN", {
         year: "numeric",
@@ -122,7 +118,7 @@ const BillPage = () => {
                 alt="Logo"
             />
             <p className="hidden text-center text-gray-600 md:block">Liên hệ: 0987777777</p>
-            <h3 className="text-center font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN THANH TOÁN</h3>
+            <h3 className="text-center text-[#ea8205] font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN THANH TOÁN</h3>
             <p className="text-center text-gray-600 md:hidden">Liên hệ: 0987777777</p>
 
             <div className="mt-4 text-gray-800">
@@ -173,7 +169,7 @@ const BillPage = () => {
             </div>
 
             <div className="mt-4 text-right text-gray-800">
-                <p className="font-bold">Tổng cộng: <span className="text-xl text-black">{totalAmount.toLocaleString()} VND</span></p>
+                <p className="font-bold ">Tổng cộng: <span className="text-xl text-[#ea8205]">{totalAmount.toLocaleString()} VND</span></p>
                 <p className="italic text-gray-600">({totalAmountInWords})</p>
             </div>
             <p className="text-center mt-4 text-gray-800 font-medium">
@@ -182,5 +178,4 @@ const BillPage = () => {
         </div>
     );
 };
-
 export default BillPage;
