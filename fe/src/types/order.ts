@@ -40,10 +40,13 @@ export interface Order {
         price: number;
         sale_price: number;
     }>;
-    paymentMethod: "bank transfer" | "cash on delivery";
+    paymentMethod: "bank transfer" | "cash on delivery" | "momo" | "zalopay";
+    paymentStatus: "unpaid" | "paid" | "failed";
     orderNumber?: string;
     note?: string;
     cancellationReason?: string;
     createdAt: Date;
     updatedAt: Date;
+
+
 }

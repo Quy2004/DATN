@@ -75,7 +75,7 @@ const orderSchema = new mongoose.Schema(
     ],
     paymentMethod: {
       type: String,
-      enum: ["bank transfer", "cash on delivery", "momo"],
+      enum: ["bank transfer", "cash on delivery", "momo","zalopay"],
       required: true 
     },
     paymentTransactionId: {

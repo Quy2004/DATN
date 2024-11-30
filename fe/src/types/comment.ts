@@ -14,5 +14,7 @@ export interface Comment {
   name: string;
   isDeleted: boolean;
   parent_id: { content: string; _id: string } | null;
+  createdAt: Date; // Thời gian tạo
+  updatedAt: Date; // Thời gian cập nhật
 //   id: string;
 }
