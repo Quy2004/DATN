@@ -65,7 +65,7 @@ const AdminLayout = () => {
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
     { name: "Quản lí banner", link: "banner", icon: <FaImage /> },
     {
-      name: "Quản lí danh mục post",
+      name: "Quản lí danh mục bài viết",
       link: "CategoryPost",
       icon: <FaFolderOpen />,
     },
@@ -93,7 +93,7 @@ const AdminLayout = () => {
     } else if (location.pathname.includes("banner")) {
       return "Quản lý banner";
     } else if (location.pathname.includes("CategoryPost")) {
-      return "Quản lý danh mục post";
+      return "Quản lý danh mục bài viết";
     } else if (location.pathname.includes("post")) {
       return "Quản lý bài viết";
     } else {

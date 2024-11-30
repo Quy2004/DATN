@@ -82,7 +82,7 @@ const CategoryPostUpdatePage = () => {
 		mutationFn: async (values: CategoryPost) => {
 			const productData = {
 				...values,
-				thumbnail: thumbnail, // Sử dụng thumbnail kiểu chuỗi
+				// thumbnail: thumbnail, // Sử dụng thumbnail kiểu chuỗi
 			};
 
 			// Gửi yêu cầu cập nhật sản phẩm
@@ -139,7 +139,7 @@ const CategoryPostUpdatePage = () => {
 					</Form.Item>
 
 					{/* Upload Ảnh  */}
-					
+{/* 					
 					<Form.Item
 						label="Ảnh danh mục"
 						name="description"
@@ -162,16 +162,16 @@ const CategoryPostUpdatePage = () => {
 							<Button icon={<FileImageOutlined />}></Button>
 						)}
 					</Upload>
-					</Form.Item>
+					</Form.Item> */}
 					<Form.Item
-						label="Mô tả post"
+						label="Mô tả danh mục"
 						name="description"
 						rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
 						className="mt-5"
 					>
 						<ReactQuill
 							theme="snow"
-							placeholder="Nhập mô tả post"
+							placeholder="Nhập mô tả danh mục"
 						/>
 					</Form.Item>
 
