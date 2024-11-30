@@ -49,13 +49,11 @@ const CategoryPostAddPage = () => {
 	};
 
 	const onFinish = async (values: CategoryPost) => {
-		if (!image) {
-			return messageApi.error("Vui lòng upload ảnh .");
-		}
+			
 
 		const productData = {
 			...values,
-			thumbnail: image,
+			// thumbnail: image,
 			description: values.description,
 		};
 
@@ -98,18 +96,18 @@ const CategoryPostAddPage = () => {
 						autoComplete="off"
 					>
 						<Form.Item<CategoryPost>
-							label="Tên post"
+							label="Tên danh mục"
 							name="title"
-							rules={[{ required: true, message: "Vui lòng nhập tên post!" }]}
+							rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
 						>
 							<Input
 								className="Input-antd text-sm placeholder-gray-400"
-								placeholder="Nhập tên post"
+								placeholder="Nhập tên danh mục"
 							/>
 						</Form.Item>
 
 						{/* Upload Ảnh  */}
-						<Form.Item
+						{/* <Form.Item
 							label="Ảnh "
 							name="image"
 							rules={[{ required: true, message: "Vui lòng upload ảnh " }]}
@@ -123,17 +121,17 @@ const CategoryPostAddPage = () => {
 							>
 								<Button icon={<FileImageOutlined />}></Button>
 							</Upload>
-						</Form.Item>
+						</Form.Item> */}
 
 						<Form.Item
-							label="Mô tả post"
+							label="Mô tả danh mục bài viết"
 							name="description"
 							rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
 							className="mt-5"
 						>
 							<ReactQuill
 								theme="snow"
-								placeholder="Nhập mô tả post"
+								placeholder="Nhập mô tả danh mục bài viết"
 							/>
 						</Form.Item>
 
