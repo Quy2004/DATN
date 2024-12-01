@@ -63,7 +63,6 @@ const OrderManagerPage = () => {
   const storedUserId = localStorageUser
     ? JSON.parse(localStorageUser)._id
     : null;
-
   const {
     data: orders,
     isLoading,
