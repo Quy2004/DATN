@@ -1,15 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import instance from "../../services/api";
-import { Order } from "../../types/order";
 
 const BillPage = () => {
     const localStorageUser = localStorage.getItem("user");
     const storedUserId = localStorageUser ? JSON.parse(localStorageUser)._id : null;
+
     const {
         data: orders,
         isLoading,
         isError,
-    } = useQuery<Order[]>({
+        refetch
+    } = useQuery({
         queryKey: ["orders", storedUserId],
         queryFn: async () => {
             if (!storedUserId) {
@@ -19,146 +22,187 @@ const BillPage = () => {
             if (!response.data || !response.data.data) {
                 throw new Error("Invalid response structure.");
             }
-            return response.data.data;
+            return response.data.data.sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
         },
-        staleTime: 60000,
-        enabled: !!storedUserId,
+        gcTime: 0,  // Thời gian garbage collection = 0
+        staleTime: 0,  // Không để dữ liệu hết hạn
+        refetchOnMount: true,  // Tự động fetch khi component được mount
+        refetchOnWindowFocus: true,  // Tự động fetch khi cửa sổ được focus
+        enabled: !!storedUserId,  // Chỉ fetch khi có storedUserId
     });
 
-    // Chuyển giá tiền thành dạng văn bản
-    const numberToWords = (num: number) => {
-        const ones = [
-            "", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám", "Chín"
-        ];
-        const tens = [
-            "", "mười", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"
-        ];
-        const units = [
-            "", "nghìn", "triệu", "tỷ"
-        ];
+    // Effect để tự động cập nhật dữ liệu mỗi 5 giây
+    useEffect(() => {
+        refetch();
 
-        if (num === 0) return "Không đồng";
+        const interval = setInterval(() => {
+            refetch();
+        }, 5000);
 
-        const words = [];
-        let unitIndex = 0;
+        return () => clearInterval(interval);
+    }, [refetch]);
 
-        // Tách số thành các nhóm ba chữ số
-        while (num > 0) {
-            let part = num % 1000;
-            if (part > 0) {
-                const partWords = [];
-                const hundreds = Math.floor(part / 100);
-                part = part % 100;
-                const ten = Math.floor(part / 10);
-                const one = part % 10;
-
-                if (hundreds > 0) {
-                    partWords.push(ones[hundreds] + " trăm");
-                }
-                if (ten > 1) {
-                    partWords.push(tens[ten]);
-                } else if (ten === 1) {
-                    partWords.push("Mười");
-                }
-                if (one > 0) {
-                    if (ten > 1 || ten === 0) {
-                        partWords.push(ones[one]);
-                    } else {
-                        partWords.push("một");
-                    }
-                }
-                words.unshift(partWords.join(" ").trim() + " " + units[unitIndex]);
-            }
-            num = Math.floor(num / 1000);
-            unitIndex++;
-        }
-        return words.join(" ").trim() + " đồng";
+    // Hàm format ngày tháng
+    const formatDate = (date: Date | string | number) => {
+        const options: Intl.DateTimeFormatOptions = {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        };
+        return new Date(date).toLocaleDateString("vi-VN", options);
     };
-    // Định dạng ngày và giờ
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString("vi-VN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-    });
 
-    const formattedTime = today.toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
+    // Hàm format thời gian
+    const formatTime = (date: Date | string | number) => {
+        const options: Intl.DateTimeFormatOptions = {
+            hour: "2-digit",
+            minute: "2-digit"
+        };
+        return new Date(date).toLocaleTimeString("vi-VN", options);
+    };
 
-    if (isLoading) {
-        return <div>Đang tải dữ liệu...</div>;
-    }
-    if (isError) {
-        return <div>Có lỗi xảy ra khi lấy dữ liệu đơn hàng.</div>;
-    }
-    if (!orders || orders.length === 0) {
-        return <div>Không có đơn hàng nào để hiển thị.</div>;
-    }
+    // Hàm chuyển số thành chữ tiếng Việt
+    const numberToWords = (num: any) => {
+        const units = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+        const scales = ["", "nghìn", "triệu", "tỷ"];
+        const toWords = (number: any) => {
+            if (number === 0) return "không";
+            let str = "";
+            let unitIndex = 0;
+            while (number > 0) {
+                const part = number % 1000;
+                if (part > 0) {
+                    const hundred = Math.floor(part / 100);
+                    const ten = Math.floor((part % 100) / 10);
+                    const one = part % 10;
 
-    const order = orders[0]; // Lấy đơn hàng đầu tiên để hiển thị
-    const categorizedItems = order.items || {}; // Giả sử `items` chứa danh sách mặt hàng đã phân loại
-    const totalAmount = Object.values(categorizedItems)
-        .flat()
-        .reduce((sum, item) => sum + item.total, 0);
-    const totalAmountInWords = numberToWords(totalAmount);
+                    let partStr = "";
+                    if (hundred > 0) partStr += `${units[hundred]} trăm `;
+                    if (ten > 0) {
+                        partStr += ten === 1 ? "mười " : `${units[ten]} mươi `;
+                    }
+                    if (one > 0) {
+                        partStr += one === 1 && ten > 1 ? "mốt " : units[one];
+                        if (one === 5 && ten > 0) partStr = partStr.replace("năm", "lăm");
+                    }
+                    str = `${partStr.trim()} ${scales[unitIndex]} ${str}`;
+                }
+                unitIndex++;
+                number = Math.floor(number / 1000);
+            }
+            return str.trim();
+        };
+        return `${toWords(num)} đồng`.trim();
+    };
+
+    // Xử lý các trạng thái loading và error
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error loading orders.</div>;
+    if (!orders || orders.length === 0) return <div>No orders found.</div>;
+
+    const latestOrder = orders[0];
 
     return (
-        <div className="containerAll mt-16 bg-slate-100 max-w-md mx-auto border p-4 text-sm font-sans md:mt-20 md:mb-4">
-            <img
-                src="/src/pages/BillPage/Logoremove.png"
-                className="hidden w-24 mb-1 mx-auto md:block"
-                alt="Logo"
-            />
-            <p className="hidden text-center text-gray-600 md:block">Liên hệ: 0987777777</p>
-            <h3 className="text-center text-[#ea8205] font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN THANH TOÁN</h3>
+        <div>
+            {latestOrder && (
+                <div key={latestOrder._id} className="containerAll mt-16 bg-slate-100 max-w-md mx-auto border p-6 text-sm font-sans md:mt-20 md:mb-4">
+                    <img
+                        src="/src/pages/BillPage/Logoremove.png"
+                        className="hidden w-24 mb-1 mx-auto md:block"
+                        alt="Logo"
+                    />
+                    <p className="hidden text-center text-gray-600 md:block">Liên hệ: 0987777777</p>
+                    <h3 className="text-center text-[#ea8205] font-semibold text-lg mt-4 md:font-bold">HÓA ĐƠN THANH TOÁN</h3>
 
-            <div className="mt-4 text-gray-800">
-                <p>Ngày: <span className="font-semibold">{formattedDate}</span></p>
-                <p>Mã đơn hàng: <span className="font-semibold">{order.orderNumber}</span></p>
-                <p>Thời gian: <span className="font-semibold">{formattedTime}</span></p>
-            </div>
-            <div className="mt-4">
-                {Object.entries(categorizedItems).map(([category, items]) => (
-                    <div key={category} className="mb-6">
-                        <div className="text-lg font-semibold text-gray-700 mb-2">{category}</div>
-                        <table className="w-full text-gray-800 border-collapse shadow-md rounded-lg overflow-hidden">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Mặt hàng</th>
-                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">SL</th>
-                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Size</th>
-                                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Topping</th>
-                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Đơn giá</th>
-                                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody className="text-sm">
-                                {items.map((item, index) => (
-                                    <tr key={index} className="border-b hover:bg-gray-50">
-                                        <td className="py-3 px-4">{item.name}</td>
-                                        <td className="text-center py-3 px-4">{item.quantity}</td>
-                                        <td className="text-center py-3 px-4">{item.size}</td>
-                                        <td className="text-center py-3 px-4">{item.toppings.join(", ")}</td>
-                                        <td className="text-right py-3 px-4">{item.unitPrice.toLocaleString()}</td>
-                                        <td className="text-right py-3 px-4">{item.total.toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="mt-4 text-gray-800">
+                        <p>Ngày: <span className="font-semibold">{formatDate(latestOrder.createdAt)}</span></p>
+                        <p>Mã đơn hàng: <span className="font-semibold">{latestOrder.orderNumber}</span></p>
+                        <p>Thời gian: <span className="font-semibold">{formatTime(latestOrder.createdAt)}</span></p>
                     </div>
-                ))}
-            </div>
-            <div className="mt-4 text-right text-gray-800">
-                <p className="font-bold">Tổng cộng: <span className="text-xl text-[#ea8205]">{totalAmount.toLocaleString()} VND</span></p>
-                <p className="italic text-gray-600">({totalAmountInWords})</p>
-            </div>
-            <p className="text-center mt-4 text-gray-800 font-medium">
-                Xin cảm ơn Quý khách! / Thank you!
-            </p>
+                    <div className="mt-4 text-gray-800">
+                        <p>Tên khách hàng: <span className="font-semibold">{latestOrder.customerInfo.name}</span></p>
+                        <p>Số điện thoại: <span className="font-semibold">{latestOrder.customerInfo.phone}</span></p>
+                        <p>Địa chỉ: <span className="font-semibold">{latestOrder.customerInfo.address}</span></p>
+                    </div>
+
+                    <div className="mt-6">
+                        {Array.isArray(latestOrder.orderDetail_id) && latestOrder.orderDetail_id.map((item: any, index: any) => {
+                            const sizePrice = item.product_size?.price || 0;
+                            const toppingsPrice = item.product_toppings?.reduce((acc: number, topping: any) => {
+                                return acc + (topping?.topping_id?.price || 0);
+                            }, 0) || 0;
+                            const itemPrice = item.sale_price + sizePrice + toppingsPrice;
+
+                            return (
+                                <div key={index} className="mb-6 bg-gray-100 rounded-lg shadow- p-4">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h4 className="text-base font-semibold text-gray-700">{item.product_id.name}</h4>
+                                        <span className="text-sm text-gray-500">x{item.quantity}</span>
+                                    </div>
+
+                                    <div className="space-y-2 text-sm text-gray-600">
+                                        <div className="flex justify-between">
+                                            <span>Size:</span>
+                                            <span className="font-medium">{item.product_size?.name}</span>
+                                        </div>
+
+                                        {item.product_size?.price && (
+                                            <div className="flex justify-between">
+                                                <span>Giá size:</span>
+                                                <span className="font-medium">{sizePrice.toLocaleString()} VND</span>
+                                            </div>
+                                        )}
+
+                                        {item.product_toppings && item.product_toppings.length > 0 && (
+                                            <div className="flex justify-between">
+                                                <span>Topping:</span>
+                                                <span className="font-medium text-right">
+                                                    {item.product_toppings
+                                                        .map((topping: any) => topping.topping_id?.nameTopping || "")
+                                                        .filter((name: any) => name)
+                                                        .join(", ")}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between">
+                                            <span>Đơn giá:</span>
+                                            <span className="font-medium">{itemPrice.toLocaleString()} VND</span>
+                                        </div>
+
+                                        {item.discount > 0 && (
+                                            <div className="flex justify-between text-red-500">
+                                                <span>Giảm giá:</span>
+                                                <span className="font-medium">-{item.discount.toLocaleString()} VND</span>
+                                            </div>
+                                        )}
+
+                                        {/* Thành tiền sau khi tính giá size và topping */}
+                                        <div className="flex justify-between text-[#ea8205] font-semibold pt-2 border-t">
+                                            <span>Thành tiền:</span>
+                                            <span>{(
+                                                (item.sale_price + sizePrice + toppingsPrice) * item.quantity).toLocaleString()} VND</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mt-4 text-right text-gray-800">
+                        <p className="font-bold">Tổng cộng: <span className="text-xl text-[#ea8205]">{latestOrder.totalPrice.toLocaleString()} VND</span></p>
+                        <p className="italic text-gray-600">({numberToWords(latestOrder.totalPrice)})</p>
+                    </div>
+                    <p className="text-center mt-4 text-gray-800 font-medium">
+                        Xin cảm ơn Quý khách! / Thank you!
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
+
 export default BillPage;
