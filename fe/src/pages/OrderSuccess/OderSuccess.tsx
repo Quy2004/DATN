@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const OrderSuccess: React.FC = () => {
   // const location = useLocation();
@@ -9,16 +9,9 @@ const OrderSuccess: React.FC = () => {
     navigate("/");
   };
 
-  // const handleViewBill = () => {
-  //   // Giả sử thông tin hóa đơn nằm trong `location.state`
-  //   if (location.state) {
-  //     navigate("/bill", { state: location.state });
-  //   } else {
-  //     // Nếu không có dữ liệu hóa đơn, có thể xử lý lỗi hoặc chuyển đến trang mặc định
-  //     navigate("/error");
-  //   }
-  // };
-
+  const handleCheckBill = () => {
+    navigate("/bill");
+  };
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200 p-4 sm:p-6">
       <div className="absolute inset-0 bg-opacity-30 bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200"></div> {/* Nền gradient mờ */}
@@ -56,6 +49,7 @@ const OrderSuccess: React.FC = () => {
         </button>
         <button
           className="bg-[#ea8025] ml-2 text-white font-bold py-2 px-4 rounded-lg  transition-colors duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:shadow-outline"
+          onClick={handleCheckBill}
         >
           Xem hóa đơn thanh toán
         </button>
