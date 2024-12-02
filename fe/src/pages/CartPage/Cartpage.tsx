@@ -19,12 +19,13 @@ const CartPage: React.FC<{
     try {
       const { data } = await instance.get(`/cart/${user._id}`);
       const mergedCart = data.cart.reduce((acc: any[], item: any) => {
-        const itemId = `${item.product._id}-${
-          item.product_sizes?._id
-        }-${item.product_toppings
-          ?.map((topping: any) => topping.topping_id._id)
-          .join(",")}`;
-        const existingItem = acc.find((cartItem: any) => cartItem.itemId === itemId);
+        const itemId = `${item.product._id}-${item.product_sizes?._id
+          }-${item.product_toppings
+            ?.map((topping: any) => topping.topping_id._id)
+            .join(",")}`;
+        const existingItem = acc.find(
+          (cartItem: any) => cartItem.itemId === itemId
+        );
         if (existingItem) {
           existingItem.quantity += item.quantity;
         } else {
@@ -38,21 +39,19 @@ const CartPage: React.FC<{
       console.error("Error fetching cart:", error);
     }
   };
-  
-
-  
 
   const updateTotalPrice = (cart: any[], selectedItems: string[]) => {
     const total = cart.reduce((acc: number, item: any) => {
       if (selectedItems.includes(item.itemId)) {
-        const productPrice = item?.product?.sale_price || item?.product?.price || 0;
+        const productPrice =
+          item?.product?.sale_price || item?.product?.price || 0;
         const sizePrice = item?.product_sizes?.priceSize || 0;
         const toppingPrice = Array.isArray(item?.product_toppings)
           ? item.product_toppings.reduce(
-              (total: number, topping: any) =>
-                total + (topping?.topping_id?.priceTopping || 0),
-              0
-            )
+            (total: number, topping: any) =>
+              total + (topping?.topping_id?.priceTopping || 0),
+            0
+          )
           : 0;
         return acc + (productPrice + sizePrice + toppingPrice) * item.quantity;
       }
@@ -60,7 +59,6 @@ const CartPage: React.FC<{
     }, 0);
     setTotalPrice(total);
   };
-  
 
   useEffect(() => {
     fetchCart();
@@ -69,7 +67,6 @@ const CartPage: React.FC<{
   useEffect(() => {
     updateTotalPrice(cart, selectedItems); // Recalculate when selectedItems change
   }, [selectedItems]);
-  
 
   // Handle increasing or decreasing the product quantity
   const handleQuantityChange = async (
@@ -95,7 +92,6 @@ const CartPage: React.FC<{
     }
   };
 
-
   // Format currency for display
   const formatCurrency = (amount: number) => {
     return `${new Intl.NumberFormat("vi-VN", {
@@ -103,28 +99,8 @@ const CartPage: React.FC<{
     }).format(amount)} VND`;
   };
 
-  // Delete selected items
-  const deleteSelectedItems = async () => {
-    if (selectedItems.length === 0) {
-      toast.error("Chưa chọn sản phẩm để xóa");
-      return;
-    }
-  
-    try {
-      const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-      const productIds = selectedItems.map((itemId) => itemId.split("-")[0]);
-      await instance.patch(`/cart/${userId}/delete-selected`, { productIds });
-  
-      fetchCart();
-      setSelectedItems([]);
-      toast.success("Đã xóa các sản phẩm đã chọn");
-    } catch (error) {
-      toast.error("Không thể xóa sản phẩm");
-      console.error("Delete selected error:", error);
-    }
-  };
-   // Xóa sản phẩm
-   const deleteCartItem = async (cartItemId: any) => {
+  // Xóa sản phẩm
+  const deleteCartItem = async (cartItemId: any) => {
     try {
       const response = await instance.delete(`/cart/item/${cartItemId}`);
       const updatedCart = response.data?.cart;
@@ -148,50 +124,73 @@ const CartPage: React.FC<{
   const handleDeleteCartItem = async (cartItemId) => {
     try {
       await deleteCartItem(cartItemId);
-      const updatedCart = cart.filter((item : any) => item._id !== cartItemId);
+      const updatedCart = cart.filter((item) => item._id !== cartItemId);
       setCart(updatedCart);
     } catch (error) {
       alert("Có lỗi xảy ra khi xóa mục giỏ hàng.");
     }
   };
+  // Xóa sản phẩm được chọn
+  const deleteSelectedItems = async () => {
+    if (selectedItems.length === 0) {
+      toast.error("Vui lòng chọn sản phẩm cần xóa");
+      return;
+    }
 
-
-  // Delete all items
-  const deleteAllItems = async () => {
     try {
-      // Hiển thị SweetAlert2 xác nhận trước khi thực hiện xóa
-      const result = await Swal.fire({
-        html: `<p class="text-lg font-semibold text-red-500">Bạn có chắc chắn muốn xóa tất cả sản phẩm không?</p>
-         <p class="text-sm text-gray-600 mt-2">Hành động này không thể hoàn tác!</p>`,
-        icon: "warning",
-        width: 400,
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Có",
-        cancelButtonText: "Hủy",
+      const response = await instance.delete("/cart/selected", {
+        data: { itemIds: selectedItems },
       });
-
-      if (result.isConfirmed) {
-        // Thực hiện xóa nếu người dùng chọn "Có, xóa tất cả!"
-        const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
-        await instance.delete(`/cart/${userId}/delete-all`);
-
+      if (response.status === 200) {
         fetchCart();
-        toast.success("Đã xóa toàn bộ sản phẩm");
+        setSelectedItems([]);
+        toast.success("Xóa các sản phẩm đã chọn thành công");
       }
     } catch (error) {
-      console.error("Delete all error:", error);
+      console.error("Error deleting selected items:", error);
     }
   };
+  // Xóa tất cả sản phẩm
+  const deleteAllItems = async () => {
+    const confirmation = await Swal.fire({
+      title: "Xác nhận xóa",
+      html: `
+        <div class="text-center">
+          <p class="text-lg font-semibold text-red-500">
+            Bạn có chắc chắn muốn xóa tất cả sản phẩm?
+          </p>
+          <p class="text-sm text-gray-600 mt-2">
+            Hành động này không thể hoàn tác!
+          </p>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+    });
 
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await instance.delete("/cart/clear");
+        if (response.status === 200) {
+          fetchCart();
+          setSelectedItems([]);
+          toast.success("Xóa toàn bộ giỏ hàng thành công");
+        }
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+      }
+    }
+  };
   // Item selection handling
   const toggleItemSelection = (item: any) => {
-    const itemId = `${item.product._id}-${
-      item.product_sizes?._id
-    }-${item.product_toppings
-      ?.map((topping: any) => topping.topping_id._id)
-      .join(",")}`;
+    const itemId = `${item.product._id}-${item.product_sizes?._id
+      }-${item.product_toppings
+        ?.map((topping: any) => topping.topping_id._id)
+        .join(",")}`;
     setSelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
@@ -205,20 +204,19 @@ const CartPage: React.FC<{
     } else {
       const allItemIds = cart.map(
         (item: any) =>
-          `${item.product._id}-${
-            item.product_sizes?._id
+          `${item.product._id}-${item.product_sizes?._id
           }-${item.product_toppings
-            ?.map((topping : any) => topping.topping_id._id)
+            ?.map((topping: any) => topping.topping_id._id)
             .join(",")}`
       );
       setSelectedItems(allItemIds);
     }
   };
-  const calculateItemTotal = (item : any) => {
+  const calculateItemTotal = (item: any) => {
     const basePrice = item?.product?.sale_price || 0; // Giá sản phẩm
     const sizePrice = item?.product_sizes?.priceSize || 0; // Giá kích thước
     const toppingsPrice = (item?.product_toppings || []).reduce(
-      (total : any, topping : any) => {
+      (total: any, topping: any) => {
         return total + (topping?.topping_id?.priceTopping || 0); // Tổng giá topping
       },
       0
@@ -258,11 +256,10 @@ const CartPage: React.FC<{
                     <button
                       onClick={deleteSelectedItems}
                       disabled={selectedItems.length === 0}
-                      className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${
-                        selectedItems.length === 0
+                      className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${selectedItems.length === 0
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:scale-105"
-                      }`}
+                        }`}
                     >
                       Xóa đã chọn
                     </button>
@@ -276,7 +273,7 @@ const CartPage: React.FC<{
                 </div>
 
                 {/* Cart Items */}
-                {cart.map((item : any) => (
+                {cart.map((item: any) => (
                   <div
                     key={item.product._id}
                     className="mb-4 rounded-xl border border-gray-200 bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 dark:border-gray-700 dark:bg-gray-800"
@@ -287,10 +284,9 @@ const CartPage: React.FC<{
                         <input
                           type="checkbox"
                           checked={selectedItems.includes(
-                            `${item.product._id}-${
-                              item.product_sizes?._id
+                            `${item.product._id}-${item.product_sizes?._id
                             }-${item.product_toppings
-                              ?.map((topping : any) => topping.topping_id._id)
+                              ?.map((topping: any) => topping.topping_id._id)
                               .join(",")}`
                           )}
                           onChange={() => toggleItemSelection(item)}
@@ -315,11 +311,11 @@ const CartPage: React.FC<{
                           {item.product.name}
                         </Link>
                         <div className="space-y-2 text-sm text-gray-600">
-                          <p>Size: {item?.product_sizes?.name}</p>
+                          <p>Size: <span className="text-gray-500 font-medium">{item?.product_sizes?.name}</span></p>
                           <p>
                             Topping:{" "}
                             {item?.product_toppings &&
-                            item?.product_toppings.length > 0 ? (
+                              item?.product_toppings.length > 0 ? (
                               item?.product_toppings.map(
                                 (topping: ProductTopping, index: number) => (
                                   <span
@@ -345,8 +341,7 @@ const CartPage: React.FC<{
                           </p>
                         </div>
                         <button
-                         onClick={() => handleDeleteCartItem(item._id)}
-
+                          onClick={() => handleDeleteCartItem(item._id)}
                           className="mt-2 border-2 border-red-500 px-2 rounded-lg hover:bg-red-500 text-sm font-medium text-red-500 hover:text-white transition-colors duration-200"
                         >
                           Xóa
@@ -356,7 +351,7 @@ const CartPage: React.FC<{
                       {/* Quantity Controls and Price */}
                       <div className="mt-4 flex items-center justify-between gap-6 md:order-3 md:mt-0">
                         <div className="flex items-center space-x-3">
-                        <button
+                          <button
                             onClick={() =>
                               handleQuantityChange(item._id, false)
                             }
@@ -375,7 +370,6 @@ const CartPage: React.FC<{
                           >
                             +
                           </button>
-
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
@@ -434,8 +428,7 @@ const CartPage: React.FC<{
                     state: {
                       selectedItems: cart.filter((item: any) =>
                         selectedItems.includes(
-                          `${item.product._id}-${
-                            item.product_sizes?._id
+                          `${item.product._id}-${item.product_sizes?._id
                           }-${item.product_toppings
                             ?.map((topping: any) => topping.topping_id._id)
                             .join(",")}`
@@ -443,13 +436,11 @@ const CartPage: React.FC<{
                       ),
                     },
                   }}
-                  className={`mt-6 block w-full rounded-lg ${
-                    selectedItems.length === 0
+                  className={`mt-6 block w-full rounded-lg ${selectedItems.length === 0
                       ? "bg-gray-300 cursor-not-allowed"
                       : "bg-[#ea8025]"
-                  } px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#ff8e37] transition-colors duration-200 transform ${
-                    selectedItems.length > 0 ? "hover:scale-[1.02]" : ""
-                  }`}
+                    } px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#ff8e37] transition-colors duration-200 transform ${selectedItems.length > 0 ? "hover:scale-[1.02]" : ""
+                    }`}
                   onClick={(e) => {
                     if (selectedItems.length === 0) {
                       e.preventDefault(); // Ngăn chặn hành động mặc định
@@ -468,7 +459,7 @@ const CartPage: React.FC<{
                   </span>
                   <Link
                     to="/"
-                    className="group inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-200"
+                    className="group inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-[#ea8025] hover:underline transition-colors duration-200"
                   >
                     Tiếp tục mua sắm
                     <svg
