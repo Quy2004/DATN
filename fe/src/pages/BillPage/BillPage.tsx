@@ -6,7 +6,6 @@ import instance from "../../services/api";
 const BillPage = () => {
     const localStorageUser = localStorage.getItem("user");
     const storedUserId = localStorageUser ? JSON.parse(localStorageUser)._id : null;
-
     const {
         data: orders,
         isLoading,
@@ -32,7 +31,7 @@ const BillPage = () => {
         refetchOnWindowFocus: true,  // Tự động fetch khi cửa sổ được focus
         enabled: !!storedUserId,  // Chỉ fetch khi có storedUserId
     });
-
+    console.log(orders)
     // Effect để tự động cập nhật dữ liệu mỗi 5 giây
     useEffect(() => {
         refetch();
@@ -102,6 +101,8 @@ const BillPage = () => {
     if (isError) return <div>Error loading orders.</div>;
     if (!orders || orders.length === 0) return <div>No orders found.</div>;
 
+    // Tính thành tiền
+
     const latestOrder = orders[0];
 
     return (
@@ -129,68 +130,89 @@ const BillPage = () => {
 
                     <div className="mt-6">
                         {Array.isArray(latestOrder.orderDetail_id) && latestOrder.orderDetail_id.map((item: any, index: any) => {
-                            const sizePrice = item.product_size?.price || 0;
-                            const toppingsPrice = item.product_toppings?.reduce((acc: number, topping: any) => {
-                                return acc + (topping?.topping_id?.price || 0);
-                            }, 0) || 0;
-                            const itemPrice = item.sale_price + sizePrice + toppingsPrice;
+                            const basePrice = Number(item.sale_price) || 0;
+                            const sizePrice = Number(item.product_size?.priceSize) || 0;
+                            const toppingsPrice = Array.isArray(item.product_toppings)
+                                ? item.product_toppings.reduce((acc: number, topping: any) => {
+                                    return acc + (Number(topping?.topping_id?.priceTopping) || 0);
+                                }, 0)
+                                : 0;
+                            const quantity = Number(item.quantity) || 1;
+                            const discount = Number(item.discount) || 0;
+                            // Tính tổng giá cho một đơn vị sản phẩm
+                            const totalItemPrice = basePrice + sizePrice + toppingsPrice;
+
+                            // Tính giá cuối cùng sau khi nhân số lượng và trừ giảm giá
+                            const finalPrice = (totalItemPrice * quantity) - discount;
 
                             return (
-                                <div key={index} className="mb-6 bg-gray-100 rounded-lg shadow- p-4">
+                                <div key={index} className="mb-6 bg-[#fff] rounded-lg shadow- p-4">
                                     <div className="flex justify-between items-center mb-3">
                                         <h4 className="text-base font-semibold text-gray-700">{item.product_id.name}</h4>
-                                        <span className="text-sm text-gray-500">x{item.quantity}</span>
+                                        <span className="text-sm text-gray-500">x{quantity}</span>
                                     </div>
 
                                     <div className="space-y-2 text-sm text-gray-600">
+                                        {/* Giá cơ bản */}
                                         <div className="flex justify-between">
-                                            <span>Size:</span>
-                                            <span className="font-medium">{item.product_size?.name}</span>
+                                            <span>Giá cơ bản:</span>
+                                            <span className="font-medium">{basePrice.toLocaleString()} VND</span>
                                         </div>
 
-                                        {item.product_size?.price && (
+                                        {/* Size và giá size */}
+                                        {item.product_size && (
                                             <div className="flex justify-between">
-                                                <span>Giá size:</span>
-                                                <span className="font-medium">{sizePrice.toLocaleString()} VND</span>
+                                                <span>Size {item.product_size?.name || ''}:</span>
+                                                <span className="font-medium">{item.product_size?.priceSize.toLocaleString()} VND</span>
                                             </div>
                                         )}
-
-                                        {item.product_toppings && item.product_toppings.length > 0 && (
-                                            <div className="flex justify-between">
-                                                <span>Topping:</span>
-                                                <span className="font-medium text-right">
-                                                    {item.product_toppings
-                                                        .map((topping: any) => topping.topping_id?.nameTopping || "")
-                                                        .filter((name: any) => name)
-                                                        .join(", ")}
-                                                </span>
-                                            </div>
+                                        {/* Topping và tổng giá topping */}
+                                        {Array.isArray(item.product_toppings) && item.product_toppings.length > 0 && (
+                                            <>
+                                                <div className="flex justify-between">
+                                                    <span>Topping:</span>
+                                                    <span className="font-medium text-right">
+                                                        {item.product_toppings.map((topping: any) => topping.topping_id?.nameTopping)
+                                                            .filter(Boolean)
+                                                            .join(", ")}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Giá topping:</span>
+                                                    <span className="font-medium">
+                                                        {item.product_toppings
+                                                            .map((topping: any) => topping.topping_id?.priceTopping || 0) // Đảm bảo giá luôn là số
+                                                            .reduce((total: number, price: number) => total + price, 0) // Tính tổng giá
+                                                            .toLocaleString()} VND
+                                                    </span>
+                                                </div>
+                                            </>
                                         )}
-
-                                        <div className="flex justify-between">
+                                        {/* Đơn giá tổng (trước khi nhân số lượng) */}
+                                        <div className="flex justify-between font-medium">
                                             <span>Đơn giá:</span>
-                                            <span className="font-medium">{itemPrice.toLocaleString()} VND</span>
+                                            <span>{totalItemPrice.toLocaleString()} VND</span>
                                         </div>
 
-                                        {item.discount > 0 && (
+                                        {/* Giảm giá nếu có */}
+                                        {discount > 0 && (
                                             <div className="flex justify-between text-red-500">
                                                 <span>Giảm giá:</span>
-                                                <span className="font-medium">-{item.discount.toLocaleString()} VND</span>
+                                                <span className="font-medium">-{discount.toLocaleString()} VND</span>
                                             </div>
                                         )}
 
-                                        {/* Thành tiền sau khi tính giá size và topping */}
+                                        {/* Thành tiền cuối cùng */}
                                         <div className="flex justify-between text-[#ea8205] font-semibold pt-2 border-t">
                                             <span>Thành tiền:</span>
-                                            <span>{(
-                                                (item.sale_price + sizePrice + toppingsPrice) * item.quantity).toLocaleString()} VND</span>
+                                            <span>{finalPrice.toLocaleString()} VND</span>
                                         </div>
-
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
+
 
                     <div className="mt-4 text-right text-gray-800">
                         <p className="font-bold">Tổng cộng: <span className="text-xl text-[#ea8205]">{latestOrder.totalPrice.toLocaleString()} VND</span></p>
