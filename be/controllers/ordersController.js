@@ -72,30 +72,36 @@ export const createOrder = async (req, res) => {
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
-      paymentStatus: "unpaid",  // Trạng thái ban đầu là unpaid
+      paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
 
     await order.save();
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
 
-    // Giả sử sau 5 phút trạng thái đơn hàng không được thanh toán và cần hủy
     setTimeout(async () => {
       const foundOrder = await Order.findById(order._id);
-
-      if (foundOrder && foundOrder.paymentStatus === "failed") {
-        console.log(`Đơn hàng ${order._id} đang bị xóa...`);
-        
-        // Thực hiện xóa đơn hàng và chi tiết
-        await Order.findByIdAndDelete(order._id);
-        await OrderDetail.deleteMany({ order_id: order._id });
-        
-        console.log(`Đơn hàng ${order._id} đã bị xóa.`);
+    
+      // Kiểm tra nếu đơn hàng tồn tại và trạng thái thanh toán là "failed" nhưng không phải phương thức COD
+      if (foundOrder) {
+        // Nếu là COD, không thực hiện xóa
+        if (foundOrder.paymentMethod === "cash on delivery") {
+          console.log(`Đơn hàng ${order._id} không bị xóa vì phương thức thanh toán là COD.`);
+        } else if (foundOrder.paymentStatus === "failed") {
+          console.log(`Đơn hàng ${order._id} đang bị xóa...`);
+    
+          // Thực hiện xóa đơn hàng và chi tiết
+          await Order.findByIdAndDelete(order._id);
+          await OrderDetail.deleteMany({ order_id: order._id });
+    
+          console.log(`Đơn hàng ${order._id} đã bị xóa.`);
+        } else {
+          console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+        }
       } else {
-        console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+        console.log(`Không tìm thấy đơn hàng với ID ${order._id}`);
       }
     }, 5 * 60 * 1000); // 5 phút = 300.000ms
-
     // Create order details including size and topping
     const orderDetailPromises = cart.products.map(async (item) => {
       if (!item.product?._id || !item.product?.price) {
@@ -448,6 +454,204 @@ export const getOrderById = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Lỗi khi lấy đơn hàng",
+      error: error.message,
+    });
+  }
+};
+// Get total revenue and order count
+export const getOrderStats = async (req, res) => {
+  try {
+    const totalOrders = await Order.countDocuments();
+    const totalRevenue = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders
+      { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalOrders,
+        totalRevenue: totalRevenue[0]?.totalRevenue || 0,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê đơn hàng",
+      error: error.message,
+    });
+  }
+};
+
+// Get order status distribution
+export const getOrderStatusDistribution = async (req, res) => {
+  try {
+    const statusDistribution = await Order.aggregate([
+      { $group: { _id: "$orderStatus", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: statusDistribution,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê trạng thái đơn hàng",
+      error: error.message,
+    });
+  }
+};
+
+// Get top products by sales volume
+export const getTopProducts = async (req, res) => {
+  try {
+    const topProducts = await OrderDetail.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "product_id",
+          foreignField: "_id",
+          as: "product_info",
+        },
+      },
+      { $unwind: "$product_info" },
+      {
+        $group: {
+          _id: "$product_id",
+          totalQuantity: { $sum: "$quantity" },
+          productName: { $first: "$product_info.name" },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 10 }, // Get top 10 products
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: topProducts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê sản phẩm",
+      error: error.message,
+    });
+  }
+};
+
+export const getCustomerStats = async (req, res) => {
+  try {
+    const customerStats = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user_id",
+          foreignField: "_id",
+          as: "user_info",
+        },
+      },
+      { $unwind: "$user_info" },
+      {
+        $lookup: {
+          from: "orderDetails",
+          localField: "_id",
+          foreignField: "order_id",
+          as: "order_details",
+        },
+      },
+      {
+        $group: {
+          _id: "$user_id",
+          userName: { $first: "$user_info.userName" },
+          email: { $first: "$user_info.email" },
+          phone: { $first: "$user_info.phone" },
+          address: { $first: "$user_info.address" },
+          totalSpent: { $sum: "$totalPrice" },
+          orderCount: { $sum: 1 },
+          orders: {
+            $push: {
+              orderId: "$_id",
+              orderNumber: "$orderNumber",
+              totalPrice: "$totalPrice",
+              orderStatus: "$orderStatus",
+              paymentStatus: "$paymentStatus",
+              createdAt: "$createdAt",
+              details: "$order_details",
+            },
+          },
+        },
+      },
+      { $sort: { totalSpent: -1 } },
+      { $limit: 10 }, // Top 10 khách hàng theo chi tiêu
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: customerStats,
+    });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Dữ liệu đầu vào không hợp lệ",
+        error: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê khách hàng",
+      error: error.message,
+    });
+  }
+};
+
+
+// Get revenue by time period (e.g., daily, weekly, monthly)
+export const getRevenueByTimePeriod = async (req, res) => {
+  try {
+    const { period } = req.query; // "daily", "weekly", "monthly"
+    let groupBy;
+
+    switch (period) {
+      case "weekly":
+        groupBy = { $week: "$createdAt" }; // Group by week number
+        break;
+      case "monthly":
+        groupBy = { $month: "$createdAt" }; // Group by month
+        break;
+      case "daily":
+      default:
+        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by date
+    }
+
+    const revenueData = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders
+      {
+        $group: {
+          _id: groupBy,
+          totalRevenue: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { _id: 1 } }, // Sort by time period
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: revenueData,
+    });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Dữ liệu đầu vào không hợp lệ",
+        error: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê doanh thu",
       error: error.message,
     });
   }

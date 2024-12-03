@@ -15,6 +15,7 @@ import {
 	Input,
 	message,
 	Modal,
+	Popconfirm,
 	Select,
 	Space,
 	Spin,
@@ -164,14 +165,31 @@ const CommentAdmin = () => {
 		},
 		onSuccess: () => {
 			messageApi.success("Thêm bình luận thành công");
+			
+			queryClient.invalidateQueries({ queryKey: ["comment"] });
 			// Reset form sau khi thêm thành công
 			form.resetFields();
 			// Chuyển hướng về trang quản lý bình luận
-			setTimeout(() => {
-				navigate("/admin/comment"); // Cập nhật đường dẫn nếu cần
-			}, 2000);
+			
 		},
 		onError(error) {
+			messageApi.error(`Lỗi: ${error.message}`);
+		},
+	});
+
+	const mutationSoftDelete = useMutation<void, Error, string>({
+		mutationFn: async (_id: string) => {
+			try {
+				return await instance.patch(`/comment/${_id}/soft-delete`);
+			} catch (error) {
+				throw new Error("Xóa bình luận thất bại");
+			}
+		},
+		onSuccess: () => {
+			messageApi.success("Xóa bình luận thành công");
+			queryClient.invalidateQueries({ queryKey: ["comment"] });
+		},
+		onError: error => {
 			messageApi.error(`Lỗi: ${error.message}`);
 		},
 	});
@@ -327,7 +345,6 @@ const CommentAdmin = () => {
 
 		// Gửi giá trị đã cập nhật lên server
 		mutate(replyContent);
-		
 	};
 
 	return (
@@ -395,7 +412,6 @@ const CommentAdmin = () => {
 				style={{ tableLayout: "fixed" }} // Giữ chiều rộng ổn định
 			/>
 
-x
 			<Modal
 				title="Trả lời bình luận"
 				open={isModalRep}
@@ -503,10 +519,12 @@ x
 				footer={null}
 				width={800}
 				className="mt-[-90px] ml-[25%] max-h-[630px] fixed overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
-
 			>
 				{selectedComment && (
-					<div className="p-5">
+					<div
+						className="p-5"
+						key={selectedComment._id}
+					>
 						<Descriptions
 							bordered
 							column={2}
@@ -564,11 +582,26 @@ x
 								<div className="space-y-2">
 									{Array.isArray(repComment) && repComment.length > 0 ? (
 										repComment.map((reply, index) => (
-											<div
-												key={index}
-												className="font-semibold text-sm border-b border-gray-300"
-											>
-												{reply.content}
+											<div className="flex ">
+												<div
+													key={index}
+													className="font-semibold text-sm border-b border-gray-300 w-[90%]"
+												>
+													{reply.content}
+												</div>
+												<Popconfirm
+													title="Xóa bình luận"
+													description="Bạn có chắc muốn xóa bình luận này không?"
+													onConfirm={() =>
+														mutationSoftDelete.mutate(reply._id)
+													}
+													okText="Yes"
+													cancelText="No"
+												>
+													<Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
+														Xóa
+													</Button>
+												</Popconfirm>
 											</div>
 										))
 									) : (

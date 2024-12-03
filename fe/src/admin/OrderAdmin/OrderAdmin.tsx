@@ -6,6 +6,8 @@ import {
   Drawer,
   Image,
   Input,
+  InputNumber,
+  DatePicker,
   message,
   Modal,
   Select,
@@ -19,8 +21,8 @@ import { useState } from "react";
 import { Order } from "../../types/order";
 import { ProductSize, ProductTopping } from "../../types/product";
 import ExportButton from "./components/ExportButton";
-import { AimOutlined, CloseOutlined } from "@ant-design/icons";
-
+import { CloseOutlined } from "@ant-design/icons";
+const { RangePicker } = DatePicker;
 type PriceType = number | { $numberDecimal: string };
 // Kiểu dữ liệu
 type OrderStatus =
@@ -58,35 +60,37 @@ const OrderManagerPage = () => {
   const [cancellationReason, setCancellationReason] = useState("");
   // Thêm state để lưu trạng thái filter
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  // Thêm vào state
+  const [priceFilter, setPriceFilter] = useState<{
+    min?: number;
+    max?: number;
+  }>({});
+
+  const [dateFilter, setDateFilter] = useState<{
+    startDate?: Date;
+    endDate?: Date;
+  }>({});
+
+  const [customerNameFilter, setCustomerNameFilter] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<
+    OrderStatus | "all"
+  >("all");
 
   const localStorageUser = localStorage.getItem("user");
   const storedUserId = localStorageUser
     ? JSON.parse(localStorageUser)._id
     : null;
-
   const {
     data: orders,
     isLoading,
     isError,
-    error,
   } = useQuery<Order[]>({
-    queryKey: ["orders", storedUserId],
+    queryKey: ["orders"],
     queryFn: async () => {
-      if (!storedUserId) {
-        console.error("User ID is not available.");
-        throw new Error("User ID is not available.");
-      }
-      console.log("Fetching orders for User ID:", storedUserId);
-      const response = await instance.get(`orders/${storedUserId}`);
-
-      if (!response.data || !response.data.data) {
-        console.error("Invalid response structure:", response.data);
-        throw new Error("Invalid response structure.");
-      }
+      const response = await instance.get(`orders`);
       return response.data.data;
     },
     staleTime: 60000,
-    enabled: !!storedUserId,
   });
 
   console.log(orders);
@@ -194,45 +198,43 @@ const OrderManagerPage = () => {
       "canceled",
     ];
 
-    const currentStatusIndex = statusOrder.indexOf(currentOrder.orderStatus);
-    const newStatusIndex = statusOrder.indexOf(newStatus);
+    const isOnlinePayment = (method: string) =>
+      ["momo", "zalopay"].includes(method);
 
-    if (newStatusIndex === -1 || currentStatusIndex === -1) {
-      messageApi.error("Trạng thái không hợp lệ");
-      return;
-    }
-
-    const isValidTransition =
-      newStatusIndex === currentStatusIndex + 1 ||
-      (newStatus === "canceled" && currentOrder.orderStatus === "pending") ||
-      (newStatus === "completed" && currentOrder.orderStatus === "delivered");
-
-    if (!isValidTransition) {
+    if (
+      isOnlinePayment(currentOrder.paymentMethod) &&
+      currentOrder.paymentStatus !== "paid"
+    ) {
       messageApi.error(
-        `Không thể chuyển từ trạng thái "${
-          OrderStatusLabels[currentOrder.orderStatus]
-        }" sang "${
-          OrderStatusLabels[newStatus]
-        }". Vui lòng chuyển trạng thái theo từng bước.`
+        "Không thể thay đổi trạng thái đơn hàng khi chưa thanh toán thành công."
       );
       return;
     }
 
-    // if (newStatus === "completed") {
-    //   // Kiểm tra người dùng đã nhận hàng chưa
-    //   if (currentOrder.orderStatus !== "delivered") {
-    //     messageApi.error(
-    //       "Chỉ có thể hoàn thành đơn hàng sau khi đơn hàng đã được giao."
-    //     );
-    //     return;
-    //   }
-    // } else {
-    // Cập nhật trạng thái cho các trạng thái khác ngoài "hoàn thành"
+    const currentStatusIndex = statusOrder.indexOf(currentOrder.orderStatus);
+    const newStatusIndex = statusOrder.indexOf(newStatus);
+
+    if (newStatusIndex === -1 || currentStatusIndex === -1) {
+      messageApi.error("Trạng thái không hợp lệ.");
+      return;
+    }
+
+    if (newStatus === "canceled" && currentStatusIndex !== 0) {
+      messageApi.error(
+        "Bạn chỉ có thể hủy đơn hàng khi trạng thái là 'chờ xác nhận'."
+      );
+      return;
+    }
+
+    if (newStatusIndex < currentStatusIndex) {
+      messageApi.error("Không thể quay lại trạng thái trước đó.");
+      return;
+    }
+
     updateOrderStatusMutation.mutate({
       orderId: currentOrder._id,
       newStatus,
     });
-    // }
   };
 
   const getStatusColor = (status: OrderStatus) => {
@@ -289,6 +291,13 @@ const OrderManagerPage = () => {
     }
   };
 
+  const paymentMethods = [
+    { value: "all", label: "Tất cả" },
+    { value: "bank transfer", label: "Chuyển Khoản" },
+    { value: "cash on delivery", label: "Thanh Toán Khi Nhận Hàng" },
+    { value: "momo", label: "Momo" },
+    { value: "zalopay", label: "ZaloPay" },
+  ];
   const columns = [
     {
       title: "STT",
@@ -338,6 +347,10 @@ const OrderManagerPage = () => {
             return "Chuyển Khoản";
           case "cash on delivery":
             return "Thanh Toán Khi Nhận Hàng";
+          case "momo":
+            return "Momo";
+          case "zalopay":
+            return "ZaloPay";
           default:
             return method;
         }
@@ -369,13 +382,17 @@ const OrderManagerPage = () => {
           type="primary"
           danger
           onClick={() => handleCancelOrder(record)}
-          disabled={[
-            "confirmed",
-            "shipping",
-            "delivered",
-            "completed",
-            "canceled",
-          ].includes(record.orderStatus)}
+          disabled={
+            [
+              "confirmed",
+              "shipping",
+              "delivered",
+              "completed",
+              "canceled",
+            ].includes(record.orderStatus) ||
+            (record.paymentStatus !== "failed" &&
+              ["momo", "zalopay"].includes(record.paymentMethod))
+          }
         >
           Hủy Đơn
         </Button>
@@ -388,10 +405,47 @@ const OrderManagerPage = () => {
     setPagination({ ...pagination, current: 1 });
   };
 
+  // Thêm hàm lọc đơn hàng mở rộng
   const getFilteredOrders = () => {
     if (!orders) return [];
-    if (statusFilter === "all") return orders;
-    return orders.filter((order) => order.orderStatus === statusFilter);
+
+    return orders.filter((order) => {
+      // Lọc theo trạng thái
+      const statusMatch =
+        statusFilter === "all" || order.orderStatus === statusFilter;
+
+      // Lọc theo giá
+      const priceMatch =
+        (!priceFilter.min || order.totalPrice >= priceFilter.min) &&
+        (!priceFilter.max || order.totalPrice <= priceFilter.max);
+
+      // Lọc theo ngày
+      const dateMatch =
+        (!dateFilter.startDate ||
+          new Date(order.createdAt) >= dateFilter.startDate) &&
+        (!dateFilter.endDate ||
+          new Date(order.createdAt) <= dateFilter.endDate);
+
+      // Lọc theo tên khách hàng
+      const customerMatch =
+        !customerNameFilter ||
+        order.customerInfo?.name
+          .toLowerCase()
+          .includes(customerNameFilter.toLowerCase());
+
+      // Lọc theo phương thức thanh toán
+      const paymentMethodMatch =
+        paymentMethodFilter === "all" ||
+        order.paymentMethod === paymentMethodFilter;
+
+      return (
+        statusMatch &&
+        priceMatch &&
+        dateMatch &&
+        customerMatch &&
+        paymentMethodMatch
+      );
+    });
   };
 
   const paymentMethodDisplay = (method: string) => {
@@ -402,6 +456,19 @@ const OrderManagerPage = () => {
         return "Thanh Toán Khi Nhận Hàng";
       case "momo":
         return "Momo";
+      case "zalopay":
+        return "ZaloPay";
+    }
+  };
+
+  const paymentStatusDisplay = (status: string) => {
+    switch (status) {
+      case "unpaid":
+        return "Chưa Thanh Toán";
+      case "paid":
+        return "Đã Thanh Toán";
+      case "failed":
+        return "Thanh Toán Thất Bại";
     }
   };
 
@@ -528,16 +595,17 @@ const OrderManagerPage = () => {
         <Title level={3} className="text-2xl font-semibold text-gray-800">
           Danh sách đơn hàng
         </Title>
-
-        <Space>
-          <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+        <ExportButton filteredOrders={getFilteredOrders()} />
+        <div className="grid grid-cols-2">
+          <Space>
+            {/* Filter by Status */}
             <Select
-              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-400 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 ease-in-out"
+              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
               value={statusFilter}
               onChange={handleStatusFilterChange}
             >
               <Select.Option value="all">
-                <span className="font-semibold">Tất cả</span>
+                <span className="font-semibold text-gray-700">Tất cả</span>
               </Select.Option>
               {Object.entries(OrderStatusLabels).map(([key, label]) => (
                 <Select.Option key={key} value={key}>
@@ -551,16 +619,79 @@ const OrderManagerPage = () => {
                 </Select.Option>
               ))}
             </Select>
-
             {statusFilter !== "all" && (
               <CloseOutlined
                 onClick={() => handleStatusFilterChange("all")}
-                className="w-4 h-4 text-gray-600 hover:text-red-500 transition duration-200 ease-in-out cursor-pointer"
+                className="w-4 h-4 text-gray-600 hover:text-red-600 transition duration-200 ease-in-out cursor-pointer"
               />
             )}
-          </div>
-          <ExportButton filteredOrders={getFilteredOrders()} />
-        </Space>
+
+            <Input
+              placeholder="Tìm theo tên khách hàng"
+              value={customerNameFilter}
+              onChange={(e) => setCustomerNameFilter(e.target.value)}
+              className="w-48 h-8 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
+            />
+
+            {/* Filter by Price */}
+
+            <InputNumber
+              placeholder="Giá tối thiểu"
+              className="border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-gray-500 focus:ring focus:ring-gray-200 transition duration-200 ease-in-out"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, "")}
+              onChange={(value: number | undefined) => {
+                setPriceFilter((prev) => ({ ...prev, min: value }));
+              }}
+            />
+            <InputNumber
+              placeholder="Giá tối đa"
+              className="border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-gray-500 focus:ring focus:ring-gray-200 transition duration-200 ease-in-out"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value?.replace(/\$\s?|(,*)/g, "")}
+              onChange={(value: number | undefined) => {
+                setPriceFilter((prev) => ({ ...prev, max: value }));
+              }}
+            />
+
+            {/* Filter by Date */}
+            <div className="flex flex-wrap items-center space-x-4 w-[200px]">
+              <RangePicker
+                placeholder={["Từ ngày", "Đến ngày"]}
+                className="border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-gray-500 focus:ring focus:ring-gray-200 transition duration-200 ease-in-out"
+                onChange={(dates) => {
+                  setDateFilter({
+                    startDate: dates ? dates[0]?.toDate() : null,
+                    endDate: dates ? dates[1]?.toDate() : null,
+                  });
+                }}
+              />
+            </div>
+            <Select
+              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
+              value={paymentMethodFilter}
+              onChange={setPaymentMethodFilter}
+            >
+              {paymentMethods.map((method) => (
+                <Select.Option key={method.value} value={method.value}>
+                  {method.label}
+                </Select.Option>
+              ))}
+            </Select>
+            {paymentMethodFilter !== "all" && (
+              <CloseOutlined
+                onClick={() => setPaymentMethodFilter("all")}
+                className="w-4 h-4 text-gray-600 hover:text-red-600 transition duration-200 ease-in-out cursor-pointer"
+              />
+            )}
+
+            {/* Export Button */}
+          </Space>
+        </div>
       </div>
 
       <Table
@@ -620,56 +751,68 @@ const OrderManagerPage = () => {
       >
         {selectedOrder && (
           <>
-            <div className="p-6 bg-white shadow-md rounded-md mb-6 transition duration-300 hover:shadow-lg hover:bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-600">
+            <div className="p-6 bg-white shadow-lg rounded-lg mb-6 transition-transform transform hover:scale-105 hover:shadow-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cột 1 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
                     Mã đơn hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       #{selectedOrder.orderNumber}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
-                    Ngày đặt hàng:
-                    <span className="ml-1 font-semibold text-gray-800">
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày đặt hàng:{" "}
+                    <span className="font-semibold text-gray-900">
                       {new Date(selectedOrder.createdAt).toLocaleString(
                         "vi-VN"
                       )}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
-                    Ngày cập nhật:
-                    <span className="ml-1 font-semibold text-gray-800">
+                  <p className="text-sm font-medium text-gray-700">
+                    Ngày cập nhật:{" "}
+                    <span className="font-semibold text-gray-900">
                       {new Date(selectedOrder.updatedAt).toLocaleString(
                         "vi-VN"
                       )}
                     </span>
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-600">
+
+                {/* Cột 2 */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700">
                     Tên khách hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {selectedOrder.customerInfo?.name || "N/A"}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     Email:{" "}
-                    <span className="font-semibold text-gray-800">
-                      {selectedOrder.customerInfo?.email}
+                    <span className="font-semibold text-gray-900">
+                      {selectedOrder.customerInfo?.email || "N/A"}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     Tổng đơn hàng:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {formatPrice(selectedOrder.totalPrice)}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-gray-700">
                     PTTT:{" "}
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-900">
                       {paymentMethodDisplay(selectedOrder.paymentMethod)}
-                    </span>
+                    </span>{" "}
+                    {selectedOrder.paymentMethod === "momo" ||
+                    selectedOrder.paymentMethod === "zalopay" ? (
+                      <>
+                        - Trạng thái:{" "}
+                        <span className="font-semibold text-gray-900">
+                          {paymentStatusDisplay(selectedOrder.paymentStatus)}
+                        </span>
+                      </>
+                    ) : null}
                   </p>
                 </div>
               </div>

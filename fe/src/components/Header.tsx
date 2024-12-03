@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button, Drawer } from "flowbite-react";
+import {  Drawer } from "flowbite-react";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -485,12 +485,11 @@ const Header: React.FC = () => {
 							onUpdate={refetchCart}
 						/>
 					))}
-
 					<div className="flex gap-2">
 						<Link to={"cart"}>
-							<Button className="flex w-[300px] rounded-lg px-4 text-center text-sm font-medium text-white 0 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600">
-								Checking
-							</Button>
+							<button className="w-[250px] mt-2 py-[6px] mx-5 rounded-lg px-4 text-center font-medium text-white bg-[#ea8025] hover:bg-[#FF6600]">
+								Kiểm tra giỏ hàng
+							</button>
 						</Link>
 						{/* <Button
 							onClick={toggleModal}

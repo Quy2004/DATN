@@ -63,7 +63,7 @@ const PostManagerPage = () => {
   } = useQuery({
     queryKey: ["categoryPost"],
     queryFn: async () => {
-      const response = await instance.get("categoryPost?");
+      const response = await instance.get("categoryPost");
       return response.data;
     },
   });

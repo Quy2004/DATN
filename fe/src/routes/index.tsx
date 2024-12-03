@@ -58,6 +58,9 @@ import SettingAccount from "../account/SettingAuth/SettingAccount";
 
 import OrderErr from "../pages/OrderError/OrderError";
 
+import Dashboard from "../admin/Statistics/StatisticsPage";
+import BillPage from "../pages/BillPage/BillPage";
+
 
 const Router = () => {
   return (
@@ -93,9 +96,12 @@ const Router = () => {
           <Route path="order-tracking/:order_id" element={<Tracking />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
+          <Route path= "bill" element={<BillPage/>}/>
+        
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
           <Route path="category" element={<CategoryManagerPage />} />
           <Route path="category/add" element={<CategoryAddPage />} />
           <Route path="category/:id/update" element={<CategoryUpdatePage />} />
