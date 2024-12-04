@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   const navigate = useNavigate();
@@ -22,6 +23,12 @@ const Checkout: React.FC = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
+  // Thêm state để quản lý voucher
+
+  const [discountAmount, setDiscountAmount] = useState<number>(0); // Số tiền giảm giá
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Trạng thái popup
+  const [voucherList, setVoucherList] = useState<any[]>([]); // Danh sách voucher
+  const [selectedVoucher, setSelectedVoucher] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const handlePaymentMethodChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -37,22 +44,35 @@ const Checkout: React.FC = () => {
     }
   };
 
+  // Hàm tính tổng giá
   const getTotalPrice = () => {
-    return carts.reduce((total: any, item: any) => {
-      const salePrice = item.product.sale_price || 0; // Giá sản phẩm
-      const sizePrice = item.product_sizes?.priceSize || 0; // Giá của kích thước
+    const originalTotal = carts.reduce((total: number, item: any) => {
+      const salePrice = item.product?.sale_price || 0;
+      const sizePrice = item.product_sizes?.priceSize || 0;
       const toppingsPrice =
-        item.product_toppings?.reduce((toppingTotal: any, topping: any) => {
-          return toppingTotal + (topping.topping_id?.priceTopping || 0); // Cộng giá của mỗi topping
-        }, 0) || 0; // Nếu không có topping thì là 0
+        item.product_toppings?.reduce(
+          (toppingTotal: number, topping: any) =>
+            toppingTotal + (topping.topping_id?.priceTopping || 0),
+          0
+        ) || 0;
 
-      // Tính tổng giá cho sản phẩm này: Giá sản phẩm + Giá kích thước + Giá topping
       const itemTotalPrice =
-        (salePrice + sizePrice + toppingsPrice) * item.quantity;
+        (salePrice + sizePrice + toppingsPrice) * (item.quantity || 0);
 
-      // Cộng vào tổng giá của giỏ hàng
       return total + itemTotalPrice;
     }, 0);
+
+    // Đảm bảo discountAmount có giá trị hợp lệ
+    const discountToApply = discountAmount || 0;
+
+    // Làm tròn giá trị giảm giá từ voucher
+    const roundedDiscount = Math.round(discountToApply);
+
+    // Tính tổng giá sau khi đã áp dụng voucher và làm tròn
+    const finalTotal = originalTotal - roundedDiscount;
+
+    // Trả về tổng giá đã trừ voucher, đảm bảo không âm
+    return Math.max(0, Math.round(finalTotal)); // Làm tròn tổng giá cuối cùng
   };
 
   interface Form {
@@ -77,7 +97,7 @@ const Checkout: React.FC = () => {
       const orderResponse = await instance.post("orders", {
         ...orderData,
       });
-      console.log("Order API Response:", orderResponse.data); 
+      console.log("Order API Response:", orderResponse.data);
 
       // Lấy payUrl từ phản hồi backend
       const { payUrl } = orderResponse.data;
@@ -104,10 +124,10 @@ const Checkout: React.FC = () => {
           error.response?.data?.message ||
           "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
       });
-     // Chuyển hướng người dùng đến trang hủy đơn nếu thanh toán thất bại
-    if (error.response?.data?.cancelUrl) {
-      window.location.href = error.response.data.cancelUrl; // Dùng URL từ backend
-    }
+      // Chuyển hướng người dùng đến trang hủy đơn nếu thanh toán thất bại
+      if (error.response?.data?.cancelUrl) {
+        window.location.href = error.response.data.cancelUrl; // Dùng URL từ backend
+      }
     }
   };
   const handleZaloPayPayment = async (orderData: any) => {
@@ -117,10 +137,10 @@ const Checkout: React.FC = () => {
         ...orderData,
       });
       console.log("Order API Response:", orderResponse.data); // Kiểm tra toàn bộ data trong response
-  
+
       // Lấy payUrl từ phản hồi backend
       const { payUrl } = orderResponse.data;
-  
+
       // Kiểm tra URL thanh toán từ ZaloPay
       if (!payUrl) {
         Swal.fire({
@@ -130,12 +150,12 @@ const Checkout: React.FC = () => {
         });
         return;
       }
-  
+
       // Chuyển hướng người dùng tới trang thanh toán ZaloPay
       window.location.href = payUrl;
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
-  
+
       Swal.fire({
         icon: "error",
         title: "Thanh toán thất bại",
@@ -143,9 +163,54 @@ const Checkout: React.FC = () => {
           error.response?.data?.message ||
           "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
       });
-  
+
       throw error;
     }
+  };
+  // Hàm mở modal và lấy danh sách voucher
+  const openVoucherModal = async () => {
+    try {
+      const response = await instance.get("/vouchers");
+      console.log("Dữ liệu từ API:", response.data); // Kiểm tra dữ liệu trả về từ API
+
+      // Kiểm tra dữ liệu voucher có đúng hay không
+      if (response.data && response.data.data) {
+        setVoucherList(response.data.data); // Cập nhật voucherList từ response.data.data
+        setIsModalOpen(true); // Mở modal
+      } else {
+        console.error("Không có dữ liệu voucher trong response");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải voucher:", error); // Kiểm tra lỗi
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Không thể tải danh sách voucher. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  // Hàm chọn voucher
+  const handleSelectVoucher = (voucher: any) => {
+    const totalPrice = getTotalPrice();
+    const discount = (totalPrice * voucher.discountPercentage) / 100;
+    const maxDiscount = voucher.maxDiscount || 0;
+
+    // Áp dụng giảm giá không vượt quá maxDiscount
+    const finalDiscountAmount = Math.min(discount, maxDiscount);
+
+    // Kiểm tra xem voucher có đang được chọn không
+    if (voucher.code === selectedVoucher) {
+      // Nếu voucher đã được chọn, bỏ chọn voucher
+      setSelectedVoucher(""); // Reset voucher đã chọn
+      setDiscountAmount(0); // Reset giảm giá
+    } else {
+      // Nếu voucher chưa được chọn, chọn voucher và tính toán giảm giá
+      setSelectedVoucher(voucher.code); // Cập nhật voucher đã chọn
+      setDiscountAmount(finalDiscountAmount); // Cập nhật giảm giá
+    }
+
+    setIsModalOpen(false); // Đóng modal
   };
   const onSubmit = async (data: Form) => {
     // Kiểm tra phương thức thanh toán
@@ -174,7 +239,8 @@ const Checkout: React.FC = () => {
       paymentMethod: paymentMethod,
       note: data.note,
       totalAmount: getTotalPrice(),
-      paymentStatus: "unpaid",
+      paymentStatus:
+        paymentMethod === "cash on delivery" ? "pending" : "unpaid",
     };
 
     try {
@@ -184,25 +250,25 @@ const Checkout: React.FC = () => {
         case "momo":
           await handleMomoPayment(orderData);
           break;
-          case "zalopay":
-            await handleZaloPayPayment(orderData);
-            break;
-          case "cash on delivery":
-            try {
-              // Gửi yêu cầu lưu đơn hàng vào cơ sở dữ liệu
-              const response = await instance.post("/orders", orderData);
-          
-              if (response.status === 201) {
-                // Chuyển hướng đến trang thành công sau khi thêm đơn hàng thành công
-                navigate("/oder-success");
-              } else {
-                throw new Error("Không thể tạo đơn hàng");
-              }
-            } catch (error) {
-              console.error("Lỗi khi tạo đơn hàng:", error);
-              // Thêm xử lý thông báo lỗi cho người dùng (nếu cần)
+        case "zalopay":
+          await handleZaloPayPayment(orderData);
+          break;
+        case "cash on delivery":
+          try {
+            // Gửi yêu cầu lưu đơn hàng vào cơ sở dữ liệu
+            const response = await instance.post("/orders", orderData);
+
+            if (response.status === 201) {
+              // Chuyển hướng đến trang thành công sau khi thêm đơn hàng thành công
+              navigate("/oder-success");
+            } else {
+              throw new Error("Không thể tạo đơn hàng");
             }
-            break;
+          } catch (error) {
+            console.error("Lỗi khi tạo đơn hàng:", error);
+            // Thêm xử lý thông báo lỗi cho người dùng (nếu cần)
+          }
+          break;
         case "bank transfer":
           break;
         default:
@@ -219,11 +285,11 @@ const Checkout: React.FC = () => {
     setPaymentMethod("momo");
     setIsBankTransferSelected(false);
   };
-// Handler chọn ZaloPay
-const handleZaloPayClick = () => {
-  setPaymentMethod("zalopay");
-  setIsBankTransferSelected(false);
-};
+  // Handler chọn ZaloPay
+  const handleZaloPayClick = () => {
+    setPaymentMethod("zalopay");
+    setIsBankTransferSelected(false);
+  };
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
   }
@@ -500,12 +566,13 @@ const handleZaloPayClick = () => {
                           <div className="text-gray-500 font-semibold">
                             {item.product.sale_price
                               ? (
-                                  item.product.sale_price * item.quantity
+                                  (item.product.sale_price +
+                                    (item.product_sizes?.priceSize || 0)) *
+                                  item.quantity
                                 ).toLocaleString("vi-VN")
                               : ""}
                           </div>
                         </div>
-
                         {/* Hiển thị Số lượng */}
                         <div className="shadow-sm flex items-center justify-between text-sm p-1">
                           <span>Số lượng:</span>
@@ -519,16 +586,109 @@ const handleZaloPayClick = () => {
                 </div>
               ))}
             </div>
+            <div className="my-4">
+              {/* Input và nút thêm voucher */}
+              <div className="flex items-center  justify-between bg-[#fff]">
+                <div className="flex items-center text-sm">
+                  <svg
+                    className="w-14"
+                    fill="#ea8025"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="-512 -512 1536.00 1536.00"
+                    stroke="#000000"
+                    stroke-width="0.00512"
+                  >
+                    <path d="M480.983,88.645h-0.933c-11.6,0-431.329,0-448.1,0C14.333,88.645,0,102.978,0,120.595v270.809 c0,17.617,14.333,31.95,31.95,31.95c17.185,0,436.934,0,448.1,0h0.933c17.103,0,31.017-13.915,31.017-31.017v-0.933V120.595 v-0.933C512,102.56,498.085,88.645,480.983,88.645z M304.09,184.698l11.544,11.544l-11.544,11.545c-10.228,10.228-10.229,26.871,0,37.102l11.544,11.544l-11.544,11.544c-10.228,10.228-10.229,26.871,0,37.102l11.544,11.544L304.09,328.17c-10.228,10.228-10.229,26.871,0,37.102l11.544,11.544c-12.642,12.64-12.025,11.968-13.132,13.292H33.247V121.892h268.565c1.46,1.908,1.215,1.552,13.823,14.16l-11.545,11.545C293.861,157.826,293.861,174.471,304.09,184.698z M478.753,390.109H348.172c5.904-10.052,4.547-23.224-4.07-31.844l-11.544-11.544l11.544-11.544c10.228-10.228,10.229-26.872,0-37.102l-11.544-11.544l11.544-11.544c10.228-10.228,10.229-26.872,0-37.102l-11.544-11.544l11.544-11.544c4.955-4.955,7.684-11.543,7.684-18.552c0-7.007-2.728-13.596-7.684-18.551l-11.544-11.544l11.545-11.545c8.867-8.869,10.046-22.559,3.537-32.71h131.113V390.109z"></path>
+                    <path d="M205.034,244.048c-18.932,0-33.409,8.018-33.409,30.067v31.628c0,22.049,14.477,30.067,33.409,30.067 c18.709,0,33.409-8.018,33.409-30.067v-31.628C238.442,252.066,223.743,244.048,205.034,244.048z M205.034,316.433 c-6.904,0-10.914-3.341-10.914-10.69v-31.628c0-7.35,4.008-10.69,10.914-10.69c6.904,0,11.137,3.341,11.137,10.69v31.628h0 C216.17,313.093,211.938,316.433,205.034,316.433z"></path>
+                    <path d="M192.115,163.2c-4.008,0-7.573,1.781-9.354,5.568l-78.175,160.584c-0.668,1.336-1.114,2.895-1.114,4.231c0,5.568,4.899,11.804,12.472,11.804c4.232,0,8.464-2.228,10.023-5.568l78.399-160.584c0.668-1.335,0.89-2.895,0.89-4.231C205.255,167.877,198.351,163.2,192.115,163.2z"></path>
+                    <path d="M102.803,172.332c-18.932,0-33.409,8.018-33.409,30.067v31.627c0,22.049,14.477,30.068,33.409,30.068 c18.709,0,33.409-8.019,33.409-30.068v-31.627C136.212,180.35,121.512,172.332,102.803,172.332z M113.94,234.026 c0,7.35-4.231,10.691-11.137,10.691c-6.904,0-10.914-3.341-10.914-10.691v-31.627c0-7.35,4.01-10.69,10.914-10.69 s11.137,3.341,11.137,10.69V234.026z"></path>
+                  </svg>
+                  Cozy Voucher
+                </div>
 
-            <div className="border-t-2 border-gray-300 py-4">
-              <div className="flex justify-between">
-                <span className="text-lg font-semibold">Tổng thanh toán:</span>
-                <span className="text-xl font-bold text-[#ea8025]">
-                  {getTotalPrice() && getTotalPrice() > 0
-                    ? `${getTotalPrice().toLocaleString("vi-VN")} VNĐ`
-                    : ""}
-                </span>
+                <input
+                  type="text"
+                  placeholder="Chọn mã "
+                  value={selectedVoucher}
+                  readOnly
+                  className="flex w-1/3 p-2 text-right  border-none rounded-md text-sky-500 cursor-pointer"
+                  onClick={openVoucherModal}
+                />
               </div>
+
+              {/* Tổng thanh toán */}
+              <div className="border-t-2 border-gray-300 py-4">
+                {discountAmount > 0 && (
+                  <div className="flex justify-between mb-2">
+                    <span>Giảm giá voucher:</span>
+                    <span className="text-green-600">
+                      -{Math.round(discountAmount).toLocaleString("vi-VN")} VNĐ
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-lg font-semibold">
+                    Tổng thanh toán:
+                  </span>
+                  <span className="text-xl font-bold text-[#ea8025]">
+                    {getTotalPrice().toLocaleString("vi-VN")} VNĐ
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal chọn voucher */}
+              {isModalOpen && voucherList && voucherList.length > 0 && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white rounded-2xl shadow-xl p-6 w-[90%] sm:w-[480px] max-h-[80vh] overflow-auto">
+                    {/* Tiêu đề Modal */}
+                    <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center">
+                      Chọn Voucher
+                    </h2>
+
+                    {/* Danh sách Voucher */}
+                    <ul className="space-y-4">
+                      {voucherList.map((v) => (
+                        <li
+                          key={v.code}
+                          className={`flex items-center justify-between bg-white rounded-xl border p-4 cursor-pointer 
+            ${
+              v.code === selectedVoucher
+                ? "bg-green-100 border-green-400"
+                : "hover:shadow-lg hover:border-gray-300"
+            } 
+            transition duration-300 ease-in-out`}
+                          onClick={() => handleSelectVoucher(v)}
+                        >
+                          {/* Thông tin Voucher */}
+                          <div className="flex flex-col space-y-1">
+                            <span className="text-xl font-medium text-sky-500">
+                              {v.code}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              Giảm {v.discountPercentage}% - Tối đa{" "}
+                              {v.maxDiscount.toLocaleString("vi-VN")} VNĐ
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Hết hạn:{" "}
+                              {new Date(v.maxOrderDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Nút Đóng */}
+                    <div className="flex justify-center mt-6">
+                      <button
+                        onClick={() => setIsModalOpen(false)}
+                        className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg text-sm hover:bg-gray-300 transition duration-200"
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </main>

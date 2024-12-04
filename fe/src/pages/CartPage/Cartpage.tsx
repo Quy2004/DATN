@@ -19,11 +19,10 @@ const CartPage: React.FC<{
     try {
       const { data } = await instance.get(`/cart/${user._id}`);
       const mergedCart = data.cart.reduce((acc: any[], item: any) => {
-        const itemId = `${item.product._id}-${
-          item.product_sizes?._id
-        }-${item.product_toppings
-          ?.map((topping: any) => topping.topping_id._id)
-          .join(",")}`;
+        const itemId = `${item.product._id}-${item.product_sizes?._id
+          }-${item.product_toppings
+            ?.map((topping: any) => topping.topping_id._id)
+            .join(",")}`;
         const existingItem = acc.find(
           (cartItem: any) => cartItem.itemId === itemId
         );
@@ -49,10 +48,10 @@ const CartPage: React.FC<{
         const sizePrice = item?.product_sizes?.priceSize || 0;
         const toppingPrice = Array.isArray(item?.product_toppings)
           ? item.product_toppings.reduce(
-              (total: number, topping: any) =>
-                total + (topping?.topping_id?.priceTopping || 0),
-              0
-            )
+            (total: number, topping: any) =>
+              total + (topping?.topping_id?.priceTopping || 0),
+            0
+          )
           : 0;
         return acc + (productPrice + sizePrice + toppingPrice) * item.quantity;
       }
@@ -86,7 +85,7 @@ const CartPage: React.FC<{
       if (response.status === 200) {
         fetchCart();
       } else {
-console.error("Không thể cập nhật số lượng sản phẩm.");
+        console.error("Không thể cập nhật số lượng sản phẩm.");
       }
     } catch (error) {
       console.error("Không thể cập nhật số lượng sản phẩm.");
@@ -186,13 +185,12 @@ console.error("Không thể cập nhật số lượng sản phẩm.");
       }
     }
   };
-// Item selection handling
+  // Item selection handling
   const toggleItemSelection = (item: any) => {
-    const itemId = `${item.product._id}-${
-      item.product_sizes?._id
-    }-${item.product_toppings
-      ?.map((topping: any) => topping.topping_id._id)
-      .join(",")}`;
+    const itemId = `${item.product._id}-${item.product_sizes?._id
+      }-${item.product_toppings
+        ?.map((topping: any) => topping.topping_id._id)
+        .join(",")}`;
     setSelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
@@ -206,8 +204,7 @@ console.error("Không thể cập nhật số lượng sản phẩm.");
     } else {
       const allItemIds = cart.map(
         (item: any) =>
-          `${item.product._id}-${
-            item.product_sizes?._id
+          `${item.product._id}-${item.product_sizes?._id
           }-${item.product_toppings
             ?.map((topping: any) => topping.topping_id._id)
             .join(",")}`
@@ -257,13 +254,12 @@ console.error("Không thể cập nhật số lượng sản phẩm.");
                   </div>
                   <div className="flex gap-6">
                     <button
-onClick={deleteSelectedItems}
+                      onClick={deleteSelectedItems}
                       disabled={selectedItems.length === 0}
-                      className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${
-                        selectedItems.length === 0
+                      className={`text-sm font-medium text-red-600 hover:text-red-700 flex items-center transition-colors duration-200 ${selectedItems.length === 0
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:scale-105"
-                      }`}
+                        }`}
                     >
                       Xóa đã chọn
                     </button>
@@ -288,8 +284,7 @@ onClick={deleteSelectedItems}
                         <input
                           type="checkbox"
                           checked={selectedItems.includes(
-                            `${item.product._id}-${
-                              item.product_sizes?._id
+                            `${item.product._id}-${item.product_sizes?._id
                             }-${item.product_toppings
                               ?.map((topping: any) => topping.topping_id._id)
                               .join(",")}`
@@ -316,11 +311,11 @@ onClick={deleteSelectedItems}
                           {item.product.name}
                         </Link>
                         <div className="space-y-2 text-sm text-gray-600">
-<p>Size: {item?.product_sizes?.name}</p>
+                          <p>Size: <span className="text-gray-500 font-medium">{item?.product_sizes?.name}</span></p>
                           <p>
                             Topping:{" "}
                             {item?.product_toppings &&
-                            item?.product_toppings.length > 0 ? (
+                              item?.product_toppings.length > 0 ? (
                               item?.product_toppings.map(
                                 (topping: ProductTopping, index: number) => (
                                   <span
@@ -370,7 +365,7 @@ onClick={deleteSelectedItems}
                             className="w-12 h-10 text-center bg-white border-2 border-gray-200 rounded-lg shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                           />
                           <button
-onClick={() => handleQuantityChange(item._id, true)}
+                            onClick={() => handleQuantityChange(item._id, true)}
                             className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
                           >
                             +
@@ -429,12 +424,11 @@ onClick={() => handleQuantityChange(item._id, true)}
                 </div>
                 <Link
                   to={{
-pathname: "/checkout",
+                    pathname: "/checkout",
                     state: {
                       selectedItems: cart.filter((item: any) =>
                         selectedItems.includes(
-                          `${item.product._id}-${
-                            item.product_sizes?._id
+                          `${item.product._id}-${item.product_sizes?._id
                           }-${item.product_toppings
                             ?.map((topping: any) => topping.topping_id._id)
                             .join(",")}`
@@ -442,13 +436,11 @@ pathname: "/checkout",
                       ),
                     },
                   }}
-                  className={`mt-6 block w-full rounded-lg ${
-                    selectedItems.length === 0
+                  className={`mt-6 block w-full rounded-lg ${selectedItems.length === 0
                       ? "bg-gray-300 cursor-not-allowed"
                       : "bg-[#ea8025]"
-                  } px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#ff8e37] transition-colors duration-200 transform ${
-                    selectedItems.length > 0 ? "hover:scale-[1.02]" : ""
-                  }`}
+                    } px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#ff8e37] transition-colors duration-200 transform ${selectedItems.length > 0 ? "hover:scale-[1.02]" : ""
+                    }`}
                   onClick={(e) => {
                     if (selectedItems.length === 0) {
                       e.preventDefault(); // Ngăn chặn hành động mặc định
@@ -467,7 +459,7 @@ pathname: "/checkout",
                   </span>
                   <Link
                     to="/"
-                    className="group inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-200"
+                    className="group inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-[#ea8025] hover:underline transition-colors duration-200"
                   >
                     Tiếp tục mua sắm
                     <svg
