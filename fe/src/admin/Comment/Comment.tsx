@@ -158,6 +158,7 @@ const CommentAdmin = () => {
 				...size, // Giữ lại các trường hiện tại trong size
 				content: size.content, // Nội dung trả lời
 				parent_id: size.id, // Gán parent_id từ trường id trong form
+				product_id: size.productId
 			};
 
 			// Gửi request với nội dung đã được thay đổi
@@ -299,6 +300,7 @@ const CommentAdmin = () => {
 		key: index + 1,
 		content: item.content,
 		userName: item.user_id.userName,
+		product: item.product_id,
 		name: item.product_id.name,
 		status: item.status,
 		_id: item._id,

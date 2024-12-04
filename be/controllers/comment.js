@@ -1,4 +1,5 @@
 import Comment from "../models/commentModel";
+import NotificationModel from "../models/NotificationModel";
 
 class CommentController {
 	// list all comments
@@ -133,19 +134,51 @@ class CommentController {
 	  
 
 	// thêm mới size
-	async createComment(req, res) {
-		try {
-			const comment = await Comment.create(req.body);
-			res.status(201).json({
-				message: "Tạocomment thành công!",
-				data: comment,
-			});
-		} catch (error) {
-			res.status(400).json({
-				message: error.message,
-			});
+	// thêm mới comment
+async createComment(req, res) {
+	try {
+	  const { parent_id, product_id } = req.body;
+  
+	  // Tạo comment
+	  const comment = await Comment.create(req.body);
+  
+	  // Kiểm tra nếu có parent_id (bình luận trả lời)
+	  if (parent_id) {
+		// Lấy thông tin comment cha (nếu có)
+		const parentComment = await Comment.findById(parent_id);
+		if (!parentComment) {
+		  return res.status(404).json({
+			message: "Bình luận cha không tồn tại",
+		  });
 		}
+  
+		// Tạo thông báo cho chủ cửa hàng về bình luận trả lời
+		const notification = {
+		  title: "Bình luận của bạn đã được trả lời",
+		  message: "Bình luận của bạn đã được chủ cửa hàng trả lời.",
+		  user_Id: parentComment.user_id, // Người nhận thông báo là người tạo bình luận cha
+		  product_Id: parentComment.product_id, // Người nhận thông báo là người tạo bình luận cha
+		  type: "general", // Loại thông báo
+		  isRead: false,
+		  isGlobal: true,
+		  status: "active",
+		};
+  
+		// Giả sử bạn có một model Notification để tạo thông báo
+		await NotificationModel.create(notification);
+	  }
+  
+	  res.status(201).json({
+		message: "Tạo comment thành công!",
+		data: comment,
+	  });
+	} catch (error) {
+	  res.status(400).json({
+		message: error.message,
+	  });
 	}
+  }
+  
 
 	// //   khóa comment
 	// async lookComment(req, res) {
