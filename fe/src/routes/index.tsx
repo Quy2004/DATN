@@ -60,6 +60,9 @@ import OrderErr from "../pages/OrderError/OrderError";
 
 import Dashboard from "../admin/Statistics/StatisticsPage";
 import BillPage from "../pages/BillPage/BillPage";
+import PrivateRouter from "./PrivateRouter";
+import ChuyenNhaDetail from "../pages/ChuyenNhaPage/ChuyenNhaDetail";
+
 
 
 const Router = () => {
@@ -82,6 +85,7 @@ const Router = () => {
             <Route path="teaholic" element={<TeaHolicTab />} />
             <Route path="blog" element={<BlogTab />} />
           </Route>
+          <Route path="chuyennha-detail/:id" element={<ChuyenNhaDetail />} />
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
@@ -97,48 +101,49 @@ const Router = () => {
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
           <Route path= "bill" element={<BillPage/>}/>
-        
         </Route>
         <Route path="*" element={<NotFoundPage />} />
-        <Route path="admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="category" element={<CategoryManagerPage />} />
-          <Route path="category/add" element={<CategoryAddPage />} />
-          <Route path="category/:id/update" element={<CategoryUpdatePage />} />
+        <Route element={<PrivateRouter />}>
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="category" element={<CategoryManagerPage />} />
+            <Route path="category/add" element={<CategoryAddPage />} />
+            <Route path="category/:id/update" element={<CategoryUpdatePage />} />
 
-          <Route path="size" element={<SizeManagerPage />} />
-          <Route path="size/add" element={<SizeAddPage />} />
-          <Route path="size/:id/update" element={<SizeUpdatePage />} />
+            <Route path="size" element={<SizeManagerPage />} />
+            <Route path="size/add" element={<SizeAddPage />} />
+            <Route path="size/:id/update" element={<SizeUpdatePage />} />
 
-          <Route path="voucher" element={<VoucherPage />} />
-          <Route path="voucher/add" element={<VoucherAddPage />} />
-          <Route path="voucher/:id/update" element={<VoucherUpdatePage />} />
+            <Route path="voucher" element={<VoucherPage />} />
+            <Route path="voucher/add" element={<VoucherAddPage />} />
+            <Route path="voucher/:id/update" element={<VoucherUpdatePage />} />
 
-          <Route path="product" element={<ProductManagerPage />} />
-          <Route path="product/add" element={<ProductAddPage />} />
-          <Route path="product/:id/update" element={<ProductEditPage />} />
+            <Route path="product" element={<ProductManagerPage />} />
+            <Route path="product/add" element={<ProductAddPage />} />
+            <Route path="product/:id/update" element={<ProductEditPage />} />
 
-          <Route path="topping" element={<ToppingManagerPage />} />
-          <Route path="topping/add" element={<ToppingAddPage />} />
-          <Route path="topping/:id/update" element={<ToppingUpdatePage />} />
-          <Route path="order" element={<OrderAdmin />} />
-          <Route path="comment" element={<CommentAdmin />} />
-          <Route path="client" element={<ClientAdmin />} />
+            <Route path="topping" element={<ToppingManagerPage />} />
+            <Route path="topping/add" element={<ToppingAddPage />} />
+            <Route path="topping/:id/update" element={<ToppingUpdatePage />} />
+            <Route path="order" element={<OrderAdmin />} />
+            <Route path="comment" element={<CommentAdmin />} />
+            <Route path="client" element={<ClientAdmin />} />
 
-          <Route path="banner" element={<BannerManagerPage />} />
-          <Route path="banner/add" element={<BannerAddPage />} />
-          <Route path="banner/:id/update" element={<BannerUpdatePage />} />
+            <Route path="banner" element={<BannerManagerPage />} />
+            <Route path="banner/add" element={<BannerAddPage />} />
+            <Route path="banner/:id/update" element={<BannerUpdatePage />} />
 
-          <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
-          <Route path="CategoryPost/add" element={<CategoryPostAddPage />} />
-          <Route
-            path="CategoryPost/:id/update"
-            element={<CategoryPostupdatePage />}
-          />
+            <Route path="CategoryPost" element={<CategoryPostManagerPage />} />
+            <Route path="CategoryPost/add" element={<CategoryPostAddPage />} />
+            <Route
+              path="CategoryPost/:id/update"
+              element={<CategoryPostupdatePage />}
+            />
 
-          <Route path="post" element={<PostManagerPage />} />
-          <Route path="post/add" element={<PostAddPage />} />
-          <Route path="post/:id/update" element={<PostUpdatePage />} />
+            <Route path="post" element={<PostManagerPage />} />
+            <Route path="post/add" element={<PostAddPage />} />
+            <Route path="post/:id/update" element={<PostUpdatePage />} />
+          </Route>
         </Route>
       </Routes>
     </div>

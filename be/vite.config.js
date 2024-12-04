@@ -16,5 +16,5 @@ export default defineConfig({
       crypto: true,
     }),
   ],
-  optimizeDeps: {},
+  optimizeDeps: { exclude: ["etag", "crypto"] },
 });

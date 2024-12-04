@@ -93,7 +93,7 @@ const Header: React.FC = () => {
 			setAvatarUrl(user.avatarUrl || null);
 		} else {
 			setUserName("");
-			setAvatarUrl(null); 
+			setAvatarUrl(null);
 		}
 	}, []);
 	const getInitials = (name: string) => (name ? name[0].toUpperCase() : "")
@@ -218,7 +218,7 @@ const Header: React.FC = () => {
 					</div>
 					<nav
 						aria-label="Global"
-						className="hidden md:block"
+						className=" md:block"
 					>
 						<div
 							className="ư flex items-center text-sm font-semibold"
@@ -227,47 +227,72 @@ const Header: React.FC = () => {
 							{/* User */}
 							{
 								userName ? (
-									<div ref={dropdownRef}
-										className="flex items-center gap-x-1 relative">
-										<button
-											id="dropdownDefaultButton"
-											onClick={toggleDropdown}
-											className="text-[#000] font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center "
-											type="button"
-										>
-											<h3>{userName}</h3>
-										</button>
-										{isDropdownOpen && (
-											<div className="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-48 dark:bg-gray-700 absolute top-full mt-4">
-												<ul className="py-2 text-sm text-gray-600 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-													<li>
-														<Link to="account-update" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-															Cập nhật tài khoản
-														</Link>
-													</li>
+									<div className="md:block hidden">
+										<div ref={dropdownRef}
+											className="flex items-center gap-x-1 relative">
+											<button
+												id="dropdownDefaultButton"
+												onClick={toggleDropdown}
+												className="text-[#000] font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center "
+												type="button"
+											>
+												<h3>{userName}</h3>
+											</button>
+											{isDropdownOpen && (
+												<div className="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-48 dark:bg-gray-700 absolute top-full mt-4">
+													<ul className="py-2 text-sm text-gray-600 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+														{user?.role === "admin" ? (
+															<>
+																<li>
+																	<Link
+																		to="/admin"
+																		className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+																	>
+																		Quản trị Admin
+																	</Link>
+																</li>
+																<li>
+																	<button className="w-max px-4 py-2 " onClick={handleLogout}>
+																		<h3 className="font-bold">
+																			Đăng xuất
+																		</h3>
+																	</button>
+																</li>
+															</>
+														) : (
+															<>
+																<li>
+																	<Link to="account-update" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																		Cập nhật tài khoản
+																	</Link>
+																</li>
+																<li>
+																	<Link to="tracking" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																		Theo dôi đơn hàng
+																	</Link>
+																</li>
+																<li>
+																	<Link to="oder-history" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+																		<h3>
+																			Xem lịch sử mua hàng
+																		</h3>
+																	</Link>
+																</li>
+																<li>
+																	<button className="w-max px-4 py-2 " onClick={handleLogout}>
+																		<h3 className="font-bold">
+																			Đăng xuất
+																		</h3>
+																	</button>
+																</li>
+															</>)
+														}
 
-													<li>
-														<Link to="tracking" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-															Theo dôi đơn hàng
-														</Link>
-													</li>
-													<li>
-														<Link to="oder-history" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-															<h3>
-																Xem lịch sử mua hàng
-															</h3>
-														</Link>
-													</li>
-													<li>
-														<button className="w-max px-4 py-2 " onClick={handleLogout}>
-															<h3 className="font-bold">
-																Đăng xuất
-															</h3>
-														</button>
-													</li>
-												</ul>
-											</div>
-										)}
+
+													</ul>
+												</div>
+											)}
+										</div>
 									</div>
 								) : (
 									<div className="px-4">
@@ -295,7 +320,7 @@ const Header: React.FC = () => {
 								)
 							}
 							{/* Cart */}
-							<div className="px-4">
+							<div className="px-4 md:block hidden">
 								<button
 									className="relative top-[30%] h-[24px] *:hover:text-[#ea8025] *:hover:opacity-80"
 									onClick={() => setIsOpen(true)}
@@ -320,6 +345,30 @@ const Header: React.FC = () => {
 
 								</button>
 							</div>
+							<div className="md:hidden">
+								<Link to={"cart"}
+									className="relative top-[30%] h-[24px] *:hover:text-[#ea8025] *:hover:opacity-80"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth="1.5"
+										stroke="currentColor"
+										className="size-6 w-[24px]"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+										/>
+									</svg>
+									<span className="absolute bg-red-500 bottom-3 left-3 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+										{cartItems?.length ? cartItems.length : 0}
+									</span>
+
+								</Link>
+							</div>
 						</div>
 					</nav>
 				</div>
@@ -333,7 +382,7 @@ const Header: React.FC = () => {
 				{/* <Drawer.Header title="" className="border-b-2 px-4" /> */}
 				<Drawer.Items>
 					<nav className="py-6 border-b-2 ">
-					<Link to={"setting"} className="absolute top-3 flex items-center space-x-3 mx-6">
+						<Link to={"setting"} className="absolute top-3 flex items-center space-x-3 mx-6">
 							{
 								userName && (
 									<div className="flex items-center space-x-3">
@@ -391,7 +440,7 @@ const Header: React.FC = () => {
 						{
 							userName ? (
 								<nav className="flex justify-center">
-									<Link to={"cart"} className="p-2 rounded-full border-gray-400 border-2">
+									{/* <Link to={"cart"} className="p-2 rounded-full border-gray-400 border-2">
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											fill="none"
@@ -410,7 +459,7 @@ const Header: React.FC = () => {
 											{cartItems?.length ? cartItems.length : 0}
 										</span>
 									</Link>
-									<div className="px-2"></div>
+									<div className="px-2"></div> */}
 									<button onClick={handleLogout}
 										className="p-2 rounded-full border-gray-400 border-2">
 										<svg xmlns="http://www.w3.org/2000/svg"
@@ -430,7 +479,7 @@ const Header: React.FC = () => {
 							)
 						}
 					</nav>
-					
+
 					<div className="flex justify-center mb:hidden mt-4">
 						<div className="relative flex items-center  ">
 							<input
