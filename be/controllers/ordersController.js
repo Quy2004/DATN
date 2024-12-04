@@ -72,30 +72,36 @@ export const createOrder = async (req, res) => {
       totalPrice: cart.totalprice || 0,
       paymentMethod,
       note: note || "",
-      paymentStatus: "unpaid",  // Trạng thái ban đầu là unpaid
+      paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
 
     await order.save();
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
 
-    // Giả sử sau 5 phút trạng thái đơn hàng không được thanh toán và cần hủy
     setTimeout(async () => {
       const foundOrder = await Order.findById(order._id);
-
-      if (foundOrder && foundOrder.paymentStatus === "failed") {
-        console.log(`Đơn hàng ${order._id} đang bị xóa...`);
-        
-        // Thực hiện xóa đơn hàng và chi tiết
-        await Order.findByIdAndDelete(order._id);
-        await OrderDetail.deleteMany({ order_id: order._id });
-        
-        console.log(`Đơn hàng ${order._id} đã bị xóa.`);
+    
+      // Kiểm tra nếu đơn hàng tồn tại và trạng thái thanh toán là "failed" nhưng không phải phương thức COD
+      if (foundOrder) {
+        // Nếu là COD, không thực hiện xóa
+        if (foundOrder.paymentMethod === "cash on delivery") {
+          console.log(`Đơn hàng ${order._id} không bị xóa vì phương thức thanh toán là COD.`);
+        } else if (foundOrder.paymentStatus === "failed") {
+          console.log(`Đơn hàng ${order._id} đang bị xóa...`);
+    
+          // Thực hiện xóa đơn hàng và chi tiết
+          await Order.findByIdAndDelete(order._id);
+          await OrderDetail.deleteMany({ order_id: order._id });
+    
+          console.log(`Đơn hàng ${order._id} đã bị xóa.`);
+        } else {
+          console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+        }
       } else {
-        console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+        console.log(`Không tìm thấy đơn hàng với ID ${order._id}`);
       }
     }, 5 * 60 * 1000); // 5 phút = 300.000ms
-
     // Create order details including size and topping
     const orderDetailPromises = cart.products.map(async (item) => {
       if (!item.product?._id || !item.product?.price) {

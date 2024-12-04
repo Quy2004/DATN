@@ -188,6 +188,7 @@ const CommentDetail: React.FC = () => {
         {/* Danh sách đánh giá */}
         <div className="space-y-6">
           {comments?.map((review: Comment) => (
+            
             <div key={review._id} className="flex space-x-4 items-start border-b pb-4">
               <div className="w-10 h-10 rounded-full bg-gray-200"></div>
               <div className="flex-1">

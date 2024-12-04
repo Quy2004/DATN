@@ -150,9 +150,9 @@ const MenuPage: React.FC = () => {
             </div>
 
             {/* Nội dung sản phẩm tương ứng */}
-            <div className="allproduct flex-1 w-full md:w-[82%]px-0 md:px-12 bg-white md:border-l-[3px] border-gray-300">
+            <div className="allproduct flex-1 w-full md:w-[82%] px-0 md:px-12 bg-white md:border-l-[3px] border-gray-300">
                 <div className="md:hidden p-2 shadow-xl">
-                    <form action="max-w-sm mx-auto">
+                    <form action="mx-auto">
                         <select className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             value={activeItem || ""} // Giá trị mặc định là ""
                             onChange={(e) => {
@@ -162,7 +162,7 @@ const MenuPage: React.FC = () => {
                             }}
 
                         >
-                            <option value="" className="mt-2">Tất cả</option> {/* Mục mặc định */}
+                            <option value="" className="mt-2 max-w-xs">Tất cả</option> {/* Mục mặc định */}
                             {parentCategories.map((parent) => (
                                 <option value={parent._id}>{parent.title}</option>
                             ))}
