@@ -310,7 +310,7 @@ export const removeCartItem = async (req, res) => {
 export const removeSelectedItems = async (req, res) => {
   try {
     const { itemIds } = req.body;
-    const userId = req.user?._id;
+    const { userId } = req.params;
 
     if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
       return res
@@ -318,9 +318,16 @@ export const removeSelectedItems = async (req, res) => {
         .json({ message: "Vui lòng chọn sản phẩm cần xóa" });
     }
 
-    // Cập nhật giỏ hàng, xóa các sản phẩm được chọn
-    const cart = await Cart.findOneAndUpdate(
-      { user: userId },
+    // Tìm giỏ hàng của người dùng
+    const cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Không tìm thấy giỏ hàng" });
+    }
+
+    // Kiểm tra và xóa các sản phẩm được chọn
+    const updatedCart = await Cart.findOneAndUpdate(
+      { userId, "products._id": { $in: itemIds } },
       { $pull: { products: { _id: { $in: itemIds } } } },
       { new: true }
     )
@@ -328,12 +335,15 @@ export const removeSelectedItems = async (req, res) => {
       .populate("products.product_sizes")
       .populate("products.product_toppings.topping_id");
 
-    if (!cart) {
-      return res.status(404).json({ message: "Không tìm thấy giỏ hàng" });
+    // Nếu không tìm thấy giỏ hàng đã cập nhật
+    if (!updatedCart) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy sản phẩm trong giỏ hàng" });
     }
 
     // Tính lại tổng giá
-    cart.totalprice = cart.products.reduce((total, item) => {
+    updatedCart.totalprice = updatedCart.products.reduce((total, item) => {
       const productPrice = item.product.sale_price || item.product.price;
       const sizePrice = item.product_sizes?.priceSize || 0;
       const toppingPrice = item.product_toppings.reduce(
@@ -343,13 +353,14 @@ export const removeSelectedItems = async (req, res) => {
       return total + (productPrice + sizePrice + toppingPrice) * item.quantity;
     }, 0);
 
-    await cart.save();
+    await updatedCart.save();
 
-    return res
-      .status(200)
-      .json({ message: "Xóa các sản phẩm đã chọn thành công", cart });
+    return res.status(200).json({
+      message: "Xóa các sản phẩm đã chọn thành công",
+      cart: updatedCart,
+    });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Lỗi:", error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -357,11 +368,12 @@ export const removeSelectedItems = async (req, res) => {
 // 3. Xóa toàn bộ giỏ hàng
 export const clearCart = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    // Lấy userId từ request parameters
+    const { userId } = req.params;
 
     // Xóa toàn bộ sản phẩm trong giỏ hàng
     const cart = await Cart.findOneAndUpdate(
-      { user: userId },
+      { userId: userId },
       { $set: { products: [], totalprice: 0 } },
       { new: true }
     );
@@ -469,3 +481,4 @@ export const changeProductQuantity = async (req, res) => {
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
+
