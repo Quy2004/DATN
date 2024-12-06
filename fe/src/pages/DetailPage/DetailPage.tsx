@@ -316,32 +316,30 @@ const DetailPage = () => {
                     />
                   </div>
                   <div className="flex space-x-4 mb-6">
-                    <button
-                      onClick={() => {
-                        if (user?.role !== "admin") {
-                          console.log("Button clicked", selectedProduct?._id);
-                          addToCart(product?._id);
-                        } else {
-                          console.log("Admin không thể thêm vào giỏ hàng");
-                        }
-                      }}
-                      className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
-                    >
-                      {user?.role !== "admin" ? (
-                        <span className="relative z-10 transition duration-300 group-hover:text-white">
-                          <p className="text-base">Thêm giỏ hàng</p>
-                        </span>
-                      ) : (
-                        <span className="relative z-10 transition duration-300 text-red-600">
-                          <p className="text-base">
-                            Vui lòng đăng nhập tài khoản người dùng
-                          </p>
-                        </span>
-                      )}
+                    {product?.isDeleted === false &&
+                      product?.status === "unavailable" ? (
+                      <p className="bg-red-100 border-l-4 border-[#ea8025] text-red-600 font-semibold py-2 px-4 rounded-md shadow-md">
+                        Sản phẩm này đã hết hàng. Bạn có thể chọn sản phẩm khác
+                        để mua.
+                      </p>
+                    ) : (
+                      <button className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold">
+                        {user?.role !== "admin" ? (
+                          <span className="relative z-10 transition duration-300 group-hover:text-white">
+                            <p className="text-base">Thêm giỏ hàng</p>
+                          </span>
+                        ) : (
+                          <span className="relative z-10 transition duration-300 text-red-600">
+                            <p className="text-base">
+                              Vui lòng đăng nhập tài khoản người dùng
+                            </p>
+                          </span>
+                        )}
 
-                      <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
-                      <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
-                    </button>
+                        <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                        <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
