@@ -15,9 +15,9 @@ RouterCart.get("/:userId", getCart);
 // Xóa một sản phẩm
 RouterCart.delete("/item/:cartItemId", removeCartItem);
 // Xóa nhiều sản phẩm được chọn
-RouterCart.delete("/selected", removeSelectedItems);
+RouterCart.delete("/:userId/selected", removeSelectedItems);
 // Xóa toàn bộ giỏ hàng
-RouterCart.delete("/clear", clearCart);
+RouterCart.delete("/clear/:userId", clearCart);
 // Tăng giảm số lượng
 RouterCart.patch("/:userId/item/:cartItemId/quantity", changeProductQuantity);
 export default RouterCart;
