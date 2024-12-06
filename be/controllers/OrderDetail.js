@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 export const createOrderDetail = async ({orderId, productId, quantity, price, image}) => {
     try {
         
-        // Kiểm tra xem các tham số đã được truyền đún
+       
         // Kiểm tra xem các tham số đã được truyền đúng
         if (!orderId || !productId || !quantity || !price) {
             throw new Error("Thiếu thông tin để tạo chi tiết đơn hàng.");

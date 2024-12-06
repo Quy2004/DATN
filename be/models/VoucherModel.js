@@ -81,7 +81,14 @@ VoucherSchema.pre("save", function (next) {
     }
     next();
 });
+VoucherSchema.pre('save', function(next) {
+    const currentDate = new Date();
 
+    if (this.minOrderDate < currentDate) {
+        this.minOrderDate = currentDate; // Cập nhật thành giờ hiện tại nếu minOrderDate trước thời gian hiện tại
+    }
+    next();
+});
 // Định nghĩa model
 const Voucher = mongoose.model("vouchers", VoucherSchema);
 

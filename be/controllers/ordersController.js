@@ -3,6 +3,7 @@ import Cart from "../models/Cart.js";
 import OrderDetail from "../models/OrderDetailModel.js";
 import axios from "axios";
 
+
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
   try {
@@ -16,6 +17,23 @@ export const getAllOrders = async (req, res) => {
           select:
             "name category_id price sale_price discount image thumbnail product_sizes product_toppings status",
         },
+      })
+      .populate({
+        path: "orderDetail_id",
+        populate: [
+          {
+            path: "product_id",
+            model: "Product",
+          },
+          {
+            path: "product_size",
+            model: "Size",
+          },
+          {
+            path: "product_toppings.topping_id",
+            model: "Topping",
+          },
+        ],
       })
       .populate({
         path: "user_id",
@@ -43,12 +61,13 @@ export const getAllOrders = async (req, res) => {
 };
 
 // Create new order
+
 export const createOrder = async (req, res) => {
   try {
-    const { userId, customerInfo, paymentMethod, note } = req.body;
+    const { userId, customerInfo, paymentMethod, totalPrice,note } = req.body;
 
     // Validate required fields
-    if (!userId || !customerInfo || !paymentMethod) {
+    if (!customerInfo || !paymentMethod) {
       return res.status(400).json({
         success: false,
         message: "Thiếu thông tin bắt buộc",
@@ -56,20 +75,22 @@ export const createOrder = async (req, res) => {
     }
 
     // Get cart and validate
-    const cart = await Cart.findOne({ userId }).populate("products.product");
-
-    if (!cart?.products?.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Giỏ hàng trống",
-      });
+    let cart;
+    if (userId) {
+      cart = await Cart.findOne({ userId }).populate("products.product");
+      if (!cart?.products?.length) {
+        return res.status(400).json({
+          success: false,
+          message: "Giỏ hàng trống",
+        });
+      }
     }
-
+console.log(totalPrice)
     // Create order
     const order = new Order({
-      user_id: userId,
+   user_id: userId || null, // Null nếu không đăng nhập
       customerInfo,
-      totalPrice: cart.totalprice || 0,
+      totalPrice,
       paymentMethod,
       note: note || "",
       paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
@@ -232,6 +253,7 @@ if (paymentMethod === "zalopay") {
     });
   }
 };
+
 
 // Get orders by user ID
 export const getOrders = async (req, res) => {
@@ -421,25 +443,24 @@ export const getOrderById = async (req, res) => {
         message: "orderId là bắt buộc",
       });
     }
-    const orders = await Order.find()
-      .populate({
-        path: "orderDetail_id",
-        populate: [
-          {
-            path: "product_id",
-            model: "Product",
-          },
-          {
-            path: "product_size",
-            model: "Size",
-          },
-          {
-            path: "product_toppings.topping_id",
-            model: "Topping",
-          },
-        ],
-      });
-      const order = orders?.filter(item => item._id = orderId);
+    const orders = await Order.find().populate({
+      path: "orderDetail_id",
+      populate: [
+        {
+          path: "product_id",
+          model: "Product",
+        },
+        {
+          path: "product_size",
+          model: "Size",
+        },
+        {
+          path: "product_toppings.topping_id",
+          model: "Topping",
+        },
+      ],
+    });
+    const order = orders?.filter((item) => (item._id = orderId));
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -448,7 +469,7 @@ export const getOrderById = async (req, res) => {
     }
     return res.status(200).json({
       success: true,
-      data: order, 
+      data: order,
     });
   } catch (error) {
     return res.status(500).json({
@@ -607,7 +628,6 @@ export const getCustomerStats = async (req, res) => {
   }
 };
 
-
 // Get revenue by time period (e.g., daily, weekly, monthly)
 export const getRevenueByTimePeriod = async (req, res) => {
   try {
@@ -652,6 +672,170 @@ export const getRevenueByTimePeriod = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê doanh thu",
+      error: error.message,
+    });
+  }
+};
+
+// Enhanced Order Stats with more details
+export const getEnhancedOrderStats = async (req, res) => {
+  try {
+    const { fromDate, toDate } = req.query; // Optional date range filtering
+
+    // Build the match stage for date filtering if provided
+    const matchStage = {};
+    if (fromDate && toDate) {
+      matchStage.createdAt = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
+    }
+
+    const stats = await Order.aggregate([
+      { $match: { ...matchStage, orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders and apply date filter
+      {
+        $facet: {
+          // Use facet to calculate multiple metrics in one aggregation
+          totalRevenue: [
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+          ],
+          averageOrderValue: [
+            {
+              $group: {
+                _id: null,
+                avg: { $avg: "$totalPrice" },
+              },
+            },
+          ],
+          totalOrders: [{ $group: { _id: null, count: { $sum: 1 } } }],
+          orderCountByStatus: [
+            { $group: { _id: "$orderStatus", count: { $sum: 1 } } },
+            { $sort: { _id: 1 } }, // Sort by status alphabetically
+          ],
+          revenueByPaymentMethod: [
+            {
+              $group: {
+                _id: "$paymentMethod",
+                total: { $sum: "$totalPrice" },
+              },
+            },
+          ],
+          topSellingProducts: [
+            {
+              $unwind: "$orderDetail_id",
+            },
+            {
+              $lookup: {
+                from: "orderdetails", // Assuming your order details collection is named "orderdetails"
+                localField: "orderDetail_id",
+                foreignField: "_id",
+                as: "order_details",
+              },
+            },
+            {
+              $unwind: "$order_details",
+            },
+            {
+              $lookup: {
+                from: "products", // Assuming your products collection is named "products"
+                localField: "order_details.product_id",
+                foreignField: "_id",
+                as: "product_info",
+              },
+            },
+            { $unwind: "$product_info" },
+            {
+              $group: {
+                _id: "$product_info._id",
+                productName: { $first: "$product_info.name" },
+                totalQuantitySold: { $sum: "$order_details.quantity" },
+                totalRevenue: {
+                  $sum: {
+                    $multiply: [
+                      "$order_details.quantity",
+                      "$order_details.price",
+                    ],
+                  },
+                },
+              },
+            },
+            { $sort: { totalQuantitySold: -1 } },
+            { $limit: 5 }, // Top 5 selling products
+          ],
+        },
+      },
+    ]);
+
+    const result = {
+      totalRevenue: stats[0].totalRevenue[0]?.total || 0,
+      averageOrderValue: stats[0].averageOrderValue[0]?.avg || 0,
+      totalOrders: stats[0].totalOrders[0]?.count || 0,
+      orderCountByStatus: stats[0].orderCountByStatus,
+      revenueByPaymentMethod: stats[0].revenueByPaymentMethod,
+      topSellingProducts: stats[0].topSellingProducts,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê đơn hàng chi tiết",
+      error: error.message,
+    });
+  }
+};
+
+
+export const getCompletedOrders = async (req, res) => {
+  try {
+    // Tìm các đơn hàng đã hoàn thành và sắp xếp theo ngày tạo
+    const orders = await Order.find({ orderStatus: "completed" })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "orderDetail_id",
+        populate: [
+          {
+            path: "product_id",
+            model: "Product",
+          },
+          {
+            path: "product_size",
+            model: "Size",
+          },
+          {
+            path: "product_toppings.topping_id",
+            model: "Topping",
+          },
+        ],
+      })
+      .populate({
+        path: "user_id",
+        select: "userName email",
+      });
+
+    // Kiểm tra xem có đơn hàng nào không
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng nào đã hoàn thành.",
+      });
+    }
+
+    // Trả về danh sách đơn hàng đã hoàn thành
+    return res.status(200).json({
+      success: true,
+      data: orders,
+    });
+  } catch (error) {
+    // Log lỗi để dễ dàng kiểm tra
+    console.error("Error fetching completed orders:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy danh sách đơn hàng đã hoàn thành.",
       error: error.message,
     });
   }
