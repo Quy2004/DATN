@@ -488,6 +488,16 @@ const Checkout: React.FC = () => {
                         Phone Banking
                       </div>
                     </button>
+                    <button className="rounded-md">
+                      <img
+                        src="src/pages/CheckOutPage/ImageBanking/Vnpay.png"
+                        alt="VnPay"
+                        className="w-16 mx-auto border-2"
+                      />
+                      <div className="mt-2 text-center font-medium">
+                        Vnpay
+                      </div>
+                    </button>
                   </div>
                 </div>
               )}
