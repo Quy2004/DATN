@@ -129,7 +129,7 @@ orderSchema.pre("save", async function (next) {
           select: "price sale_price discount",
         })
         .populate({
-          path: "product_size",
+path: "product_size",
           select: "priceSize",
         })
         .populate({
@@ -157,7 +157,7 @@ orderSchema.pre("save", async function (next) {
         return total + productTotalPrice * detail.quantity;
       }, 0);
 
-      this.totalPrice = totalPrice;
+    
     } catch (error) {
       console.error("Error calculating totalPrice:", error);
     }
