@@ -56,25 +56,30 @@ const Checkout: React.FC = () => {
             toppingTotal + (topping.topping_id?.priceTopping || 0),
           0
         ) || 0;
-
+  
       const itemTotalPrice =
         (salePrice + sizePrice + toppingsPrice) * (item.quantity || 0);
-
+  
       return total + itemTotalPrice;
     }, 0);
-
+  
     // Đảm bảo discountAmount có giá trị hợp lệ
     const discountToApply = discountAmount || 0;
-
+  
     // Làm tròn giá trị giảm giá từ voucher
     const roundedDiscount = Math.round(discountToApply);
-
+  
     // Tính tổng giá sau khi đã áp dụng voucher và làm tròn
     const finalTotal = originalTotal - roundedDiscount;
-
-    // Trả về tổng giá đã trừ voucher, đảm bảo không âm
-    return Math.max(0, Math.round(finalTotal)); // Làm tròn tổng giá cuối cùng
+  
+    // Trả về đối tượng bao gồm tổng giá và giá trị giảm giá
+    return {
+      finalTotal: Math.max(0, Math.round(finalTotal)), // Làm tròn tổng giá cuối cùng
+      roundedDiscount, // Trả về giá trị giảm giá đã tròn
+    };
   };
+  
+  
 
   interface Form {
     name: string;
@@ -323,10 +328,10 @@ const Checkout: React.FC = () => {
     }
 
     // Tính toán giảm giá
-    const totalPrice = getTotalPrice();
-    const discount = (totalPrice * voucher.discountPercentage) / 100;
-    const maxDiscount = voucher.maxDiscount || 0;
-    const finalDiscountAmount = Math.min(discount, maxDiscount);
+const { finalTotal } = getTotalPrice(); // Lấy finalTotal từ kết quả trả về của getTotalPrice()
+const discount = (finalTotal * voucher.discountPercentage) / 100; // Sử dụng finalTotal ở đây
+const maxDiscount = voucher.maxDiscount || 0;
+const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm giá cuối cùng
 
     // Xử lý chọn/hủy voucher
     if (voucher.code === selectedVoucher) {
@@ -364,14 +369,16 @@ const Checkout: React.FC = () => {
       });
       return;
     }
-    const totalAmount = getTotalPrice();
-    console.log("Tổng giá trị đơn hàng:", totalAmount);
+    const { finalTotal, roundedDiscount } = getTotalPrice();
+  console.log("Tổng giá trị đơn hàng:", finalTotal);
+  console.log("Giảm giá từ voucher:", roundedDiscount);
     const orderData = {
       userId,
       customerInfo: data,
       paymentMethod: paymentMethod,
       note: data.note,
-      totalPrice: totalAmount,
+      totalPrice: finalTotal,
+      discountAmount: roundedDiscount, // Thêm giảm giá vào orderData
       paymentStatus:
         paymentMethod === "cash on delivery" ? "pending" : "unpaid",
     };
@@ -621,16 +628,6 @@ const Checkout: React.FC = () => {
                         Phone Banking
                       </div>
                     </button>
-                    <button className="rounded-md">
-                      <img
-                        src="src/pages/CheckOutPage/ImageBanking/Vnpay.png"
-                        alt="VnPay"
-                        className="w-16 mx-auto border-2"
-                      />
-                      <div className="mt-2 text-center font-medium">
-                        Vnpay
-                      </div>
-                    </button>
                   </div>
                 </div>
               )}
@@ -777,14 +774,15 @@ const Checkout: React.FC = () => {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-lg font-semibold">
-                    Tổng thanh toán:
-                  </span>
-                  <span className="text-xl font-bold text-[#ea8025]">
-                    {getTotalPrice().toLocaleString("vi-VN")} VNĐ
-                  </span>
-                </div>
+              <div className="flex justify-between">
+  <span className="text-lg font-semibold">
+    Tổng thanh toán:
+  </span>
+  <span className="text-xl font-bold text-[#ea8025]">
+    {getTotalPrice().finalTotal.toLocaleString("vi-VN")} VNĐ
+  </span>
+</div>
+
               </div>
 
               {/* Modal chọn voucher */}
