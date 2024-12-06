@@ -148,7 +148,6 @@ class NotificationController {
 	async countUnreadNotifications(req, res) {
 		try {
 		  const { userId } = req.params;
-		  console.log("User ID:", userId);  // Log userId
 	  
 		  // Đếm số thông báo với isRead: false và userId khớp
 		  const count = await NotificationModel.countDocuments({
@@ -156,7 +155,6 @@ class NotificationController {
 			isRead: false,
 		  });
 		  
-		  console.log("Unread Notifications Count:", count);  // Log kết quả đếm
 	  
 		  res.status(200).json({
 			success: true,

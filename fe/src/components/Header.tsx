@@ -451,7 +451,7 @@ const Header: React.FC = () => {
 												{unreadCount >= 0 && <span>{unreadCount}</span>}
 											</span>
 											{isDropdownOpen2 && (
-												<div className="z-10 *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md w-[400px] max-h-[700px] dark:bg-gray-700 absolute -left-32 top-8 mt-4">
+												<div className="z-10 ml-[-160px] *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md w-[400px] max-h-[700px] dark:bg-gray-700 absolute -left-32 top-8 mt-4">
 													<h2 className="text-2xl font-bold">
 														Thông báo của bạn
 													</h2>
