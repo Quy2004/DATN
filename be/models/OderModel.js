@@ -44,6 +44,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    discountAmount: {
+      type: Number,
+      required: false,
+      default: 0, 
+    },
     orderStatus: {
       type: String,
       enum: [
