@@ -2,6 +2,7 @@ import Order from "../models/OderModel.js";
 import Cart from "../models/Cart.js";
 import OrderDetail from "../models/OrderDetailModel.js";
 import axios from "axios";
+import NotificationModel from "../models/NotificationModel.js";
 
 
 // Get all orders with populated data
@@ -64,7 +65,7 @@ export const getAllOrders = async (req, res) => {
 
 export const createOrder = async (req, res) => {
   try {
-    const { userId, customerInfo, paymentMethod, totalPrice,note } = req.body;
+    const { userId, customerInfo, paymentMethod, totalPrice,note,discountAmount } = req.body;
 
     // Validate required fields
     if (!customerInfo || !paymentMethod) {
@@ -86,11 +87,13 @@ export const createOrder = async (req, res) => {
       }
     }
 console.log(totalPrice)
+console.log("Số tiền giảm giá:", discountAmount);
     // Create order
     const order = new Order({
    user_id: userId || null, // Null nếu không đăng nhập
       customerInfo,
       totalPrice,
+      discountAmount, // Lưu thông tin giảm giá
       paymentMethod,
       note: note || "",
       paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
@@ -345,20 +348,22 @@ export const getOrders = async (req, res) => {
 };
 
 // Update order status
+const statusMapping = {
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  shipping: "Đang giao",
+  delivered: "Đã giao",
+  completed: "Hoàn thành",
+  canceled: "Hủy đơn",
+};
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    // Validate order status
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "shipping",
-      "delivered",
-      "completed",
-      "canceled",
-    ];
+    // Kiểm tra trạng thái hợp lệ
+    const validStatuses = Object.keys(statusMapping);
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -380,10 +385,26 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Lấy trạng thái tiếng Việt từ mapping
+    const vietnameseStatus = statusMapping[status];
+
+    // Tạo thông báo mới sử dụng trạng thái tiếng Việt
+    const notification = await NotificationModel.create({
+      title: "Cập nhật trạng thái đơn hàng",
+      message: `Đơn hàng "${order.orderNumber}" của bạn đã được cập nhật trạng thái thành "${vietnameseStatus}".`,
+      user_Id: order.user_id, // Lấy userId từ bảng Order
+      order_Id: order._id, // Lấy userId từ bảng Order
+      type: "general",
+      isGlobal: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Cập nhật trạng thái thành công",
-      data: order,
+      data: {
+        order,
+        notification, // Trả về thông báo mới tạo (tùy chọn)
+      },
     });
   } catch (error) {
     return res.status(500).json({
