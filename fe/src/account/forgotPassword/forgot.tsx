@@ -41,7 +41,7 @@ const Forgot = () => {
                                 </div>
                                 <p className="text-sm text-green-500">{message}</p>
                                 <div className="text-right">
-                                    <button type="submit" className="text-xs py-3 px-6 rounded-lg bg-red-500 text-white shadow-md hover:shadow-lg">Xác nhận</button>
+                                    <button type="submit" className="text-xs py-3 px-6 mr-2 rounded-lg bg-red-500 text-white shadow-md hover:shadow-lg">Xác nhận</button>
                                     <button type="button" className="text-xs py-3 px-6 rounded-lg bg-gray-400 text-white shadow-md hover:shadow-lg"><Link to={'/login'}>Quay lại</Link></button>
                                 </div>
                             </form>

@@ -55,13 +55,13 @@ const AccountUpdate = () => {
             setAvatarsList(
                 userData.avatars.length > 0
                     ? [
-                          {
-                              uid: "0",
-                              name: "avatar.jpg",
-                              status: "done",
-                              url: avatarUrl,
-                          },
-                      ]
+                        {
+                            uid: "0",
+                            name: "avatar.jpg",
+                            status: "done",
+                            url: avatarUrl,
+                        },
+                    ]
                     : []
             );
         }
@@ -171,7 +171,7 @@ const AccountUpdate = () => {
     const firstAddress = addressData?.[0];
 
     return (
-        <div className="mt-20 mb-8 flex justify-center mx-auto">
+        <div className="mt-14 mb-8 flex justify-center mx-auto">
             <div className="w-[1200px] *:mx-auto">
                 <section className="md:w-1/2 bg-white rounded-lg shadow-2xl p-6">
                     <Form
@@ -185,10 +185,11 @@ const AccountUpdate = () => {
                         onFinish={onFinish}
                         form={form}
                     >
-                        <h1 className="text-2xl font-semibold mb-4">Cập nhật thông tin</h1>
-                        <div className="space-y-2 flex items-start gap-3 h-[230px]">
+                        <h1 className="text-2xl font-semibold mb-1">Cập nhật thông tin</h1>
+                        <p className="mb-4 border-b-orange-400 w-[205px] md:w-[205px] border-b-[4px]"></p>
+                        <div className="flex items-start gap-3 h-[230px]">
                             <div className="flex-1">
-                                <label className="mb-2">Avatar</label>
+                                <label className="mb-2 mx-1 font-medium">Avatar</label>
                                 <Form.Item name="avatars">
                                     <Upload
                                         name="file"
@@ -203,7 +204,7 @@ const AccountUpdate = () => {
                                         maxCount={1}
                                     >
                                         {avatarsList.length === 0 ? (
-                                            <Button icon={<FileImageOutlined />}>
+                                            <Button className="mx-2" icon={<FileImageOutlined />}>
                                                 Tải ảnh lên
                                             </Button>
                                         ) : null}
@@ -211,29 +212,29 @@ const AccountUpdate = () => {
                                 </Form.Item>
                             </div>
                             <div className="flex-1">
-                                <label className="space-y-2 mb-4">Họ và tên</label>
+                                <label className="space-y-2 mb-4 mx-1 font-medium">Họ và tên</label>
                                 <Form.Item name="userName">
-                                    <Input placeholder="Nhập họ tên" />
+                                    <Input className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập họ tên" />
                                 </Form.Item>
                             </div>
                         </div>
-                        <label>Email</label>
+                        <label className="space-y-2 mb-4 mx-1 font-medium">Email</label>
                         <Form.Item name="email">
-                            <Input placeholder="Nhập email" />
+                            <Input placeholder="Nhập email" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        <label>Địa chỉ</label>
+                        <label className="space-y-2 mb-4 mx-1 font-medium">Địa chỉ</label>
                         <Form.Item name="address">
-                            <Input placeholder="Nhập địa chỉ" />
+                            <Input placeholder="Nhập địa chỉ" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        <label>Tên người nhận</label>
+                        <label className="space-y-2 mb-4 mx-1 font-medium">Tên người nhận</label>
                         <Form.Item name="name">
-                            <Input placeholder="Nhập tên người nhận" />
+                            <Input placeholder="Nhập tên người nhận" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        <label>Số điện thoại người nhận</label>
+                        <label className="space-y-2 mb-4 mx-1 font-medium">Số điện thoại người nhận</label>
                         <Form.Item name="phone">
-                            <Input placeholder="Nhập số điện thoại" />
+                            <Input placeholder="Nhập số điện thoại" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        <Button htmlType="submit" className="w-full h-12 my-7 bg-blue-600">
+                        <Button htmlType="submit" className="w-full mt-2 px-4 py-5 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">
                             Lưu thay đổi
                         </Button>
                     </Form>
