@@ -412,11 +412,12 @@ const OderHistory = () => {
                   ))}
                 </div>
 
-                {/* Order Footer */}
-                <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
+               {/* Order Footer */}
+               <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
                   <div className="flex flex-col sm:flex-row justify-between items-center">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-x-4 sm:space-y-0">
-                      {order?.orderStatus === "pending" && (
+                      {(order?.orderStatus === "pending" ||
+                        order?.orderStatus === "confirmed") && (
                         <button
                           onClick={() => handleCancelOrder(order._id)}
                           className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors duration-200"
@@ -424,6 +425,7 @@ const OderHistory = () => {
                           Yêu cầu hủy
                         </button>
                       )}
+
                       {order?.orderStatus === "delivered" && (
                         <button
                           onClick={() => handleConfirmDelivery(order?._id)}

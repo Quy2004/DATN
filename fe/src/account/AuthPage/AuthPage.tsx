@@ -51,41 +51,60 @@ const AuthPage = () => {
     const handleRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await instance.post("/auth/register", registerData);
+          const response = await instance.post("/auth/register", registerData);
+    
+          // Kiểm tra response.data trước khi sử dụng
+          if (response.data && response.data.data) {
             toast.success("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.", {
-                duration: 3000,
+              duration: 3000,
             });
-
-            localStorage.setItem("user", JSON.stringify(response.data.user));
-            localStorage.setItem("token", response.data.token);
-
+    
+            // Lưu thông tin user từ response.data.data
+            localStorage.setItem("user", JSON.stringify(response.data.data));
+    
             setSignIn(true);
             setRegisterData({ userName: "", email: "", password: "" });
-        } catch (error) {
-            toast.error("Có lỗi xảy ra khi đăng ký.", { duration: 3000 });
+          }
+        } catch (error: any) {
+          // Hiển thị message lỗi từ server nếu có
+          const errorMessage =
+            error.response?.data?.message || "Có lỗi xảy ra khi đăng ký.";
+          toast.error(errorMessage, { duration: 3000 });
         }
-    };
-
-    const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
+      };
+    
+      const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await instance.post("/auth/login", loginData);
+          const response = await instance.post("/auth/login", loginData);
+    
+          // Kiểm tra response.data trước khi sử dụng
+          if (response.data && response.data.user && response.data.token) {
             toast.success("Đăng nhập thành công! Chào mừng bạn trở lại.", {
-                duration: 2000,
+              duration: 2000,
             });
-
+    
+            // Lưu thông tin user và token
             localStorage.setItem("user", JSON.stringify(response.data.user));
             localStorage.setItem("token", response.data.token);
-
+    
+            // Cập nhật instance headers với token mới
+            instance.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${response.data.token}`;
+    
             setTimeout(() => {
-
-                navigate("/");
-                window.location.reload();
+              navigate("/");
+              window.location.reload();
             }, 1500);
-        } catch (error) {
-            toast.error("Email hoặc mật khẩu không chính xác.", { duration: 3000 });
+          }
+        } catch (error: any) {
+          // Hiển thị message lỗi từ server nếu có
+          const errorMessage =
+            error.response?.data?.message || "Email hoặc mật khẩu không chính xác.";
+          toast.error(errorMessage, { duration: 3000 });
         }
-    };
+      };
 
     const handleLogout = () => {
         localStorage.removeItem("user");
