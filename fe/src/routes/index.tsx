@@ -62,6 +62,7 @@ import Dashboard from "../admin/Statistics/StatisticsPage";
 import BillPage from "../pages/BillPage/BillPage";
 import PrivateRouter from "./PrivateRouter";
 import ChuyenNhaDetail from "../pages/ChuyenNhaPage/ChuyenNhaDetail";
+import ChangePassword from "../account/SettingAuth/ChangePassword";
 
 
 
@@ -92,6 +93,7 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
+          <Route path="change-password" element={<ChangePassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />

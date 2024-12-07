@@ -135,6 +135,46 @@ class UserController {
 		}
 	}
 
+	async updatePassword(req, res) {
+		try {
+		  const { id } = req.params; // ID người dùng từ params
+		  const { currentPassword, newPassword } = req.body;  // Mật khẩu cũ và mới từ body
+	  
+		  // Tìm người dùng trong cơ sở dữ liệu
+		  const user = await User.findById(id);
+		  if (!user) {
+			return res.status(404).json({
+			  message: "User not found",
+			});
+		  }
+	  
+		  // Kiểm tra mật khẩu cũ
+		  const isMatch = await bcrypt.compare(currentPassword, user.password);
+		  if (!isMatch) {
+			return res.status(400).json({
+			  message: "Mật khẩu không chính xác",
+			});
+		  }
+	  
+		  // Mã hóa mật khẩu mới
+		  const hashedPassword = await bcrypt.hash(newPassword, 10);
+	  
+		  // Cập nhật mật khẩu mới
+		  user.password = hashedPassword;
+		  await user.save();
+	  
+		  res.status(200).json({
+			message: "Password updated successfully",
+		  });
+		} catch (error) {
+		  console.error(error);
+		  res.status(400).json({
+			message: "Error occurred while updating password",
+			error: error.message,
+		  });
+		}
+	  }
+	  
 	// Xóa người dùng(xóa mềm)
 	async deleteUser(req, res) {
 		try {
