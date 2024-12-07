@@ -297,106 +297,163 @@ const HomePage: React.FC = () => {
                 />
               )}
             </div>
-            {products.slice(0, 2).map((product: Product) => (
-              <div className="item mx-auto md:mx-0" key={product._id}>
-                <div className="relative  group place-items-center md:product_img">
-                  <Link to={`detail/${product._id}`}>
-                    <img
-                      src={`${product.image}`}
-                      alt=""
-                      className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
-                    />
-                  </Link>
-                  {product.status === "available" && user?.role !== "admin" ? (
-                    <div className="hidden md:block">
-                      <button
-                        key={product._id}
-                        onClick={() => toggleModal(product)}
-                        className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-                          left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                          />
-                        </svg>{" "}
-                        Mua ngay
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+            {products
+              .filter((product: Product) => product.active)
+              .slice(0, 2)
+              .map((product: Product) =>
+                product.active ? (
+                  <div className="item mx-auto md:mx-0" key={product._id}>
+                    {/* Nội dung hiển thị sản phẩm */}
+                    <div className="relative group place-items-center md:product_img">
+                      {/* Các phần tử bên trong sản phẩm */}
+                      <Link to={`detail/${product._id}`}>
+                        <img
+                          src={`${product.image}`}
+                          alt=""
+                          className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
                         />
-                      </svg>{" "}
-                      {user?.role === "admin" ? "" : "Hết Hàng"}
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="">
-                    <Link to={`detail/${product._id}`}>
-                      <h3 className="">{product.name}</h3>
-                    </Link>
-                    <p>{formatPrice(product.price)} VNĐ </p>
-                  </div>
-                  <div className="">
-                    <i className="text-sm">
-                      {product.status === "available" ? (
-                        ""
+                      </Link>
+                      {/* Các nút và phần logic hiển thị khác */}
+                      {product.status === "available" &&
+                        user?.role !== "admin" ? (
+                        <div className="hidden md:block">
+                          <button
+                            key={product._id}
+                            onClick={() => toggleModal(product)}
+                            className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+              left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
+                          >
+                            {/* SVG và nội dung của nút */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              className="size-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                              />
+                            </svg>{" "}
+                            Mua ngay
+                          </button>
+                        </div>
                       ) : (
-                        <span className="text-red-500">Hết hàng</span>
+                        <button
+                          className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+            left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="size-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                            />
+                          </svg>{" "}
+                          {user?.role === "admin" ? "" : "Hết Hàng"}
+                        </button>
                       )}
-                    </i>
+                    </div>
+                    {/* Thông tin tên và giá sản phẩm */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Link to={`detail/${product._id}`}>
+                          <h3 className="text-lg font-semibold">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        <div className="flex items-center space-x-2 text-sm md:text-[14px]">
+                          {/* Hiển thị giá */}
+                          {product.price !== product.sale_price ? (
+                            <>
+                              <p className="text-gray-500 line-through italic">
+                                {formatPrice(product.price)} VNĐ
+                              </p>
+                              <p className="text-red-600 font-medium text-lg md:text-[14px]">
+                                {formatPrice(product.sale_price)} VNĐ
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-gray-600 text-lg md:text-[14px]">
+                              {formatPrice(product.sale_price)} VNĐ
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <i className="text-sm">
+                          {product.status === "available" ? (
+                            ""
+                          ) : (
+                            <span className="text-red-500">Hết hàng</span>
+                          )}
+                        </i>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ) : null
+              )}
           </div>
           <div className="my-4"></div>
           {/* 4 sản phầm HOT */}
           {products.length > 3 ? (
             <Slider {...settings}>
-              {products.slice(0, 10).map((product: Product, index) => (
-                <div className="flex mx-2 md:mx-0">
-                  <div key={`${product._id}-${index}`} className="item md:mx-1 mx-2">
-                    <div className="my-4">
-                      <div className="relative group w-[180px] mb-2 rounded-xl  md:w-[300px]">
-                        <Link to={`detail/${product._id}`}>
-                          <img
-                            src={`${product.image}`}
-                            alt=""
-                            className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
-                          />
-                        </Link>
-                        {product.status === "available" &&
-                          user?.role !== "admin" ? (
-                          <div className="hidden md:block">
+              {products
+                .filter((product: Product) => product.active)
+                .slice(2)
+                .map((product: Product, index) => (
+                  <div className="flex mx-2 md:mx-0">
+                    <div
+                      key={`${product._id}-${index}`}
+                      className="item md:mx-1 mx-2"
+                    >
+                      <div className="my-4">
+                        <div className="relative group w-[180px] mb-2 rounded-xl  md:w-[300px]">
+                          <Link to={`detail/${product._id}`}>
+                            <img
+                              src={`${product.image}`}
+                              alt=""
+                              className="w-[180px] h-[180px] object-cover rounded-[10px] shadow-3xl border-2 md:h-[250px] md:w-[260px]"
+                            />
+                          </Link>
+                          {product.status === "available" &&
+                            user?.role !== "admin" ? (
+                            <div className="hidden md:block">
+                              <button
+                                key={product._id}
+                                onClick={() => toggleModal(product)}
+                                className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
+                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="1.5"
+                                  stroke="currentColor"
+                                  className="size-5"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                  />
+                                </svg>{" "}
+                                Mua ngay
+                              </button>
+                            </div>
+                          ) : (
                             <button
-                              key={product._id}
-                              onClick={() => toggleModal(product)}
                               className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
                           left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
                             >
@@ -414,78 +471,51 @@ const HomePage: React.FC = () => {
                                   d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                 />
                               </svg>{" "}
-                              Mua ngay
+                              Hết Hàng
                             </button>
-                          </div>
-                        ) : (
-                          <button
-                            className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-                          left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="size-5"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                              />
-                            </svg>{" "}
-                            Hết Hàng
-                          </button>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <div className="">
-                            <Link to={`detail/${product._id}`}>
-                              <h3 className="">{product.name}</h3>
-                            </Link>
-                            <p>{formatPrice(product.price)} VNĐ </p>
-                          </div>
-                          <div className="">
-                            <i className="text-sm mr-5 md:mr-2">
-                              {product.status === "available" ? (
-                                <div className="hidden md:block">
-                                  <button
-                                    key={product._id}
-                                    onClick={() => toggleModal(product)}
-                                    className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-                                left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      strokeWidth="1.5"
-                                      stroke="currentColor"
-                                      className="size-5"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                                      />
-                                    </svg>
-                                    Mua ngay
-                                  </button>
-                                </div>
-                              ) : (
-                                <span className="text-red-500">Hết hàng</span>
-                              )}
-                            </i>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Link to={`detail/${product._id}`}>
+                                <h3 className="text-lg font-semibold">
+                                  {product.name}
+                                </h3>
+                              </Link>
+                              <div className="flex items-center space-x-2 text-sm md:text-[14px]">
+                                {/* Hiển thị giá */}
+                                {product.price !== product.sale_price ? (
+                                  <>
+                                    <p className="text-gray-500 line-through italic">
+                                      {formatPrice(product.price)} VNĐ
+                                    </p>
+                                    <p className="text-red-600 font-medium text-lg md:text-[14px]">
+                                      {formatPrice(product.sale_price)} VNĐ
+                                    </p>
+                                  </>
+                                ) : (
+                                  <p className="text-gray-600 text-lg md:text-[14px]">
+                                    {formatPrice(product.sale_price)} VNĐ
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <i className="text-sm">
+                                {product.status === "available" ? (
+                                  ""
+                                ) : (
+                                  <span className="text-red-500">Hết hàng</span>
+                                )}
+                              </i>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </Slider>
           ) : (
             <div className="flex flex-wrap gap-y-4 md:mx-0 md:mt-0">
@@ -507,13 +537,31 @@ const HomePage: React.FC = () => {
                     </Link>
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="">
+                        <div>
                           <Link to={`detail/${product._id}`}>
-                            <h3 className="">{product.name}</h3>
+                            <h3 className="text-lg font-semibold">
+                              {product.name}
+                            </h3>
                           </Link>
-                          <p className="">{formatPrice(product.price)} VNĐ </p>
+                          <div className="flex items-center space-x-2 text-sm md:text-[14px]">
+                            {/* Hiển thị giá */}
+                            {product.price !== product.sale_price ? (
+                              <>
+                                <p className="text-gray-500 line-through italic">
+                                  {formatPrice(product.price)} VNĐ
+                                </p>
+                                <p className="text-red-600 font-medium text-lg md:text-[14px]">
+                                  {formatPrice(product.sale_price)} VNĐ
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-gray-600 text-lg md:text-[14px]">
+                                {formatPrice(product.sale_price)} VNĐ
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="">
+                        <div>
                           <i className="text-sm">
                             {product.status === "available" ? (
                               ""
