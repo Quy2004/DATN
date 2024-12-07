@@ -464,7 +464,7 @@ export const getOrderById = async (req, res) => {
         message: "orderId là bắt buộc",
       });
     }
-    const orders = await Order.find().populate({
+    const order = await Order.findOne({ _id: orderId }).populate({
       path: "orderDetail_id",
       populate: [
         {
@@ -481,7 +481,7 @@ export const getOrderById = async (req, res) => {
         },
       ],
     });
-    const order = orders?.filter((item) => (item._id = orderId));
+
     if (!order) {
       return res.status(404).json({
         success: false,

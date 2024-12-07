@@ -97,7 +97,7 @@ const Router = () => {
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
           <Route path="setting" element={<SettingAccount />} />
-          <Route path="order-tracking/:order_id" element={<Tracking />} />
+          <Route path="order-tracking/:id" element={<Tracking />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
           <Route path= "bill" element={<BillPage/>}/>
