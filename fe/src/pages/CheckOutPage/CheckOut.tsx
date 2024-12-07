@@ -534,8 +534,8 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
                 <textarea
                   {...register("note", {
                     maxLength: {
-                      value: 500,
-                      message: "Ghi chú không được vượt quá 500 ký tự",
+                      value: 100,
+                      message: "Ghi chú không được vượt quá 100 ký tự",
                     },
                   })}
                   placeholder="Nhập ghi chú khi đặt hàng"
