@@ -1,8 +1,7 @@
 import {
 	CheckOutlined,
 	CloseOutlined,
-	LockOutlined,
-	PlusCircleFilled,
+	LockOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,7 +25,7 @@ import {
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Comment } from "../../types/comment";
 import { Product } from "../../types/product";
@@ -158,6 +157,7 @@ const CommentAdmin = () => {
 				...size, // Giữ lại các trường hiện tại trong size
 				content: size.content, // Nội dung trả lời
 				parent_id: size.id, // Gán parent_id từ trường id trong form
+				product_id: size.productId
 			};
 
 			// Gửi request với nội dung đã được thay đổi
@@ -299,6 +299,7 @@ const CommentAdmin = () => {
 		key: index + 1,
 		content: item.content,
 		userName: item.user_id.userName,
+		product: item.product_id,
 		name: item.product_id.name,
 		status: item.status,
 		_id: item._id,
@@ -379,17 +380,6 @@ const CommentAdmin = () => {
 						onClick={() => setIsDeleted(!isDeleted)}
 					>
 						{isDeleted ? "" : ""}
-					</Button>
-					<Button
-						type="primary"
-						icon={<PlusCircleFilled />}
-					>
-						<Link
-							to="/admin/size/add"
-							style={{ color: "white" }}
-						>
-							Thêm bình luận
-						</Link>
 					</Button>
 				</div>
 			</div>

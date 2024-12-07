@@ -18,6 +18,7 @@ const cartItem = new Schema({
       topping_id: { type: mongoose.Schema.Types.ObjectId, ref: "Topping" },
     },
   ],
+  
 });
 
 const cartSchema = new Schema(

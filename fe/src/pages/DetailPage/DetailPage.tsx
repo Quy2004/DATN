@@ -19,7 +19,7 @@ const DetailPage = () => {
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
   const [selectedToppings, setSelectedToppings] = useState<any>();
 
-  console.log(selectedProduct)
+  console.log(selectedProduct);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -103,6 +103,20 @@ const DetailPage = () => {
     const newQuantity = parseInt(event.target.value, 10);
     setQuantity(newQuantity >= 1 ? newQuantity : 1);
   };
+  const calculateTotalPrice = () => {
+    const basePrice = product?.sale_price || product?.price || 0; // Use sale_price if available
+    const sizePrice = selectedSize?.size_id?.priceSize || 0;
+    const toppingPrice =
+      selectedToppings?.reduce(
+        (acc: string, topping: ProductTopping) =>
+          acc + (topping.priceTopping || 0),
+        0
+      ) || 0;
+
+    return (basePrice + sizePrice + toppingPrice) * quantity;
+  };
+
+  const totalPrice = calculateTotalPrice();
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
@@ -114,13 +128,19 @@ const DetailPage = () => {
       );
     }
 
+    // Check if a size has been selected
+    if (!selectedSize) {
+      return toast.error("Vui lòng chọn size.");
+    }
+
     try {
       const payload = {
         userId: user._id,
         productId,
         quantity,
         productSizes: selectedSize?.size_id || null,
-        productToppings: selectedToppings?.map((t: ProductTopping) => t.topping_id) || [],
+        productToppings:
+          selectedToppings?.map((t: ProductTopping) => t.topping_id) || [],
       };
       console.log(
         "Mapped Toppings (productToppings):",
@@ -136,7 +156,6 @@ const DetailPage = () => {
       toast.error("Có lỗi xảy ra khi thêm vào giỏ hàng");
     }
   };
-
 
   return (
     <>
@@ -175,20 +194,37 @@ const DetailPage = () => {
 
                 {/* Product Info */}
                 <div className="w-full px-0 md:px-4 md:w-3/5">
-                  <h2 className="mt-2 text-lg font-semibold md:font-bold mb-2 md:mt-0 md:text-4xl">{product.name}</h2>
-                  <div className="mb-4">
-                    <span className="text-2xl md:text-lg text-[#ea8025] font-semibold md:text-black md:font-medium mr-2">
-                      {formatPrice(
-                        product.price,
-                        selectedSize?.size_id.priceSize || 0,
-                        quantity
-                      )}{" "}
-                      VNĐ
-                    </span>
+                  <h2 className="mt-2 text-lg font-semibold md:font-bold mb-2 md:mt-0 md:text-4xl">
+                    {product.name}
+                  </h2>
+                  <div className="mb-4 flex items-center">
+                    {product.sale_price &&
+                      product.sale_price < product.price ? (
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl md:text-lg text-gray-500 italic line-through font-medium mr-2">
+                          {new Intl.NumberFormat("vi-VN").format(product.price)}{" "}
+                          VNĐ
+                        </p>
+                        <p className="text-2xl md:text-lg text-[#ea8025] font-semibold mr-2">
+                          {new Intl.NumberFormat("vi-VN").format(totalPrice)}{" "}
+                          VNĐ
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-end gap-1 py-1">
+                        <p className="text-2xl md:text-lg text-[#ea8025] font-semibold mr-2">
+                          {new Intl.NumberFormat("vi-VN").format(totalPrice)}{" "}
+                          VNĐ
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <hr className="hidden md:block mb-3"/>
+
+                  <hr className="hidden md:block mb-3" />
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Chọn size (Bắt buộc)</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Chọn size (Bắt buộc)
+                    </h3>
                     <div className="my-3">
                       {selectedProduct ? (
                         selectedProduct.product_sizes.length > 0 ? (
@@ -225,7 +261,9 @@ const DetailPage = () => {
 
                       {/* Phần chọn topping */}
                       <div className="my-6">
-                        <h2 className="font-medium text-lg mb-2">Chọn topping</h2>
+                        <h2 className="font-medium text-lg mb-2">
+                          Chọn topping
+                        </h2>
                         {selectedProduct ? (
                           <form className="bg-white shadow-xl my-1 rounded-md">
                             {selectedProduct.product_toppings.map((topping) => (
@@ -236,7 +274,8 @@ const DetailPage = () => {
                                 <input
                                   type="checkbox"
                                   checked={selectedToppings?.some(
-                                    (t: any) => t.topping_id === topping.topping_id
+                                    (t: any) =>
+                                      t.topping_id === topping.topping_id
                                   )}
                                   onChange={() => handleToppingChange(topping)}
                                   disabled={topping?.stock <= 0}
@@ -251,7 +290,9 @@ const DetailPage = () => {
                             ))}
                           </form>
                         ) : (
-                          <p className="px-6 text-gray-500">Không có topping nào có sẵn.</p>
+                          <p className="px-6 text-gray-500">
+                            Không có topping nào có sẵn.
+                          </p>
                         )}
                       </div>
                     </div>
@@ -275,31 +316,54 @@ const DetailPage = () => {
                     />
                   </div>
                   <div className="flex space-x-4 mb-6">
-                    <button
-                      onClick={() => {
-                        console.log("Button clicked", selectedProduct?._id);
-                        addToCart(product?._id);
-                      }}
-                      className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
-                    >
-                      <span className="relative z-10 transition duration-300 group-hover:text-white">
-                        <p className="text-base">Thêm giỏ hàng</p>
-                      </span>
-                      <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
-                      <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
-                    </button>
-                    <button className="bg-[#ea8025] flex gap-2 items-center text-white px-6 py-2 rounded-md hover:bg-[#FF6600] focus:outline-none">
-                      Mua ngay
-                    </button>
+                    {product?.isDeleted === false &&
+                      product?.status === "unavailable" ? (
+                      <p className="bg-red-100 border-l-4 border-[#ea8025] text-red-600 font-semibold py-2 px-4 rounded-md shadow-md">
+                        Sản phẩm này đã hết hàng. Bạn có thể chọn sản phẩm khác
+                        để mua.
+                      </p>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (user?.role !== "admin") {
+                            addToCart(product?._id);
+                          } else {
+                            console.log("Admin không thể thêm vào giỏ hàng");
+                          }
+                        }}
+                        className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                      >
+                        {user?.role !== "admin" ? (
+                          <span className="relative z-10 transition duration-300 group-hover:text-white">
+                            <p className="text-base">Thêm giỏ hàng</p>
+                          </span>
+                        ) : (
+                          <span className="relative z-10 transition duration-300 text-red-600">
+                            <p className="text-base">
+                              Vui lòng đăng nhập tài khoản người dùng
+                            </p>
+                          </span>
+                        )}
+
+                        <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-50"></span>
+                        <span className="absolute inset-0 bg-[#ea8025] opacity-0 transform -translate-x-full transition-all duration-1000 group-hover:translate-x-0 group-hover:opacity-100"></span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="mx-0 md:mx-4">
                 <h1 className="font-medium text-xl">Mô tả sản phẩm:</h1>
-                <p
-                  className="text-md md:text-lg text-gray-700 mb-4 mt-1"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                ></p>
+                {product.description ? (
+                  <p
+                    className="text-md md:text-lg text-gray-700 mb-4 mt-1"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  ></p>
+                ) : (
+                  <p className="text-md md:text-lg text-gray-700 mb-4 mt-1">
+                    Không có mô tả cho sản phẩm này.
+                  </p>
+                )}
               </div>
             </div>
             <div className="my-2  md:my-2 md:px-0">
@@ -307,7 +371,9 @@ const DetailPage = () => {
             </div>
             <div className="border-t-2 px-4 md:border md:my-2">
               <div className="mx-0 md:mx-4 ">
-                <h1 className="text-lg mb-[2px] md:my-2 font-medium md:text-xl">Sản phẩm khác</h1>
+                <h1 className="text-lg mb-[2px] md:my-2 font-medium md:text-xl">
+                  Sản phẩm khác
+                </h1>
                 <div className="flex flex-wrap justify-center md:grid md:grid-cols-6 gap-x-4">
                   {products.slice(0, 6).map((item) =>
                     item._id !== product._id ? (
@@ -340,7 +406,6 @@ const DetailPage = () => {
             </div>
           </div>
         </div>
-
       )}
     </>
   );

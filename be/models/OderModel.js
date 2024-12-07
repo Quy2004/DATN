@@ -44,6 +44,11 @@ const orderSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    discountAmount: {
+      type: Number,
+      required: false,
+      default: 0, 
+    },
     orderStatus: {
       type: String,
       enum: [
@@ -129,7 +134,7 @@ orderSchema.pre("save", async function (next) {
           select: "price sale_price discount",
         })
         .populate({
-          path: "product_size",
+path: "product_size",
           select: "priceSize",
         })
         .populate({
@@ -157,7 +162,7 @@ orderSchema.pre("save", async function (next) {
         return total + productTotalPrice * detail.quantity;
       }, 0);
 
-      this.totalPrice = totalPrice;
+    
     } catch (error) {
       console.error("Error calculating totalPrice:", error);
     }

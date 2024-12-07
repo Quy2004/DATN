@@ -3,7 +3,8 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
@@ -55,25 +56,30 @@ const Checkout: React.FC = () => {
             toppingTotal + (topping.topping_id?.priceTopping || 0),
           0
         ) || 0;
-
+  
       const itemTotalPrice =
         (salePrice + sizePrice + toppingsPrice) * (item.quantity || 0);
-
+  
       return total + itemTotalPrice;
     }, 0);
-
+  
     // Đảm bảo discountAmount có giá trị hợp lệ
     const discountToApply = discountAmount || 0;
-
+  
     // Làm tròn giá trị giảm giá từ voucher
     const roundedDiscount = Math.round(discountToApply);
-
+  
     // Tính tổng giá sau khi đã áp dụng voucher và làm tròn
     const finalTotal = originalTotal - roundedDiscount;
-
-    // Trả về tổng giá đã trừ voucher, đảm bảo không âm
-    return Math.max(0, Math.round(finalTotal)); // Làm tròn tổng giá cuối cùng
+  
+    // Trả về đối tượng bao gồm tổng giá và giá trị giảm giá
+    return {
+      finalTotal: Math.max(0, Math.round(finalTotal)), // Làm tròn tổng giá cuối cùng
+      roundedDiscount, // Trả về giá trị giảm giá đã tròn
+    };
   };
+  
+  
 
   interface Form {
     name: string;
@@ -171,17 +177,18 @@ const Checkout: React.FC = () => {
   const openVoucherModal = async () => {
     try {
       const response = await instance.get("/vouchers");
-      console.log("Dữ liệu từ API:", response.data); // Kiểm tra dữ liệu trả về từ API
 
-      // Kiểm tra dữ liệu voucher có đúng hay không
       if (response.data && response.data.data) {
-        setVoucherList(response.data.data); // Cập nhật voucherList từ response.data.data
-        setIsModalOpen(true); // Mở modal
+        // Lọc voucher phù hợp
+        const applicableVouchers = filterApplicableVouchers(response.data.data);
+
+        setVoucherList(applicableVouchers);
+        setIsModalOpen(true);
       } else {
         console.error("Không có dữ liệu voucher trong response");
       }
     } catch (error) {
-      console.error("Lỗi khi tải voucher:", error); // Kiểm tra lỗi
+      console.error("Lỗi khi tải voucher:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi",
@@ -190,28 +197,158 @@ const Checkout: React.FC = () => {
     }
   };
 
-  // Hàm chọn voucher
-  const handleSelectVoucher = (voucher: any) => {
-    const totalPrice = getTotalPrice();
-    const discount = (totalPrice * voucher.discountPercentage) / 100;
-    const maxDiscount = voucher.maxDiscount || 0;
+  const filterApplicableVouchers = (vouchers: any[]) => {
+    return vouchers.filter((voucher) => {
+      // Loại bỏ voucher không hoạt động hoặc đã bị xóa
+      if (voucher.status !== "active" || voucher.isDeleted) {
+        return false;
+      }
 
-    // Áp dụng giảm giá không vượt quá maxDiscount
-    const finalDiscountAmount = Math.min(discount, maxDiscount);
+      // Kiểm tra số lượng voucher
+      if (voucher.quantity <= 0) {
+        return false;
+      }
 
-    // Kiểm tra xem voucher có đang được chọn không
-    if (voucher.code === selectedVoucher) {
-      // Nếu voucher đã được chọn, bỏ chọn voucher
-      setSelectedVoucher(""); // Reset voucher đã chọn
-      setDiscountAmount(0); // Reset giảm giá
-    } else {
-      // Nếu voucher chưa được chọn, chọn voucher và tính toán giảm giá
-      setSelectedVoucher(voucher.code); // Cập nhật voucher đã chọn
-      setDiscountAmount(finalDiscountAmount); // Cập nhật giảm giá
+      // Kiểm tra ngày hiệu lực của voucher
+      const currentDate = new Date();
+      const minOrderDate = new Date(voucher.minOrderDate);
+      const maxOrderDate = new Date(voucher.maxOrderDate);
+
+      if (currentDate < minOrderDate || currentDate > maxOrderDate) {
+        return false;
+      }
+
+      // Nếu không có điều kiện sản phẩm và danh mục cụ thể, áp dụng cho tất cả
+      if (
+        (!voucher.applicableProducts ||
+          voucher.applicableProducts.length === 0) &&
+        (!voucher.applicableCategories ||
+          voucher.applicableCategories.length === 0)
+      ) {
+        return true;
+      }
+
+      // Kiểm tra sản phẩm trong giỏ hàng
+      const isValidForProducts =
+        voucher.applicableProducts && voucher.applicableProducts.length > 0
+          ? carts.some((cartItem: any) =>
+              voucher.applicableProducts.includes(cartItem.product?._id)
+            )
+          : false;
+
+      // Kiểm tra danh mục sản phẩm trong giỏ hàng
+      const isValidForCategories =
+        voucher.applicableCategories && voucher.applicableCategories.length > 0
+          ? carts.some((cartItem: any) =>
+              voucher.applicableCategories.includes(
+                cartItem.product?.category?._id
+              )
+            )
+          : false;
+
+      // Nếu có điều kiện sản phẩm, kiểm tra điều kiện sản phẩm
+      if (voucher.applicableProducts && voucher.applicableProducts.length > 0) {
+        return isValidForProducts;
+      }
+
+      // Nếu có điều kiện danh mục, kiểm tra điều kiện danh mục
+      if (
+        voucher.applicableCategories &&
+        voucher.applicableCategories.length > 0
+      ) {
+        return isValidForCategories;
+      }
+
+      // Trường hợp không khớp
+      return false;
+    });
+  };
+
+  const handleSelectVoucher = async (voucher: any) => {
+    console.log("Voucher:", voucher);
+
+    // Kiểm tra ID voucher hợp lệ
+    if (!voucher || !voucher._id) {
+      toast.error("ID voucher không hợp lệ."); // Hiển thị thông báo lỗi
+      return;
     }
 
-    setIsModalOpen(false); // Đóng modal
+    // Kiểm tra trạng thái voucher
+    if (voucher.status !== "active" || voucher.isDeleted) {
+      toast.error("Voucher hiện không khả dụng."); // Hiển thị thông báo lỗi
+      return;
+    }
+
+    // Kiểm tra số lượng voucher
+    if (voucher.quantity <= 0) {
+      toast.error("Voucher đã hết số lượng sử dụng."); // Hiển thị thông báo lỗi
+      return;
+    }
+
+    // Kiểm tra ngày hiệu lực của voucher
+    const currentDate = new Date();
+    const minOrderDate = new Date(voucher.minOrderDate);
+    const maxOrderDate = new Date(voucher.maxOrderDate);
+
+    if (currentDate < minOrderDate || currentDate > maxOrderDate) {
+      toast.error("Voucher chưa đến hoặc đã hết hạn sử dụng."); // Hiển thị thông báo lỗi thay vì info
+      return;
+    }
+
+    // Kiểm tra điều kiện sản phẩm và danh mục
+    const isValidForProducts =
+      !voucher.applicableProducts || voucher.applicableProducts.length === 0
+        ? true
+        : carts.some((cartItem: any) =>
+            voucher.applicableProducts.includes(cartItem.product?._id)
+          );
+
+    const isValidForCategories =
+      !voucher.applicableCategories || voucher.applicableCategories.length === 0
+        ? true
+        : carts.some((cartItem: any) =>
+            voucher.applicableCategories.includes(
+              cartItem.product?.category?._id
+            )
+          );
+
+    // Nếu có điều kiện sản phẩm hoặc danh mục, phải thỏa mãn
+    if (
+      (voucher.applicableProducts &&
+        voucher.applicableProducts.length > 0 &&
+        !isValidForProducts) ||
+      (voucher.applicableCategories &&
+        voucher.applicableCategories.length > 0 &&
+        !isValidForCategories)
+    ) {
+      toast.error(
+        "Voucher không áp dụng cho sản phẩm hoặc danh mục trong giỏ hàng."
+      ); // Thông báo lỗi
+      return;
+    }
+
+    // Tính toán giảm giá
+const { finalTotal } = getTotalPrice(); // Lấy finalTotal từ kết quả trả về của getTotalPrice()
+const discount = (finalTotal * voucher.discountPercentage) / 100; // Sử dụng finalTotal ở đây
+const maxDiscount = voucher.maxDiscount || 0;
+const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm giá cuối cùng
+
+    // Xử lý chọn/hủy voucher
+    if (voucher.code === selectedVoucher) {
+      setSelectedVoucher("");
+      setDiscountAmount(0);
+      toast.success("Voucher đã được hủy."); // Hiển thị thông báo thành công khi hủy
+    } else {
+      setSelectedVoucher(voucher.code);
+      setDiscountAmount(finalDiscountAmount);
+      toast.success("Voucher đã được áp dụng thành công!"); // Thông báo thành công khi áp dụng
+    }
+
+    setIsModalOpen(false);
   };
+
+  // Thêm hàm lọc voucher phù hợp
+
   const onSubmit = async (data: Form) => {
     // Kiểm tra phương thức thanh toán
     if (!paymentMethod) {
@@ -232,13 +369,16 @@ const Checkout: React.FC = () => {
       });
       return;
     }
-
+    const { finalTotal, roundedDiscount } = getTotalPrice();
+  console.log("Tổng giá trị đơn hàng:", finalTotal);
+  console.log("Giảm giá từ voucher:", roundedDiscount);
     const orderData = {
       userId,
       customerInfo: data,
       paymentMethod: paymentMethod,
       note: data.note,
-      totalAmount: getTotalPrice(),
+      totalPrice: finalTotal,
+      discountAmount: roundedDiscount, // Thêm giảm giá vào orderData
       paymentStatus:
         paymentMethod === "cash on delivery" ? "pending" : "unpaid",
     };
@@ -394,8 +534,8 @@ const Checkout: React.FC = () => {
                 <textarea
                   {...register("note", {
                     maxLength: {
-                      value: 500,
-                      message: "Ghi chú không được vượt quá 500 ký tự",
+                      value: 100,
+                      message: "Ghi chú không được vượt quá 100 ký tự",
                     },
                   })}
                   placeholder="Nhập ghi chú khi đặt hàng"
@@ -564,13 +704,21 @@ const Checkout: React.FC = () => {
                         <div className="flex justify-between text-sm p-1">
                           <div>Giá:</div>
                           <div className="text-gray-500 font-semibold">
-                            {item.product.sale_price
-                              ? (
-                                  (item.product.sale_price +
-                                    (item.product_sizes?.priceSize || 0)) *
-                                  item.quantity
+                            {item?.product && item?.product?.sale_price
+                              ? // Tính giá thủ công
+                                (
+                                  (item?.product?.sale_price +
+                                    (item?.product_sizes?.priceSize || 0) +
+                                    (item?.product_toppings || []).reduce(
+                                      (total: any, topping: any) =>
+                                        total +
+                                        (topping?.topping_id?.priceTopping ||
+                                          0),
+                                      0
+                                    )) *
+                                  item?.quantity
                                 ).toLocaleString("vi-VN")
-                              : ""}
+                              : "Chưa có giá"}
                           </div>
                         </div>
                         {/* Hiển thị Số lượng */}
@@ -626,14 +774,15 @@ const Checkout: React.FC = () => {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-lg font-semibold">
-                    Tổng thanh toán:
-                  </span>
-                  <span className="text-xl font-bold text-[#ea8025]">
-                    {getTotalPrice().toLocaleString("vi-VN")} VNĐ
-                  </span>
-                </div>
+              <div className="flex justify-between">
+  <span className="text-lg font-semibold">
+    Tổng thanh toán:
+  </span>
+  <span className="text-xl font-bold text-[#ea8025]">
+    {getTotalPrice().finalTotal.toLocaleString("vi-VN")} VNĐ
+  </span>
+</div>
+
               </div>
 
               {/* Modal chọn voucher */}
@@ -647,7 +796,7 @@ const Checkout: React.FC = () => {
 
                     {/* Danh sách Voucher */}
                     <ul className="space-y-4">
-                      {voucherList.map((v) => (
+                      {filterApplicableVouchers(voucherList).map((v) => (
                         <li
                           key={v.code}
                           className={`flex items-center justify-between bg-white rounded-xl border p-4 cursor-pointer 

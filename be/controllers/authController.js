@@ -93,7 +93,7 @@ export const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email : email });
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: "Email không tồn tại trong hệ thống" });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "Email chưa được đăng ký,vui lòng nhập lại email" });
     }
     const token = crypto.randomBytes(20).toString("hex");
   

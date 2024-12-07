@@ -11,10 +11,12 @@ import {
   getTopProducts,
   getCustomerStats,
   getRevenueByTimePeriod,
+  getEnhancedOrderStats,
+  getCompletedOrders,
 } from "../controllers/ordersController";
 
 const router = express.Router();
-// router.get("/statistics", getOrderStatistics);
+router.get("/statistics", getEnhancedOrderStats);
 
 // Endpoint để lấy tổng doanh thu và số lượng đơn hàng
 router.get("/order-stats", getOrderStats);
@@ -41,5 +43,6 @@ router.get("/order/:orderId", getOrderById);
 // Cập nhật trạng thái đơn hàng
 router.put("/status/:orderId", updateOrderStatus);
 router.put("/cancel/:orderId", cancelOrder);
-
+//Hóa đơn
+router.get("/invoice/order", getCompletedOrders);
 export default router;
