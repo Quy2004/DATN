@@ -99,7 +99,18 @@ console.log("Số tiền giảm giá:", discountAmount);
       paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
+    const notification = new NotificationModel({
+			title: "Đặt hàng thành công",
+			message: `Đơn hàng mã "${order._id}" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái hiện tại: "${
+				paymentMethod === "cash on delivery" ? "Đang chờ xử lý" : "Chưa thanh toán"
+			}".`,
+			user_Id: userId || null, // Null nếu không đăng nhập
+			order_Id: order._id, // Gắn ID đơn hàng để tiện theo dõi
+			type: "general",
+			isGlobal: false, // Chỉ thông báo cho người dùng liên quan
+		});
 
+		await notification.save();
     await order.save();
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
 
@@ -155,76 +166,74 @@ console.log("Số tiền giảm giá:", discountAmount);
     order.orderDetail_id = orderDetailIds;
     await order.save();
 
-    // Clear cart after order created
+   // Xóa giỏ hàng theo điều kiện phương thức thanh toán
+   if (paymentMethod === 'cash on delivery') {
+    // Nếu là thanh toán khi nhận hàng, xóa toàn bộ giỏ hàng
     await Cart.findOneAndDelete({ userId });
+  }
 
-    // Nếu phương thức thanh toán là MoMo
-    if (paymentMethod === "momo") {
-      try {
-        // Thông tin thanh toán MoMo
-        const paymentData = {
-          orderId: order._id.toString(),
-          amount: Math.round(order.totalPrice), // Làm tròn số tiền
-          orderInfo: `Thanh toán đơn hàng ${order._id}`,
-        };
+   // Nếu phương thức thanh toán là MoMo
+   if (paymentMethod === "momo") {
+    try {
+      const paymentData = {
+        orderId: order._id.toString(),
+        amount: Math.round(order.totalPrice),
+        orderInfo: `Thanh toán đơn hàng ${order._id}`,
+      };
 
-        // Gửi yêu cầu thanh toán MoMo
-        const paymentResponse = await axios.post(
-          "http://localhost:8000/payments/momo/create-payment", 
-          paymentData
-        );
+      const paymentResponse = await axios.post(
+        "http://localhost:8000/payments/momo/create-payment", 
+        paymentData
+      );
 
-        // Lấy URL thanh toán từ phản hồi
-        const { payUrl } = paymentResponse.data;
+      const { payUrl } = paymentResponse.data;
 
-        order.paymentStatus = "unpaid"; 
-        await order.save();
-        return res.status(201).json({
-          success: true,
-          message: "Tạo đơn hàng thành công",
-          data: order,
-          payUrl, // Trả về URL thanh toán MoMo cho frontend
-        });
-      } catch (paymentError) {
-        // Nếu tạo thanh toán MoMo thất bại, hủy đơn hàng
-        await Order.findByIdAndDelete(order._id);
-        await OrderDetail.deleteMany({ order_id: order._id });
+      order.paymentStatus = "unpaid"; 
+      await order.save();
+      return res.status(201).json({
+        success: true,
+        message: "Tạo đơn hàng thành công",
+        data: order,
+        payUrl,
+      });
+    } catch (paymentError) {
+      // Nếu tạo thanh toán MoMo thất bại, hủy đơn hàng
+      await Order.findByIdAndDelete(order._id);
+      await OrderDetail.deleteMany({ order_id: order._id });
 
-        console.error(
-          "Lỗi khi tạo thanh toán MoMo",
-          paymentError.response?.data || paymentError.message
-        );
-        return res.status(500).json({
-          success: false,
-          message: "Lỗi khi tạo thanh toán MoMo",
-          error: paymentError.message,
-        });
-      }
+      console.error(
+        "Lỗi khi tạo thanh toán MoMo",
+        paymentError.response?.data || paymentError.message
+      );
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi khi tạo thanh toán MoMo",
+        error: paymentError.message,
+      });
     }
+  }
+
 // Nếu phương thức thanh toán là ZaloPay
 if (paymentMethod === "zalopay") {
   try {
-    // Thông tin thanh toán ZaloPay
     const paymentData = {
       orderId: order._id.toString(),
-      amount: Math.round(order.totalPrice), // Làm tròn số tiền
+      amount: Math.round(order.totalPrice),
       orderInfo: `Thanh toán đơn hàng ${order._id}`,
     };
 
-    // Gửi yêu cầu thanh toán ZaloPay
     const paymentResponse = await axios.post(
       "http://localhost:8000/payments/zalo/create-payment", 
       paymentData
     );
 
-    // Lấy URL thanh toán từ phản hồi
     const { payUrl } = paymentResponse.data;
 
     return res.status(201).json({
       success: true,
       message: "Tạo đơn hàng thành công",
       data: order,
-      payUrl, // Trả về URL thanh toán ZaloPay cho frontend
+      payUrl,
     });
   } catch (paymentError) {
     // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
@@ -242,19 +251,20 @@ if (paymentMethod === "zalopay") {
     });
   }
 }
-    // Trả về kết quả tạo đơn hàng nếu không phải MoMo
-    return res.status(201).json({
-      success: true,
-      message: "Tạo đơn hàng thành công",
-      data: order,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Lỗi khi tạo đơn hàng",
-      error: error.message,
-    });
-  }
+
+// Trả về kết quả tạo đơn hàng nếu không phải MoMo hoặc ZaloPay
+return res.status(201).json({
+  success: true,
+  message: "Tạo đơn hàng thành công",
+  data: order,
+});
+} catch (error) {
+return res.status(500).json({
+  success: false,
+  message: "Lỗi khi tạo đơn hàng",
+  error: error.message,
+});
+}
 };
 
 
@@ -358,61 +368,61 @@ const statusMapping = {
 };
 
 export const updateOrderStatus = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { status } = req.body;
+	try {
+		const { orderId } = req.params;
+		const { status } = req.body;
 
-    // Kiểm tra trạng thái hợp lệ
-    const validStatuses = Object.keys(statusMapping);
+		// Kiểm tra trạng thái hợp lệ
+		const validStatuses = Object.keys(statusMapping);
 
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Trạng thái đơn hàng không hợp lệ",
-      });
-    }
+		if (!validStatuses.includes(status)) {
+			return res.status(400).json({
+				success: false,
+				message: "Trạng thái đơn hàng không hợp lệ",
+			});
+		}
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { orderStatus: status },
-      { new: true }
-    );
+		const order = await Order.findByIdAndUpdate(
+			orderId,
+			{ orderStatus: status },
+			{ new: true },
+		);
 
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy đơn hàng",
-      });
-    }
+		if (!order) {
+			return res.status(404).json({
+				success: false,
+				message: "Không tìm thấy đơn hàng",
+			});
+		}
 
-    // Lấy trạng thái tiếng Việt từ mapping
-    const vietnameseStatus = statusMapping[status];
+		// Lấy trạng thái tiếng Việt từ mapping
+		const vietnameseStatus = statusMapping[status];
 
-    // Tạo thông báo mới sử dụng trạng thái tiếng Việt
-    const notification = await NotificationModel.create({
-      title: "Cập nhật trạng thái đơn hàng",
-      message: `Đơn hàng "${order.orderNumber}" của bạn đã được cập nhật trạng thái thành "${vietnameseStatus}".`,
-      user_Id: order.user_id, // Lấy userId từ bảng Order
-      order_Id: order._id, // Lấy userId từ bảng Order
-      type: "general",
-      isGlobal: true,
-    });
+		// Tạo thông báo mới sử dụng trạng thái tiếng Việt
+		const notification = await NotificationModel.create({
+			title: "Trạng thái đơn hàng đã được cập nhật",
+			message: `Đơn hàng mã "${order.orderNumber}" của bạn hiện đã chuyển sang trạng thái: "${vietnameseStatus}".`,
+			user_Id: order.user_id, // Lấy userId từ bảng Order
+			order_Id: order._id, // Lấy userId từ bảng Order
+			type: "general",
+			isGlobal: true,
+		});
 
-    return res.status(200).json({
-      success: true,
-      message: "Cập nhật trạng thái thành công",
-      data: {
-        order,
-        notification, // Trả về thông báo mới tạo (tùy chọn)
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Lỗi khi cập nhật trạng thái",
-      error: error.message,
-    });
-  }
+		return res.status(200).json({
+			success: true,
+			message: "Cập nhật trạng thái thành công",
+			data: {
+				order,
+				notification, // Trả về thông báo mới tạo (tùy chọn)
+			},
+		});
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: "Lỗi khi cập nhật trạng thái",
+			error: error.message,
+		});
+	}
 };
 // Hủy đơn hàng
 export const cancelOrder = async (req, res) => {
