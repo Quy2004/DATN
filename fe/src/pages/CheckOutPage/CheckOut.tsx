@@ -56,30 +56,28 @@ const Checkout: React.FC = () => {
             toppingTotal + (topping.topping_id?.priceTopping || 0),
           0
         ) || 0;
-  
+
       const itemTotalPrice =
         (salePrice + sizePrice + toppingsPrice) * (item.quantity || 0);
-  
+
       return total + itemTotalPrice;
     }, 0);
-  
+
     // Đảm bảo discountAmount có giá trị hợp lệ
     const discountToApply = discountAmount || 0;
-  
+
     // Làm tròn giá trị giảm giá từ voucher
     const roundedDiscount = Math.round(discountToApply);
-  
+
     // Tính tổng giá sau khi đã áp dụng voucher và làm tròn
     const finalTotal = originalTotal - roundedDiscount;
-  
+
     // Trả về đối tượng bao gồm tổng giá và giá trị giảm giá
     return {
       finalTotal: Math.max(0, Math.round(finalTotal)), // Làm tròn tổng giá cuối cùng
       roundedDiscount, // Trả về giá trị giảm giá đã tròn
     };
   };
-  
-  
 
   interface Form {
     name: string;
@@ -158,7 +156,7 @@ const Checkout: React.FC = () => {
       }
 
       // Chuyển hướng người dùng tới trang thanh toán ZaloPay
-      window.location.href = payUrl
+      window.location.href = payUrl;
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
 
@@ -195,7 +193,7 @@ const Checkout: React.FC = () => {
       }
 
       // Chuyển hướng người dùng tới trang thanh toán VnPay
-      window.location.href = payUrl
+      window.location.href = payUrl;
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
 
@@ -209,7 +207,7 @@ const Checkout: React.FC = () => {
 
       throw error;
     }
-  }
+  };
   // Hàm mở modal và lấy danh sách voucher
   const openVoucherModal = async () => {
     try {
@@ -365,10 +363,10 @@ const Checkout: React.FC = () => {
     }
 
     // Tính toán giảm giá
-const { finalTotal } = getTotalPrice(); // Lấy finalTotal từ kết quả trả về của getTotalPrice()
-const discount = (finalTotal * voucher.discountPercentage) / 100; // Sử dụng finalTotal ở đây
-const maxDiscount = voucher.maxDiscount || 0;
-const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm giá cuối cùng
+    const { finalTotal } = getTotalPrice(); // Lấy finalTotal từ kết quả trả về của getTotalPrice()
+    const discount = (finalTotal * voucher.discountPercentage) / 100; // Sử dụng finalTotal ở đây
+    const maxDiscount = voucher.maxDiscount || 0;
+    const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm giá cuối cùng
 
     // Xử lý chọn/hủy voucher
     if (voucher.code === selectedVoucher) {
@@ -407,8 +405,8 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
       return;
     }
     const { finalTotal, roundedDiscount } = getTotalPrice();
-  console.log("Tổng giá trị đơn hàng:", finalTotal);
-  console.log("Giảm giá từ voucher:", roundedDiscount);
+    console.log("Tổng giá trị đơn hàng:", finalTotal);
+    console.log("Giảm giá từ voucher:", roundedDiscount);
     const orderData = {
       userId,
       customerInfo: data,
@@ -450,7 +448,7 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
           break;
         case "vnpay":
           await handleVnPayPayment(orderData);
-          break
+          break;
         default:
           throw new Error("Phương thức thanh toán không hợp lệ");
       }
@@ -470,10 +468,10 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
     setPaymentMethod("zalopay");
     setIsBankTransferSelected(false);
   };
-  const handleVnPayClick = ()=>{
-    setPaymentMethod("vnpay")
+  const handleVnPayClick = () => {
+    setPaymentMethod("vnpay");
     setIsBankTransferSelected(false);
-  }
+  };
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
   }
@@ -678,9 +676,7 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
                         alt="VnPay"
                         className="w-16 mx-auto border-2"
                       />
-                      <div className="mt-2 text-center font-medium">
-                        Vnpay
-                      </div>
+                      <div className="mt-2 text-center font-medium">Vnpay</div>
                     </button>
                   </div>
                 </div>
@@ -699,120 +695,144 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
           <section className="w-full md:w-1/2 bg-gray-50 rounded-lg shadow-md p-6">
             <h6 className="text-lg font-semibold mb-4">Sản phẩm</h6>
             <div className="flex flex-col space-y-4 mb-6">
-  {carts.map((item: any) => (
-    <div
-      key={item.product._id}
-      className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
-    >
-      {item.product && (
-        <div className="flex w-full">
-          {/* Product Image */}
-          <div className="mr-4 relative">
-            <img
-              src={item.product.image}
-              alt={item.product.name}
-              className="h-[100px] w-[100px] rounded-sm object-cover"
-            />
-            {item.product.sale_percentage && (
-              <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                -{item.product.sale_percentage}%
-              </div>
-            )}
-          </div>
-
-          {/* Product Details */}
-          <div className="flex-grow">
-            {/* Name and Price Section */}
-            <div className="flex justify-between items-center mb-2">
-              <div className="font-bold text-lg text-gray-800">
-                {item.product.name}
-              </div>
-              <div className="flex items-center">
-                {item.product.original_price && (
-                  <span className="line-through text-gray-500 mr-2">
-                    {item.product.original_price.toLocaleString('vi-VN')} VNĐ
-                  </span>
-                )}
-                {item.product.sale_price && (
-                  <span className="font-bold text-red-500">
-                    {item.product.sale_price.toLocaleString('vi-VN')} VNĐ
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Size Section */}
-            <div className="flex justify-between items-center text-sm mb-1">
-              <span className="text-gray-600">Size:</span>
-              <div className="text-gray-700 flex items-center">
-                {item.product_sizes?.name || "Không có kích thước"}
-                {item.product_sizes?.priceSize && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    (+{item.product_sizes.priceSize.toLocaleString('vi-VN')} VNĐ)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Topping Section */}
-            <div className="flex justify-between items-center text-sm mb-1">
-              <span className="text-gray-600">Topping:</span>
-              <div className="text-gray-700">
-                {item.product_toppings && item.product_toppings.length > 0 ? (
-                  <div>
-                    {item.product_toppings.map((topping: any, index: number) => (
-                      <div key={topping._id} className="flex items-center">
-                        <span>{topping.topping_id?.nameTopping}</span>
-                        {topping.topping_id?.priceTopping && (
-                          <span className="ml-2 text-xs text-gray-500">
-                            (+{topping.topping_id.priceTopping.toLocaleString('vi-VN')} VNĐ)
-                          </span>
+              {carts.map((item: any) => (
+                <div
+                  key={item.product._id}
+                  className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
+                >
+                  {item.product && (
+                    <div className="flex w-full">
+                      {/* Product Image */}
+                      <div className="mr-4 relative">
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          className="h-[100px] w-[100px] rounded-sm object-cover"
+                        />
+                        {item.product.sale_percentage && (
+                          <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                            -{item.product.sale_percentage}%
+                          </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  "Không có topping"
-                )}
-              </div>
+
+                      {/* Product Details */}
+                      <div className="flex-grow">
+                        {/* Name and Price Section */}
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="font-bold text-lg text-gray-800">
+                            {item.product.name}
+                          </div>
+                          <div className="flex items-center">
+                            {item.product.original_price && (
+                              <span className="line-through text-gray-500 mr-2">
+                                {item.product.original_price.toLocaleString(
+                                  "vi-VN"
+                                )}{" "}
+                                VNĐ
+                              </span>
+                            )}
+                            {item.product.sale_price && (
+                              <span className="font-bold text-red-500">
+                                {item.product.sale_price.toLocaleString(
+                                  "vi-VN"
+                                )}{" "}
+                                VNĐ
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Size Section */}
+                        <div className="flex justify-between items-center text-sm mb-1">
+                          <span className="text-gray-600">Size:</span>
+                          <div className="text-gray-700 flex items-center">
+                            {item.product_sizes?.name || "Không có kích thước"}
+                            {item.product_sizes?.priceSize && (
+                              <span className="ml-2 text-xs text-gray-500">
+                                (+
+                                {item.product_sizes.priceSize.toLocaleString(
+                                  "vi-VN"
+                                )}{" "}
+                                VNĐ)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Topping Section */}
+                        <div className="flex justify-between items-center text-sm mb-1">
+                          <span className="text-gray-600">Topping:</span>
+                          <div className="text-gray-700">
+                            {item.product_toppings &&
+                            item.product_toppings.length > 0 ? (
+                              <div>
+                                {item.product_toppings.map(
+                                  (topping: any, index: number) => (
+                                    <div
+                                      key={topping._id}
+                                      className="flex items-center"
+                                    >
+                                      <span>
+                                        {topping.topping_id?.nameTopping}
+                                      </span>
+                                      {topping.topping_id?.priceTopping && (
+                                        <span className="ml-2 text-xs text-gray-500">
+                                          (+
+                                          {topping.topping_id.priceTopping.toLocaleString(
+                                            "vi-VN"
+                                          )}{" "}
+                                          VNĐ)
+                                        </span>
+                                      )}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            ) : (
+                              "Không có topping"
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Quantity Section */}
+                        <div className="flex justify-between items-center text-sm mt-2 mb-2">
+                          <div className="flex items-center">
+                            <span className="mr-2 text-gray-600">
+                              Số lượng:
+                            </span>
+                            <span className="font-semibold text-gray-800">
+                              {item.quantity}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Total Price Section */}
+                        <div className="border-t border-gray-300 pt-2 text-right">
+                          <span className="font-bold text-primary text-base text-gray-900">
+                            Thành Tiền:{" "}
+                            {item?.product && item?.product?.sale_price
+                              ? (
+                                  (item?.product?.sale_price +
+                                    (item?.product_sizes?.priceSize || 0) +
+                                    (item?.product_toppings || []).reduce(
+                                      (total: any, topping: any) =>
+                                        total +
+                                        (topping?.topping_id?.priceTopping ||
+                                          0),
+                                      0
+                                    )) *
+                                  item?.quantity
+                                ).toLocaleString("vi-VN") + " VNĐ"
+                              : "Chưa có giá"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-
-            {/* Quantity Section */}
-            <div className="flex justify-between items-center text-sm mt-2 mb-2">
-              <div className="flex items-center">
-                <span className="mr-2 text-gray-600">Số lượng:</span>
-                <span className="font-semibold text-gray-800">{item.quantity}</span>
-              </div>
-            </div>
-
-       {/* Total Price Section */}
-<div className="border-t border-gray-300 pt-2 text-right">
-  <span className="font-bold text-primary text-base text-gray-900">
-    Thành Tiền:{" "}
-    {item?.product && item?.product?.sale_price
-      ? (
-          (item?.product?.sale_price +
-            (item?.product_sizes?.priceSize || 0) +
-            (item?.product_toppings || []).reduce(
-              (total: any, topping: any) =>
-                total + (topping?.topping_id?.priceTopping || 0),
-              0
-            )) *
-          item?.quantity
-        ).toLocaleString("vi-VN") + " VNĐ"
-      : "Chưa có giá"}
-  </span>
-</div>
-
-          </div>
-        </div>
-      )}
-    </div>
-  ))}
-</div>
-
-
-
 
             <div className="my-4">
               {/* Input và nút thêm voucher */}
@@ -854,15 +874,14 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
                     </span>
                   </div>
                 )}
-              <div className="flex justify-between">
-  <span className="text-lg font-semibold">
-    Tổng thanh toán:
-  </span>
-  <span className="text-xl font-bold text-[#ea8025]">
-    {getTotalPrice().finalTotal.toLocaleString("vi-VN")} VNĐ
-  </span>
-</div>
-
+                <div className="flex justify-between">
+                  <span className="text-lg font-semibold">
+                    Tổng thanh toán:
+                  </span>
+                  <span className="text-xl font-bold text-[#ea8025]">
+                    {getTotalPrice().finalTotal.toLocaleString("vi-VN")} VNĐ
+                  </span>
+                </div>
               </div>
 
               {/* Modal chọn voucher */}

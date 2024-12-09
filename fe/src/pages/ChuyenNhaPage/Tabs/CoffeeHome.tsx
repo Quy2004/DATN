@@ -1,137 +1,74 @@
+import { Link, useParams } from "react-router-dom";
+import { useMemo } from "react";
+import instance from "../../../services/api";
+import { useQuery } from "@tanstack/react-query";
+import { Post } from "../../../types/post";
 
-import { Link } from 'react-router-dom';
 const CoffeHolicTab: React.FC = () => {
-    return (
-        <>
-            <div className="mb-14">
-                <div className='*:mx-auto'>
-                    <div className="flex *:rounded-[10px] py-3 w-[75%] justify-center">
-                        <div className="w-[25%] ">
-                            <ul className="">
-                                <li className="">
-                                    <Link to="#">
-                                        <img src="https://file.hstatic.net/1000075078/article/thecoffeehouse_caphehighlight01_de40c0102a954c50a328f7befcdd82bd_master.jpg" alt=""
-                                            className="rounded-xl h-[160px] w-full object-cover" />
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className=" px-5 text-justify w-[50%]">
-                            <Link to=''>
-                                <h3 className="uppercase text-lg font-semibold pb-1">bắt gặp sài gòn xưa trong món uống hiện đại của giới trẻ</h3>
-                            </Link>
-                            <span className="text-left">
-                                <p className="my-1 text-gray-500">
-                                    5/25/2024
-                                </p>
-                            </span>
-                            <p className="text-sm">
-                                Dẫu qua bao nhiêu lớp sóng thời gian,
-                                người ta vẫn có thể tìm lại những dấu ấn thăng trầm của
-                                một Sài Gòn xưa cũ. Trên những góc phố,
-                                trong các...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {/*  */}
-                <div className='*:mx-auto'>
-                    <div className="flex *:rounded-[10px] py-3 w-[75%] justify-center">
-                        <div className="w-[25%] ">
-                            <ul className="">
-                                <li className="">
-                                    <Link to="#">
-                                        <img src="https://file.hstatic.net/1000075078/article/1200x630_0b0081d93ba6479b934e04e71cbfd102_master.jpg" alt=""
-                                            className="rounded-xl h-[160px] w-full object-cover" />
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className=" px-5 text-justify w-[50%]">
-                            <Link to=''>
-                                <h3 className="uppercase text-lg font-semibold pb-1">
-                                    CHỈ CHỌN CÀ PHÊ MỖI SÁNG NHƯNG CŨNG KHIẾN
-                                    CUỘC SỐNG CỦA BẠN THÊM THÚ VỊ, TẠI SAO KHÔNG?
+  const { categoryId } = useParams();
 
-                                </h3>
-                            </Link>
-                            <span className="text-left">
-                                <p className="my-1 text-gray-500">
-                                    5/25/2024
-                                </p>
-                            </span>
-                            <p className="text-sm">
-                                Thực chất, bạn không nhất thiết phải làm gì
-                                to tát để tạo nên một ngày rực rỡ. Chỉ cần bắt đầu từ
-                                những việc nhỏ nhặt nhất, khi bạn đứng trước quầy...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {/*  */}
-                <div className='*:mx-auto'>
-                    <div className="flex *:rounded-[10px] py-3 w-[75%] justify-center">
-                        <div className="w-[25%] ">
-                            <ul className="">
-                                <li className="">
-                                    <Link to="#">
-                                        <img src="https://file.hstatic.net/1000075078/file/1__3__5c6373c6309f47fe8b298f96417819cf_grande.jpg" alt=""
-                                            className="rounded-xl h-[160px] w-full object-cover" />
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className=" px-5 text-justify w-[50%]">
-                            <Link to=''>
-                                <h3 className="uppercase text-lg font-semibold pb-1">
-                                    CÀ PHÊ SỮA ESPRESSO THE COFFEE HOUSE - BẬT LON BẬT VỊ NGON
-                                </h3>
-                            </Link>
-                            <span className="text-left">
-                                <p className="my-1 text-gray-500">
-                                    5/25/2024
-                                </p>
-                            </span>
-                            <p className="text-sm">
-                                Cà phê sữa Espresso là một lon cà phê sữa giải khát với
-                                hương vị cà phê đậm đà từ 100% cà phê Robusta cùng vị sữa béo
-                                nhẹ cho bạn một trải nghiệm hương vị...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {/*  */}
-                <div className='*:mx-auto'>
-                    <div className="flex *:rounded-[10px] py-3 w-[75%] justify-center">
-                        <div className="w-[25%] ">
-                            <ul className="">
-                                <li className="">
-                                    <Link to="#">
-                                        <img src="https://file.hstatic.net/1000075078/file/4__1__473314caa93e41b6aa16b1d9da071e07_grande.jpg" alt=""
-                                            className="rounded-xl h-[160px] w-full object-cover" />
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className=" px-5 text-justify w-[50%]">
-                            <Link to=''>
-                                <h3 className="uppercase text-lg font-semibold pb-1">
-                                    UỐNG GÌ KHI TỚI SIGNATURE BY THE COFFEE HOUSE?
-                                </h3>
-                            </Link>
-                            <span className="text-left">
-                                <p className="my-1 text-gray-500">
-                                    5/25/2024
-                                </p>
-                            </span>
-                            <p className="text-sm">
-                            Vừa qua, The Coffee House chính thức khai trương cửa hàng SIGNATURE by The Coffee House, chuyên phục vụ cà phê đặc sản, các món ăn đa bản sắc ấy...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
+  const {
+    data: posts = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["posts"],
+    queryFn: async () => {
+      try {
+        const response = await instance.get("posts");
+        return response.data;
+      } catch (error) {
+        throw new Error("Lỗi khi tải danh sách bài viết");
+      }
+    },
+  });
+
+  const filteredPosts = useMemo(() => {
+    return categoryId
+      ? posts.data?.filter(
+          (post: Post) => post.categoryPost?._id === categoryId
+        )
+      : posts.data;
+  }, [posts.data, categoryId]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading data: {error?.message}</div>;
+
+  return (
+    <div className="mb-14 container mx-auto px-4">
+      {filteredPosts?.map((post: Post) => (
+        <div
+          key={post._id}
+          className="flex flex-col md:flex-row items-center justify-center py-4 border-b last:border-b-0"
+        >
+          <div className="w-full md:w-1/4 mb-4 md:mb-0 md:mr-5">
+            <Link to={`/chuyennha-detail/${post._id}`}>
+              <img
+                src={post.imagePost}
+                alt={post.title}
+                className=" h-[160px] w-full object-cover shadow-md hover:scale-105 transition-transform duration-300"
+              />
+            </Link>
+          </div>
+          <div className="w-full md:w-1/2 text-left md:text-justify">
+            <Link to={`/chuyennha-detail/${post._id}`}>
+              <h3 className="uppercase text-base md:text-lg font-semibold pb-1 hover:text-orange-500 transition-colors">
+                {post.title}
+              </h3>
+            </Link>
+            <p className="text-xs md:text-sm text-gray-500 my-2">
+              {new Date(post.createdAt).toLocaleDateString()}
+            </p>
+            <p
+              className="text-sm text-gray-700 line-clamp-3"
+              dangerouslySetInnerHTML={{ __html: post.excerpt }}
+            ></p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
-export default CoffeHolicTab
+
+export default CoffeHolicTab;
