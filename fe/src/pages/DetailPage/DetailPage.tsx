@@ -323,7 +323,16 @@ const DetailPage = () => {
                         để mua.
                       </p>
                     ) : (
-                      <button className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold">
+                      <button
+                        onClick={() => {
+                          if (user?.role !== "admin") {
+                            addToCart(product?._id);
+                          } else {
+                            console.log("Admin không thể thêm vào giỏ hàng");
+                          }
+                        }}
+                        className="relative bg-white px-6 py-2 border border-[#ea8025] text-lg rounded-md transition duration-300 overflow-hidden focus:outline-none cursor-pointer group text-black font-semibold"
+                      >
                         {user?.role !== "admin" ? (
                           <span className="relative z-10 transition duration-300 group-hover:text-white">
                             <p className="text-base">Thêm giỏ hàng</p>

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import axios from "axios";
 import crypto from "crypto-browserify";
 import Order from "../models/OderModel";
+import Cart from "../models/Cart";
  // Chỉnh lại tên đúng của model
 
 class MomoController {
@@ -22,9 +23,9 @@ createMomoPayment = async (req, res) => {
     const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
     const requestId = `${partnerCode}${Date.now()}`;
     const orderInfo = `Thanh toán đơn hàng ${order.orderNumber}`;
-    const redirectUrl = "http://localhost:5173/oder-success"; 
+    const redirectUrl = "http://localhost:5173/order-result";
     const cancelUrl = encodeURIComponent("http://localhost:5173/order-error");
-    const ipnUrl = "https://6051-113-189-171-22.ngrok-free.app/payments/momo/notify"; 
+    const ipnUrl = "https://7e83-113-189-171-22.ngrok-free.app/payments/momo/notify"; //lưu ý thay đường dẫn ngrok mới nhất 
     const amount = order.totalPrice.toString(); // Chuyển tổng giá trị đơn hàng thành chuỗi
     const requestType = "captureWallet";
     const extraData = ""; // Dữ liệu bổ sung (tuỳ chọn)
@@ -123,7 +124,9 @@ createMomoPayment = async (req, res) => {
               message: "Không tìm thấy đơn hàng" 
           });
       }
-  
+      if (resultCode === 0) {
+        await Cart.findOneAndDelete({ userId: updatedOrder.user_id});
+    }
       // Nếu thanh toán thất bại, trả về cancelUrl cho người dùng
       if (resultCode !== 0) {
           return res.status(200).json({

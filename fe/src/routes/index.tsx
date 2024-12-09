@@ -62,6 +62,7 @@ import Dashboard from "../admin/Statistics/StatisticsPage";
 import BillPage from "../pages/BillPage/BillPage";
 import PrivateRouter from "./PrivateRouter";
 import ChuyenNhaDetail from "../pages/ChuyenNhaPage/ChuyenNhaDetail";
+import OrderResult from "../pages/Order-result/Order-result";
 
 
 
@@ -97,7 +98,8 @@ const Router = () => {
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
           <Route path="setting" element={<SettingAccount />} />
-          <Route path="order-tracking/:order_id" element={<Tracking />} />
+          <Route path="order-tracking/:id" element={<Tracking />} />
+          <Route path="order-result" element={<OrderResult />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
           <Route path= "bill" element={<BillPage/>}/>

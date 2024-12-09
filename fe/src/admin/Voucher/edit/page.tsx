@@ -150,12 +150,11 @@ const VoucherUpdatePage = () => {
 				>
 					Tạo mã ngẫu nhiên
 				</Button>
-				
-					<Link to="/admin/voucher">
+
+				<Link to="/admin/voucher">
 					<Button type="primary">
 						<BackwardFilled /> Quay lại
-					
-				</Button>
+					</Button>
 				</Link>
 			</div>
 			<div className="w-full mx-auto overflow-y-auto max-h-[400px]">
@@ -165,7 +164,7 @@ const VoucherUpdatePage = () => {
 					name="voucherForm"
 					labelCol={{ span: 8 }}
 					wrapperCol={{ span: 16 }}
-					style={{ maxWidth: 600 }}
+					style={{ width: 500, marginLeft: 240 }}
 					onFinish={onFinish}
 					autoComplete="off"
 				>

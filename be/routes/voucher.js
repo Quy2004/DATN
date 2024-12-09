@@ -11,5 +11,5 @@ voucherRouter.put("/:id", voucherController.updateVoucher);
 voucherRouter.delete("/:id", voucherController.deleteVoucher);
 voucherRouter.patch("/:id/soft-delete", voucherController.deleteSoftVoucher);
 voucherRouter.patch("/:id/restore", voucherController.restoreVoucher);
-
+voucherRouter.put("/use/:id", voucherController.useVoucher);
 export default voucherRouter;

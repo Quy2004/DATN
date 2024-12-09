@@ -1,8 +1,7 @@
 import {
 	CheckOutlined,
 	CloseOutlined,
-	LockOutlined,
-	PlusCircleFilled,
+	LockOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,7 +25,7 @@ import {
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Comment } from "../../types/comment";
 import { Product } from "../../types/product";
@@ -381,17 +380,6 @@ const CommentAdmin = () => {
 						onClick={() => setIsDeleted(!isDeleted)}
 					>
 						{isDeleted ? "" : ""}
-					</Button>
-					<Button
-						type="primary"
-						icon={<PlusCircleFilled />}
-					>
-						<Link
-							to="/admin/size/add"
-							style={{ color: "white" }}
-						>
-							Thêm bình luận
-						</Link>
 					</Button>
 				</div>
 			</div>

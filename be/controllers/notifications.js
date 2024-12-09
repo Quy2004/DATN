@@ -110,6 +110,68 @@ class NotificationController {
 			});
 		}
 	}
+
+	async markAsRead(req, res) {
+		try {
+			const { id } = req.params; // Lấy id thông báo từ params
+	
+			// Tìm và cập nhật trạng thái isRead thành true
+			const updatedNotification = await NotificationModel.findByIdAndUpdate(
+				id,
+				{ isRead: true },
+				{ new: true } // Trả về bản ghi sau khi cập nhật
+			);
+	
+			// Nếu không tìm thấy thông báo
+			if (!updatedNotification) {
+				return res.status(404).json({
+					success: false,
+					message: "Không tìm thấy thông báo.",
+				});
+			}
+	
+			// Trả về phản hồi thành công
+			res.status(200).json({
+				success: true,
+				message: "Thông báo đã được đánh dấu là đã đọc.",
+				data: updatedNotification,
+			});
+		} catch (error) {
+			res.status(500).json({
+				success: false,
+				message: "Đã xảy ra lỗi khi đánh dấu thông báo.",
+				error: error.message,
+			});
+		}
+	}
+
+	async countUnreadNotifications(req, res) {
+		try {
+		  const { userId } = req.params;
+	  
+		  // Đếm số thông báo với isRead: false và userId khớp
+		  const count = await NotificationModel.countDocuments({
+			user_Id: userId,
+			isRead: false,
+		  });
+		  
+	  
+		  res.status(200).json({
+			success: true,
+			count,
+		  });
+		} catch (error) {
+		  res.status(500).json({
+			success: false,
+			message: "Đã xảy ra lỗi khi lấy thông báo.",
+			error: error.message,
+		  });
+		}
+	  }
+	  
+	  
+	  
+	
 }
 
 export default NotificationController;

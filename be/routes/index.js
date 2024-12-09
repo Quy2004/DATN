@@ -16,6 +16,7 @@ import postRouter from "./post.js";
 import commentRouter from "./comment.js";
 import momoRouter from "./momoRoutes.js";
 import zaloRouter from "./zaloRoter.js";
+import vnPayRouter from "./vnPay.js";
 import NotificationRouter from "./notification.js";
 import vnPayRouter from "./vnPay.js";
 

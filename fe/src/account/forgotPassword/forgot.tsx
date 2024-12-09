@@ -1,56 +1,137 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import instance from '../../services/api';
+import { motion } from "framer-motion";
+import { FaEnvelope, FaArrowLeft } from "react-icons/fa";
+import instance from "../../services/api";
+
 const Forgot = () => {
-    const [email, setEmail] = useState('');
-    const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const handleForgotPassword = async (e: any) => {
-        e.preventDefault();
-        try {
-            const response = await instance.post('/auth/forgot-password', { email });
-            setMessage(response.data.message);
-        } catch (error: any) {
-            setMessage(error.response?.data?.message || 'Lỗi khi gửi yêu cầu quên mật khẩu');
-        }
-    };
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage("");
+    setIsError(false);
+    setLoading(true);
 
-    return (
-        <>
-            <section className="bg-hero bg-no-repeat bg-cover">
-                <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0 mt-10">
-                    <div className="w-full md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-                        <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                            <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                                Quên mật khẩu
-                            </h1>
-                            <label>Vui lòng nhập email của bạn để khôi phục mật khẩu.</label>
-                            <form onSubmit={handleForgotPassword} className="space-y-4 md:space-y-6">
-                                <div>
-                                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-left">Địa chỉ email</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        id="email"
-                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        placeholder="name@company.com"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                    />
-                                </div>
-                                <p className="text-sm text-green-500">{message}</p>
-                                <div className="text-right">
-                                    <button type="submit" className="text-xs py-3 px-6 rounded-lg bg-red-500 text-white shadow-md hover:shadow-lg">Xác nhận</button>
-                                    <button type="button" className="text-xs py-3 px-6 rounded-lg bg-gray-400 text-white shadow-md hover:shadow-lg"><Link to={'/login'}>Quay lại</Link></button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </>
-    );
-}
+    try {
+      const response = await instance.post("/auth/forgot-password", { email });
+      setMessage(response.data.message);
+      setIsError(false);
+    } catch (error: any) {
+      setMessage(
+        error.response?.data?.message || "Lỗi khi gửi yêu cầu quên mật khẩu"
+      );
+      setIsError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-200 flex items-center justify-center px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md bg-white shadow-2xl rounded-2xl overflow-hidden"
+      >
+        <div className="p-8 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center">
+              <FaEnvelope className="mr-3 text-blue-500" />
+              Quên Mật Khẩu
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Nhập email để khôi phục mật khẩu của bạn
+            </p>
+          </motion.div>
+
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <label className="block text-gray-700 font-medium mb-2">
+                Địa chỉ Email
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập email của bạn"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg   
+                  focus:outline-none focus:ring-2 focus:ring-blue-500   
+                  transition duration-300 ease-in-out"
+                  required
+                />
+                <FaEnvelope className="absolute right-4 top-4 text-gray-400" />
+              </div>
+            </motion.div>
+
+            {message && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`text-sm text-center ${
+                  isError ? "text-red-500" : "text-green-500"
+                }`}
+              >
+                {message}
+              </motion.p>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex justify-between items-center"
+            >
+              <button
+                type="submit"
+                disabled={!email || loading}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg   
+                hover:bg-blue-600 transition duration-300   
+                flex items-center justify-center space-x-2  
+                disabled:opacity-50"
+              >
+                {loading ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div>
+                ) : (
+                  "Gửi Yêu Cầu"
+                )}
+              </button>
+            </motion.div>
+          </form>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center"
+          >
+            <Link
+              to="/login"
+              className="text-blue-500 hover:text-blue-700   
+              flex items-center justify-center space-x-2   
+              transition duration-300"
+            >
+              <FaArrowLeft />
+              <span>Quay lại đăng nhập</span>
+            </Link>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default Forgot;

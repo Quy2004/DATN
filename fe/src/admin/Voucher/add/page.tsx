@@ -111,7 +111,7 @@ const VoucherAddPage = () => {
 					name="voucherForm"
 					labelCol={{ span: 8 }}
 					wrapperCol={{ span: 16 }}
-					style={{ maxWidth: 600 }}
+					style={{ width: 500, marginLeft: 240 }}
 					onFinish={onFinish}
 					autoComplete="off"
 				>
