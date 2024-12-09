@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Card, Typography, Spin, List, Row, Col } from "antd";
+import { Card, Spin, List, Row, Col, Typography } from "antd";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -11,10 +10,12 @@ import {
 } from "chart.js";
 import instance from "../../services/api";
 
-// Đăng ký ChartJS
+// Register ChartJS modules
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title);
 
-// Các hàm gọi API
+const { Title: AntTitle } = Typography;
+
+// API Calls
 const getOrderStats = () => instance.get("/orders/order-stats");
 const getOrderStatusDistribution = () =>
   instance.get("/orders/order-status-distribution");
@@ -23,9 +24,16 @@ const getCustomerStats = () => instance.get("/orders/customer-stats");
 const getRevenueByTime = (period: string) =>
   instance.get(`/orders/revenue-by-time?period=${period}`);
 
-// Các thành phần
-const OrderStats: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+// Format currency
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+
+// Order Statistics Component
+const OrderStats = () => {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     totalOrders: number;
     totalRevenue: number;
@@ -33,152 +41,140 @@ const OrderStats: React.FC = () => {
 
   useEffect(() => {
     getOrderStats()
-      .then((response) => {
-        setData(response.data.data);
+      .then((res) => {
+        setData(res.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu thống kê đơn hàng:", error);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
   return (
-    <div className="p-5 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-4">Thống kê đơn hàng</h2>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <span className="text-gray-500">Đang tải...</span>
-        </div>
-      ) : (
-        <div>
-          <p className="text-gray-700">Tổng số đơn hàng: {data?.totalOrders}</p>
-          <p className="text-gray-700 mt-2">
-            Tổng doanh thu: {formatCurrency(data?.totalRevenue ?? 0)}
-          </p>
-        </div>
+    <Card title="Thống kê đơn hàng" loading={loading}>
+      {data && (
+        <>
+          <p>Tổng số đơn hàng: {data.totalOrders}</p>
+          <p>Tổng doanh thu: {formatCurrency(data.totalRevenue)}</p>
+        </>
       )}
-    </div>
+    </Card>
   );
 };
 
-
-const OrderStatusDistribution: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+// Order Status Distribution Component
+const OrderStatusDistribution = () => {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{ _id: string; count: number }[] | null>(
     null
   );
 
   useEffect(() => {
     getOrderStatusDistribution()
-      .then((response) => {
-        setData(response.data.data);
+      .then((res) => {
+        setData(res.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error(
-          "Lỗi khi lấy dữ liệu phân phối trạng thái đơn hàng:",
-          error
-        );
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  // Dịch trạng thái sang tiếng Việt
-  const statusTranslations: { [key: string]: string } = {
+  const statusMap: { [key: string]: string } = {
     pending: "Đang chờ",
-    completed: "Đã hoàn thành",
+    completed: "Hoàn thành",
     canceled: "Đã hủy",
-    delivered: "Đã giao",
     confirmed: "Đã xác nhận",
+    delivered: "Đã giao",
   };
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-4">Phân phối trạng thái đơn hàng</h2>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <span className="text-gray-500">Đang tải...</span>
-        </div>
-      ) : (
-        <ul className="list-disc list-inside text-gray-700">
-          {data?.map((status) => (
-            <li key={status._id}>
-              Trạng thái: {statusTranslations[status._id] || status._id} - Số
-              lượng: {status.count}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Card title="Phân phối trạng thái đơn hàng" loading={loading}>
+      {data?.map((status) => (
+        <p key={status._id}>
+          {statusMap[status._id] || status._id}: {status.count}
+        </p>
+      ))}
+    </Card>
   );
 };
 
-
-const TopProducts: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+// Top Products Component
+const TopProducts = () => {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<
     | {
         _id: string;
         totalQuantity: number;
-        productName: string;
+        product: {
+          name: string;
+          price: number;
+          sale_price: number;
+          image: string;
+          thumbnail: string[];
+          description: string;
+          status: string;
+          discount: string;
+          slug: string;
+        };
       }[]
     | null
   >(null);
 
   useEffect(() => {
     getTopProducts()
-      .then((response) => {
-        setData(response.data.data);
+      .then((res) => {
+        setData(res.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm bán chạy:", error);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-4">Sản phẩm bán chạy</h2>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <span className="text-gray-500">Đang tải...</span>
-        </div>
-      ) : (
-        <ul className="list-disc list-inside text-gray-700">
-          {data?.map((product) => (
-            <li key={product._id}>
-              {product.productName}: {product.totalQuantity} đã bán
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Card title="Sản phẩm bán chạy" loading={loading}>
+      <div style={{ maxHeight: "300px", overflowX: "auto", overflowY: "auto" }}>
+        <List
+          dataSource={data || []}
+          renderItem={(item) => (
+            <List.Item className="flex items-center space-x-4 p-4 border-b">
+              <img
+                src={item.product.image}
+                alt={item.product.name}
+                className="w-24 h-24 object-cover rounded-lg"
+              />
+              <div className="flex flex-col">
+                <strong className="text-lg font-semibold">
+                  {item.product.name}
+                </strong>
+
+                <p className="text-gray-600">
+                  Giá:{" "}
+                  <span className="font-semibold">
+                    {item.product.sale_price} VND
+                  </span>{" "}
+                  (Giảm giá:{" "}
+                  <span className="text-red-600">{item.product.discount}%</span>
+                  )
+                </p>
+
+                <p className="text-gray-600">Đã bán: {item.totalQuantity}</p>
+              </div>
+            </List.Item>
+          )}
+        />
+      </div>
+    </Card>
   );
 };
 
-const RevenueByTime: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [data, setData] = useState<any[]>([]);
+// Revenue by Time Component
+const RevenueByTime = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<{ _id: string; totalRevenue: number }[]>([]);
 
   useEffect(() => {
     getRevenueByTime("daily")
-      .then((response) => {
-        setData(response.data.data);
+      .then((res) => {
+        setData(res.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu doanh thu theo thời gian:", error);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   const chartData = {
@@ -193,26 +189,17 @@ const RevenueByTime: React.FC = () => {
   };
 
   return (
-    <div className="p-5 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-4">Doanh thu theo thời gian</h2>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <span className="text-gray-500">Đang tải...</span>
-        </div>
-      ) : (
-        <div className="relative h-64">
-          <Bar
-            data={chartData}
-            options={{ responsive: true, maintainAspectRatio: false }}
-          />
-        </div>
-      )}
-    </div>
+    <Card title="Doanh thu theo ngày" loading={loading}>
+      <div style={{ height: "300px" }}>
+        <Bar data={chartData} options={{ responsive: true }} />
+      </div>
+    </Card>
   );
 };
 
-const CustomerStats: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+// Customer Stats Component
+const CustomerStats = () => {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<
     | {
         _id: string;
@@ -225,70 +212,49 @@ const CustomerStats: React.FC = () => {
 
   useEffect(() => {
     getCustomerStats()
-      .then((response) => {
-        setData(response.data.data);
+      .then((res) => {
+        setData(res.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu khách hàng:", error);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
   return (
-    <div className="p-5 bg-white rounded-lg shadow-md">
-      <h2 className="text-lg font-bold mb-4">Thống kê khách hàng</h2>
-      {loading ? (
-        <div className="flex justify-center items-center">
-          <span className="text-gray-500">Đang tải...</span>
-        </div>
-      ) : (
-        <ul className="list-disc list-inside text-gray-700">
-          {data?.map((customer) => (
-            <li key={customer._id}>
-              {customer.userName}: {customer.orderCount} đơn hàng, tổng tiền{" "}
-              {formatCurrency(customer.totalSpent)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Card title="Thống kê khách hàng" loading={loading}>
+      <List
+        dataSource={data || []}
+        renderItem={(item) => (
+          <List.Item>
+            {item.userName}: {item.orderCount} đơn hàng - Tổng chi tiêu:{" "}
+            {formatCurrency(item.totalSpent)}
+          </List.Item>
+        )}
+      />
+    </Card>
   );
 };
 
-
-const Dashboard: React.FC = () => {
+// Main Dashboard Component
+const Dashboard = () => {
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} md={8}>
-          <OrderStats />
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <OrderStatusDistribution />
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <TopProducts />
-        </Col>
-        <Col xs={24} sm={12} md={16}>
-          <RevenueByTime />
-        </Col>
-        <Col xs={24} sm={12} md={16}>
-          <CustomerStats />
-        </Col>
-      </Row>
-    </div>
+    <Row gutter={[16, 16]}>
+      <Col xs={24} md={12} lg={8}>
+        <OrderStats />
+      </Col>
+      <Col xs={24} md={12} lg={8}>
+        <OrderStatusDistribution />
+      </Col>
+      <Col xs={24} lg={8}>
+        <TopProducts />
+      </Col>
+      <Col xs={24} md={12}>
+        <RevenueByTime />
+      </Col>
+      <Col xs={24} md={12}>
+        <CustomerStats />
+      </Col>
+    </Row>
   );
 };
-
 
 export default Dashboard;

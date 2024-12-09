@@ -144,12 +144,12 @@ const PostAddPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
+      <div className="w-full mx-auto max-h-[480px] overflow-y-auto">
         <Form
           form={form}
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          style={{ width: 500, marginLeft: 240 }}
           onFinish={onFinish}
         >
           <Form.Item

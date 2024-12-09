@@ -344,7 +344,7 @@ const ClientAdmin = () => {
 		<>
 			{contextHolder}
 			<div className="flex items-center justify-between mb-5">
-				<Title level={3}>Danh sách user</Title>
+				<Title level={3}>Danh sách tài khoản</Title>
 
 				<div className="flex space-x-3">
 					<Search
