@@ -82,9 +82,7 @@ const Router = () => {
           <Route path="cart" element={<CartPage />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
-            <Route path="coffeeholic" element={<CoffeHolicTab />} />
-            <Route path="teaholic" element={<TeaHolicTab />} />
-            <Route path="blog" element={<BlogTab />} />
+            <Route path=":categoryId" element={<CoffeHolicTab />} />
           </Route>
           <Route path="chuyennha-detail/:id" element={<ChuyenNhaDetail />} />
           <Route path="login" element={<AuthPage />} />
