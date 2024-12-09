@@ -208,8 +208,8 @@ const Header: React.FC = () => {
 					<div className="flex-grow md:flex-grow-0 flex justify-center items-center">
 						<Link to="/">
 							<img
-								className="h-12 mx-auto"
-								src="/src/assets/images/bg-remove-cf.png"
+								className="w-40 h-40 mx-auto"
+								src="/src/assets/images/LogoCozyHaven.png"
 								alt="Logo"
 							/>
 						</Link>

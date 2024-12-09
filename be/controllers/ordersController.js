@@ -4,7 +4,6 @@ import OrderDetail from "../models/OrderDetailModel.js";
 import axios from "axios";
 import NotificationModel from "../models/NotificationModel.js";
 
-
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
   try {
@@ -18,23 +17,6 @@ export const getAllOrders = async (req, res) => {
           select:
             "name category_id price sale_price discount image thumbnail product_sizes product_toppings status",
         },
-      })
-      .populate({
-        path: "orderDetail_id",
-        populate: [
-          {
-            path: "product_id",
-            model: "Product",
-          },
-          {
-            path: "product_size",
-            model: "Size",
-          },
-          {
-            path: "product_toppings.topping_id",
-            model: "Topping",
-          },
-        ],
       })
       .populate({
         path: "user_id",
@@ -62,13 +44,18 @@ export const getAllOrders = async (req, res) => {
 };
 
 // Create new order
-
 export const createOrder = async (req, res) => {
   try {
-    const { userId, customerInfo, paymentMethod, totalPrice,note,discountAmount } = req.body;
-
+    const {
+      userId,
+      customerInfo,
+      paymentMethod,
+      totalPrice,
+      note,
+      discountAmount,
+    } = req.body;
     // Validate required fields
-    if (!customerInfo || !paymentMethod) {
+    if (!userId || !customerInfo || !paymentMethod) {
       return res.status(400).json({
         success: false,
         message: "Thiếu thông tin bắt buộc",
@@ -76,51 +63,68 @@ export const createOrder = async (req, res) => {
     }
 
     // Get cart and validate
-    let cart;
-    if (userId) {
-      cart = await Cart.findOne({ userId }).populate("products.product");
-      if (!cart?.products?.length) {
-        return res.status(400).json({
-          success: false,
-          message: "Giỏ hàng trống",
-        });
-      }
+    const cart = await Cart.findOne({ userId }).populate("products.product");
+
+    if (!cart?.products?.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Giỏ hàng trống",
+      });
     }
-console.log(totalPrice)
-console.log("Số tiền giảm giá:", discountAmount);
+
     // Create order
     const order = new Order({
-   user_id: userId || null, // Null nếu không đăng nhập
+      user_id: userId || null, // Null nếu không đăng nhập
       customerInfo,
       totalPrice,
       discountAmount, // Lưu thông tin giảm giá
       paymentMethod,
       note: note || "",
-      paymentStatus: paymentMethod === 'cash on delivery' ? 'pending' : 'unpaid',// Trạng thái ban đầu là unpaid
+      paymentStatus:
+        paymentMethod === "cash on delivery" ? "pending" : "unpaid", // Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
+    const notification = new NotificationModel({
+      title: "Đặt hàng thành công",
+      message: `Đơn hàng mã "${
+        order._id
+      }" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái hiện tại: "${
+        paymentMethod === "cash on delivery"
+          ? "Đang chờ xử lý"
+          : "Chưa thanh toán"
+      }".`,
+      user_Id: userId || null, // Null nếu không đăng nhập
+      order_Id: order._id, // Gắn ID đơn hàng để tiện theo dõi
+      type: "general",
+      isGlobal: false, // Chỉ thông báo cho người dùng liên quan
+    });
 
+    await notification.save();
     await order.save();
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
 
     setTimeout(async () => {
       const foundOrder = await Order.findById(order._id);
-    
+
       // Kiểm tra nếu đơn hàng tồn tại và trạng thái thanh toán là "failed" nhưng không phải phương thức COD
       if (foundOrder) {
         // Nếu là COD, không thực hiện xóa
         if (foundOrder.paymentMethod === "cash on delivery") {
-          console.log(`Đơn hàng ${order._id} không bị xóa vì phương thức thanh toán là COD.`);
+          console.log(
+            `Đơn hàng ${order._id} không bị xóa vì phương thức thanh toán là COD.`
+          );
         } else if (foundOrder.paymentStatus === "failed") {
           console.log(`Đơn hàng ${order._id} đang bị xóa...`);
-    
+
           // Thực hiện xóa đơn hàng và chi tiết
           await Order.findByIdAndDelete(order._id);
           await OrderDetail.deleteMany({ order_id: order._id });
-    
+
           console.log(`Đơn hàng ${order._id} đã bị xóa.`);
         } else {
-          console.log(`Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`);
+          console.log(
+            `Đơn hàng ${order._id} không ở trạng thái failed hoặc cancel.`
+          );
         }
       } else {
         console.log(`Không tìm thấy đơn hàng với ID ${order._id}`);
@@ -155,35 +159,35 @@ console.log("Số tiền giảm giá:", discountAmount);
     order.orderDetail_id = orderDetailIds;
     await order.save();
 
-    // Clear cart after order created
-    await Cart.findOneAndDelete({ userId });
+    // Xóa giỏ hàng theo điều kiện phương thức thanh toán
+    if (paymentMethod === "cash on delivery") {
+      // Nếu là thanh toán khi nhận hàng, xóa toàn bộ giỏ hàng
+      await Cart.findOneAndDelete({ userId });
+    }
 
     // Nếu phương thức thanh toán là MoMo
     if (paymentMethod === "momo") {
       try {
-        // Thông tin thanh toán MoMo
         const paymentData = {
           orderId: order._id.toString(),
-          amount: Math.round(order.totalPrice), // Làm tròn số tiền
+          amount: Math.round(order.totalPrice),
           orderInfo: `Thanh toán đơn hàng ${order._id}`,
         };
 
-        // Gửi yêu cầu thanh toán MoMo
         const paymentResponse = await axios.post(
-          "http://localhost:8000/payments/momo/create-payment", 
+          "http://localhost:8000/payments/momo/create-payment",
           paymentData
         );
 
-        // Lấy URL thanh toán từ phản hồi
         const { payUrl } = paymentResponse.data;
 
-        order.paymentStatus = "unpaid"; 
+        order.paymentStatus = "unpaid";
         await order.save();
         return res.status(201).json({
           success: true,
           message: "Tạo đơn hàng thành công",
           data: order,
-          payUrl, // Trả về URL thanh toán MoMo cho frontend
+          payUrl,
         });
       } catch (paymentError) {
         // Nếu tạo thanh toán MoMo thất bại, hủy đơn hàng
@@ -201,47 +205,88 @@ console.log("Số tiền giảm giá:", discountAmount);
         });
       }
     }
-// Nếu phương thức thanh toán là ZaloPay
-if (paymentMethod === "zalopay") {
-  try {
-    // Thông tin thanh toán ZaloPay
-    const paymentData = {
-      orderId: order._id.toString(),
-      amount: Math.round(order.totalPrice), // Làm tròn số tiền
-      orderInfo: `Thanh toán đơn hàng ${order._id}`,
-    };
 
-    // Gửi yêu cầu thanh toán ZaloPay
-    const paymentResponse = await axios.post(
-      "http://localhost:8000/payments/zalo/create-payment", 
-      paymentData
-    );
+    // Nếu phương thức thanh toán là ZaloPay
+    if (paymentMethod === "zalopay") {
+      try {
+        const paymentData = {
+          orderId: order._id.toString(),
+          amount: Math.round(order.totalPrice),
+          orderInfo: `Thanh toán đơn hàng ${order._id}`,
+        };
 
-    // Lấy URL thanh toán từ phản hồi
-    const { payUrl } = paymentResponse.data;
+        const paymentResponse = await axios.post(
+          "http://localhost:8000/payments/zalo/create-payment",
+          paymentData
+        );
 
-    return res.status(201).json({
-      success: true,
-      message: "Tạo đơn hàng thành công",
-      data: order,
-      payUrl, // Trả về URL thanh toán ZaloPay cho frontend
-    });
-  } catch (paymentError) {
-    // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
-    await Order.findByIdAndDelete(order._id);
-    await OrderDetail.deleteMany({ order_id: order._id });
+        const { payUrl } = paymentResponse.data;
 
-    console.error(
-      "Lỗi khi tạo thanh toán ZaloPay",
-      paymentError.response?.data || paymentError.message
-    );
-    return res.status(500).json({
-      success: false,
-      message: "Lỗi khi tạo thanh toán ZaloPay",
-      error: paymentError.message,
-    });
-  }
-}
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl,
+        });
+      } catch (paymentError) {
+        // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
+        console.error(
+          "Lỗi khi tạo thanh toán ZaloPay",
+          paymentError.response?.data || paymentError.message
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán ZaloPay",
+          error: paymentError.message,
+        });
+      }
+    }
+    // Nếu phương thức thanh toán là VnPay
+    if (paymentMethod === "vnpay") {
+      try {
+        // Thông tin thanh toán VnPay
+        const paymentData = {
+          amount: Math.round(order.totalPrice), // Làm tròn số tiền,
+          bankCode: "",
+          language: "vn",
+          orderId: order._id.toString(),
+        };
+
+        // Gửi yêu cầu thanh toán VnPay
+        const paymentResponse = await axios.post(
+          "http://localhost:8888/order/create_payment_url",
+          paymentData
+        );
+
+        // Lấy URL thanh toán từ phản hồi
+        const payUrl = paymentResponse.data.vnp_url;
+
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl, // Trả về URL thanh toán VnPay cho frontend
+        });
+      } catch (paymentError) {
+        // Nếu tạo thanh toán VnPay thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
+        console.error(
+          "Lỗi khi tạo thanh toán VnPay",
+          paymentError.response?.data || paymentError.message
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán VnPay",
+          error: paymentError.message,
+        });
+      }
+    }
+
     // Trả về kết quả tạo đơn hàng nếu không phải MoMo
     return res.status(201).json({
       success: true,
@@ -249,6 +294,7 @@ if (paymentMethod === "zalopay") {
       data: order,
     });
   } catch (error) {
+    console.log("creatr order", error);
     return res.status(500).json({
       success: false,
       message: "Lỗi khi tạo đơn hàng",
@@ -256,7 +302,6 @@ if (paymentMethod === "zalopay") {
     });
   }
 };
-
 
 // Get orders by user ID
 export const getOrders = async (req, res) => {
@@ -390,8 +435,8 @@ export const updateOrderStatus = async (req, res) => {
 
     // Tạo thông báo mới sử dụng trạng thái tiếng Việt
     const notification = await NotificationModel.create({
-      title: "Cập nhật trạng thái đơn hàng",
-      message: `Đơn hàng "${order.orderNumber}" của bạn đã được cập nhật trạng thái thành "${vietnameseStatus}".`,
+      title: "Trạng thái đơn hàng đã được cập nhật",
+      message: `Đơn hàng mã "${order.orderNumber}" của bạn hiện đã chuyển sang trạng thái: "${vietnameseStatus}".`,
       user_Id: order.user_id, // Lấy userId từ bảng Order
       order_Id: order._id, // Lấy userId từ bảng Order
       type: "general",
@@ -697,8 +742,6 @@ export const getRevenueByTimePeriod = async (req, res) => {
     });
   }
 };
-
-// Enhanced Order Stats with more details
 export const getEnhancedOrderStats = async (req, res) => {
   try {
     const { fromDate, toDate } = req.query; // Optional date range filtering
@@ -808,8 +851,6 @@ export const getEnhancedOrderStats = async (req, res) => {
     });
   }
 };
-
-
 export const getCompletedOrders = async (req, res) => {
   try {
     // Tìm các đơn hàng đã hoàn thành và sắp xếp theo ngày tạo
@@ -857,6 +898,54 @@ export const getCompletedOrders = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Lỗi khi lấy danh sách đơn hàng đã hoàn thành.",
+      error: error.message,
+    });
+  }
+};
+export const updatePaymentStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    // Kiểm tra trạng thái thanh toán hợp lệ
+    const validPaymentStatuses = ["pending", "paid", "failed"];
+
+    if (!validPaymentStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Trạng thái thanh toán không hợp lệ",
+      });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { paymentStatus: status },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    // Mapping trạng thái thanh toán sang tiếng Việt
+    const paymentStatusMapping = {
+      pending: "Đang chờ xử lý",
+      paid: "Đã thanh toán",
+      failed: "Thanh toán thất bại",
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật trạng thái thanh toán thành công",
+      data: order,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi cập nhật trạng thái thanh toán",
       error: error.message,
     });
   }
