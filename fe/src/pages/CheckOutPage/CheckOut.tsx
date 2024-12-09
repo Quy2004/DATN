@@ -699,95 +699,121 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
           <section className="w-full md:w-1/2 bg-gray-50 rounded-lg shadow-md p-6">
             <h6 className="text-lg font-semibold mb-4">Sản phẩm</h6>
             <div className="flex flex-col space-y-4 mb-6">
-              {carts.map((item: any) => (
-                <div
-                  key={item.product._id}
-                  className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
-                >
-                  {item.product && (
-                    <>
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="h-[70px] w-[70px] rounded-sm"
-                      />
-                      <div className="w-full md:w-2/3 pl-0 md:pl-4">
-                        <div className="font-semibold text-lg">
-                          {item.product.name}
-                        </div>
+  {carts.map((item: any) => (
+    <div
+      key={item.product._id}
+      className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
+    >
+      {item.product && (
+        <div className="flex w-full">
+          {/* Product Image */}
+          <div className="mr-4 relative">
+            <img
+              src={item.product.image}
+              alt={item.product.name}
+              className="h-[100px] w-[100px] rounded-sm object-cover"
+            />
+            {item.product.sale_percentage && (
+              <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                -{item.product.sale_percentage}%
+              </div>
+            )}
+          </div>
 
-                        {/* Hiển thị Size */}
-                        {item.product_sizes && (
-                          <div className="flex items-center justify-between space-x-2 text-sm p-1">
-                            <label>Size:</label>
-                            <div className="text-gray-500 font-semibold">
-                              {item.product_sizes?.name ||
-                                "Không có kích thước"}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Hiển thị Topping mà không có giá */}
-                        {item.product_toppings &&
-                        item.product_toppings.length > 0 ? (
-                          <div className="flex items-center justify-between space-x-2 text-sm p-1">
-                            <label>Topping:</label>
-                            <div className="font-semibold text-gray-500">
-                              {item.product_toppings.map(
-                                (topping: any, index: number) => (
-                                  <span key={topping._id}>
-                                    {topping.topping_id?.nameTopping ||
-                                      "Không có topping"}
-                                    {index < item.product_toppings.length - 1 &&
-                                      ", "}
-                                  </span>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between space-x-2 text-sm p-1">
-                            <label>Topping:</label>
-                            <div className="font-semibold text-gray-500">
-                              Không có topping
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Hiển thị Giá */}
-                        <div className="flex justify-between text-sm p-1">
-                          <div>Giá:</div>
-                          <div className="text-gray-500 font-semibold">
-                            {item?.product && item?.product?.sale_price
-                              ? // Tính giá thủ công
-                                (
-                                  (item?.product?.sale_price +
-                                    (item?.product_sizes?.priceSize || 0) +
-                                    (item?.product_toppings || []).reduce(
-                                      (total: any, topping: any) =>
-                                        total +
-                                        (topping?.topping_id?.priceTopping ||
-                                          0),
-                                      0
-                                    )) *
-                                  item?.quantity
-                                ).toLocaleString("vi-VN")
-                              : "Chưa có giá"}
-                          </div>
-                        </div>
-                        {/* Hiển thị Số lượng */}
-                        <div className="shadow-sm flex items-center justify-between text-sm p-1">
-                          <span>Số lượng:</span>
-                          <span className="font-semibold text-gray-500">
-                            {item.quantity}
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+          {/* Product Details */}
+          <div className="flex-grow">
+            {/* Name and Price Section */}
+            <div className="flex justify-between items-center mb-2">
+              <div className="font-bold text-lg text-gray-800">
+                {item.product.name}
+              </div>
+              <div className="flex items-center">
+                {item.product.original_price && (
+                  <span className="line-through text-gray-500 mr-2">
+                    {item.product.original_price.toLocaleString('vi-VN')} VNĐ
+                  </span>
+                )}
+                {item.product.sale_price && (
+                  <span className="font-bold text-red-500">
+                    {item.product.sale_price.toLocaleString('vi-VN')} VNĐ
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Size Section */}
+            <div className="flex justify-between items-center text-sm mb-1">
+              <span className="text-gray-600">Size:</span>
+              <div className="text-gray-700 flex items-center">
+                {item.product_sizes?.name || "Không có kích thước"}
+                {item.product_sizes?.priceSize && (
+                  <span className="ml-2 text-xs text-gray-500">
+                    (+{item.product_sizes.priceSize.toLocaleString('vi-VN')} VNĐ)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Topping Section */}
+            <div className="flex justify-between items-center text-sm mb-1">
+              <span className="text-gray-600">Topping:</span>
+              <div className="text-gray-700">
+                {item.product_toppings && item.product_toppings.length > 0 ? (
+                  <div>
+                    {item.product_toppings.map((topping: any, index: number) => (
+                      <div key={topping._id} className="flex items-center">
+                        <span>{topping.topping_id?.nameTopping}</span>
+                        {topping.topping_id?.priceTopping && (
+                          <span className="ml-2 text-xs text-gray-500">
+                            (+{topping.topping_id.priceTopping.toLocaleString('vi-VN')} VNĐ)
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  "Không có topping"
+                )}
+              </div>
+            </div>
+
+            {/* Quantity Section */}
+            <div className="flex justify-between items-center text-sm mt-2 mb-2">
+              <div className="flex items-center">
+                <span className="mr-2 text-gray-600">Số lượng:</span>
+                <span className="font-semibold text-gray-800">{item.quantity}</span>
+              </div>
+            </div>
+
+       {/* Total Price Section */}
+<div className="border-t border-gray-300 pt-2 text-right">
+  <span className="font-bold text-primary text-base text-gray-900">
+    Thành Tiền:{" "}
+    {item?.product && item?.product?.sale_price
+      ? (
+          (item?.product?.sale_price +
+            (item?.product_sizes?.priceSize || 0) +
+            (item?.product_toppings || []).reduce(
+              (total: any, topping: any) =>
+                total + (topping?.topping_id?.priceTopping || 0),
+              0
+            )) *
+          item?.quantity
+        ).toLocaleString("vi-VN") + " VNĐ"
+      : "Chưa có giá"}
+  </span>
+</div>
+
+          </div>
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+
+
+
+
             <div className="my-4">
               {/* Input và nút thêm voucher */}
               <div className="flex items-center  justify-between bg-[#fff]">
