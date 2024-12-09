@@ -133,18 +133,18 @@ const CategoryPostManagerPage = () => {
 			dataIndex: "title",
 			key: "title",
 		},
-		{
-			title: "Mô tả",
-			dataIndex: "description", // Đảm bảo rằng điều này được ánh xạ chính xác
-			key: "description",
-			render: (text: any) => (
-				<div
-					dangerouslySetInnerHTML={{
-						__html: text,
-					}}
-				/>
-			),
-		},
+		// {
+		// 	title: "Mô tả",
+		// 	dataIndex: "description", // Đảm bảo rằng điều này được ánh xạ chính xác
+		// 	key: "description",
+		// 	render: (text: any) => (
+		// 		<div
+		// 			dangerouslySetInnerHTML={{
+		// 				__html: text,
+		// 			}}
+		// 		/>
+		// 	),
+		// },
 
 		// {
 		//     title: "Ảnh danh mục",
