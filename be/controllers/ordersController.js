@@ -251,7 +251,48 @@ if (paymentMethod === "zalopay") {
     });
   }
 }
+// Nếu phương thức thanh toán là VnPay
+    if (paymentMethod === "vnpay") {
+      try {
+        // Thông tin thanh toán VnPay
+        const paymentData = {
+          amount: Math.round(order.totalPrice), // Làm tròn số tiền,
+          bankCode: "",
+          language: "vn",
+          orderId: order._id.toString()
+        };
 
+        // Gửi yêu cầu thanh toán VnPay
+        const paymentResponse = await axios.post(
+          "http://localhost:8888/order/create_payment_url", 
+          paymentData
+        );
+
+        // Lấy URL thanh toán từ phản hồi
+        const payUrl = paymentResponse.data.vnp_url;
+
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl, // Trả về URL thanh toán VnPay cho frontend
+        });
+      } catch (paymentError) {
+        // Nếu tạo thanh toán VnPay thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
+        console.error(
+          "Lỗi khi tạo thanh toán VnPay",
+          paymentError.response?.data || paymentError.message
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán VnPay",
+          error: paymentError.message,
+        });
+      }
+    }
 // Trả về kết quả tạo đơn hàng nếu không phải MoMo hoặc ZaloPay
 return res.status(201).json({
   success: true,
