@@ -76,7 +76,7 @@ export const createOrder = async (req, res) => {
       orderDetail_id: [],
     });
 
-    await order.save();
+    await order.save(); // luu mongo
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
 
     setTimeout(async () => {
@@ -177,47 +177,93 @@ export const createOrder = async (req, res) => {
         });
       }
     }
-// Nếu phương thức thanh toán là ZaloPay
-if (paymentMethod === "zalopay") {
-  try {
-    // Thông tin thanh toán ZaloPay
-    const paymentData = {
-      orderId: order._id.toString(),
-      amount: Math.round(order.totalPrice), // Làm tròn số tiền
-      orderInfo: `Thanh toán đơn hàng ${order._id}`,
-    };
 
-    // Gửi yêu cầu thanh toán ZaloPay
-    const paymentResponse = await axios.post(
-      "http://localhost:8000/payments/zalo/create-payment", 
-      paymentData
-    );
+    // Nếu phương thức thanh toán là ZaloPay
+    if (paymentMethod === "zalopay") {
+      try {
+        // Thông tin thanh toán ZaloPay
+        const paymentData = {
+          orderId: order._id.toString(),
+          amount: Math.round(order.totalPrice), // Làm tròn số tiền
+          orderInfo: `Thanh toán đơn hàng ${order._id}`,
+        };
 
-    // Lấy URL thanh toán từ phản hồi
-    const { payUrl } = paymentResponse.data;
+        // Gửi yêu cầu thanh toán ZaloPay
+        const paymentResponse = await axios.post(
+          "http://localhost:8000/payments/zalo/create-payment", 
+          paymentData
+        );
 
-    return res.status(201).json({
-      success: true,
-      message: "Tạo đơn hàng thành công",
-      data: order,
-      payUrl, // Trả về URL thanh toán ZaloPay cho frontend
-    });
-  } catch (paymentError) {
-    // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
-    await Order.findByIdAndDelete(order._id);
-    await OrderDetail.deleteMany({ order_id: order._id });
+        // Lấy URL thanh toán từ phản hồi
+        const { payUrl } = paymentResponse.data;
 
-    console.error(
-      "Lỗi khi tạo thanh toán ZaloPay",
-      paymentError.response?.data || paymentError.message
-    );
-    return res.status(500).json({
-      success: false,
-      message: "Lỗi khi tạo thanh toán ZaloPay",
-      error: paymentError.message,
-    });
-  }
-}
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl, // Trả về URL thanh toán ZaloPay cho frontend
+        });
+      } catch (paymentError) {
+        // Nếu tạo thanh toán ZaloPay thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
+        console.error(
+          "Lỗi khi tạo thanh toán ZaloPay",
+          paymentError.response?.data || paymentError.message
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán ZaloPay",
+          error: paymentError.message,
+        });
+      }
+    }
+
+    // Nếu phương thức thanh toán là VnPay
+    if (paymentMethod === "vnpay") {
+      try {
+        // Thông tin thanh toán VnPay
+        const paymentData = {
+          amount: Math.round(order.totalPrice), // Làm tròn số tiền,
+          bankCode: "",
+          language: "vn",
+          orderId: order._id.toString()
+        };
+
+        // Gửi yêu cầu thanh toán VnPay
+        const paymentResponse = await axios.post(
+          "http://localhost:8888/order/create_payment_url", 
+          paymentData
+        );
+
+        // Lấy URL thanh toán từ phản hồi
+        const payUrl = paymentResponse.data.vnp_url;
+
+        return res.status(201).json({
+          success: true,
+          message: "Tạo đơn hàng thành công",
+          data: order,
+          payUrl, // Trả về URL thanh toán VnPay cho frontend
+        });
+      } catch (paymentError) {
+        // Nếu tạo thanh toán VnPay thất bại, hủy đơn hàng
+        await Order.findByIdAndDelete(order._id);
+        await OrderDetail.deleteMany({ order_id: order._id });
+
+        console.error(
+          "Lỗi khi tạo thanh toán VnPay",
+          paymentError.response?.data || paymentError.message
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi khi tạo thanh toán VnPay",
+          error: paymentError.message,
+        });
+      }
+    }
+
+
     // Trả về kết quả tạo đơn hàng nếu không phải MoMo
     return res.status(201).json({
       success: true,
@@ -225,6 +271,7 @@ if (paymentMethod === "zalopay") {
       data: order,
     });
   } catch (error) {
+    console.log('creatr order', error);
     return res.status(500).json({
       success: false,
       message: "Lỗi khi tạo đơn hàng",
