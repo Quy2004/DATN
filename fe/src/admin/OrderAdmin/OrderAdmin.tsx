@@ -22,6 +22,7 @@ import { Order } from "../../types/order";
 import { ProductSize, ProductTopping } from "../../types/product";
 import ExportButton from "./components/ExportButton";
 import { CloseOutlined } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 const { RangePicker } = DatePicker;
 type PriceType = number | { $numberDecimal: string };
 // Kiểu dữ liệu
@@ -45,19 +46,21 @@ type Product = {
 const OrderStatusLabels: Record<OrderStatus, string> = {
   pending: "Chờ Xác Nhận",
   confirmed: "Đã Xác Nhận",
-  shipping: "Đang Giao",
-  delivered: "Đã Giao",
+  shipping: "Đang Giao Hàng",
+  delivered: "Đã Giao Hàng",
   completed: "Hoàn Thành",
   canceled: "Đã Hủy",
 };
 
 const OrderManagerPage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); // Modal hủy đơn hàng
   const [cancellationReason, setCancellationReason] = useState("");
+  const [orderNumberFilter, setOrderNumberFilter] = useState("");
   // Thêm state để lưu trạng thái filter
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   // Thêm vào state
@@ -145,6 +148,7 @@ const OrderManagerPage = () => {
       messageApi.error(`Cập nhật thất bại: ${error.message}`);
     },
   });
+
   const cancelOrderMutation = useMutation({
     mutationFn: async ({
       orderId,
@@ -198,19 +202,6 @@ const OrderManagerPage = () => {
       "canceled",
     ];
 
-    const isOnlinePayment = (method: string) =>
-      ["momo", "zalopay"].includes(method);
-
-    if (
-      isOnlinePayment(currentOrder.paymentMethod) &&
-      currentOrder.paymentStatus !== "paid"
-    ) {
-      messageApi.error(
-        "Không thể thay đổi trạng thái đơn hàng khi chưa thanh toán thành công."
-      );
-      return;
-    }
-
     const currentStatusIndex = statusOrder.indexOf(currentOrder.orderStatus);
     const newStatusIndex = statusOrder.indexOf(newStatus);
 
@@ -219,9 +210,12 @@ const OrderManagerPage = () => {
       return;
     }
 
-    if (newStatus === "canceled" && currentStatusIndex !== 0) {
+    if (
+      newStatus === "canceled" &&
+      !["pending", "confirmed"].includes(currentOrder.orderStatus)
+    ) {
       messageApi.error(
-        "Bạn chỉ có thể hủy đơn hàng khi trạng thái là 'chờ xác nhận'."
+        "Bạn chỉ có thể hủy đơn hàng khi trạng thái là 'chờ xác nhận' hoặc 'đã xác nhận'."
       );
       return;
     }
@@ -262,7 +256,6 @@ const OrderManagerPage = () => {
 
   const handleCancelOrder = (order: Order) => {
     const nonCancellableStatuses: OrderStatus[] = [
-      "confirmed",
       "shipping",
       "delivered",
       "completed",
@@ -274,7 +267,7 @@ const OrderManagerPage = () => {
     }
 
     setSelectedOrder(order);
-    setIsCancelModalVisible(true); // Hiển thị modal hủy
+    setIsCancelModalVisible(true);
   };
 
   const handleCancelSubmit = () => {
@@ -293,11 +286,15 @@ const OrderManagerPage = () => {
 
   const paymentMethods = [
     { value: "all", label: "Tất cả" },
-    { value: "bank transfer", label: "Chuyển Khoản" },
     { value: "cash on delivery", label: "Thanh Toán Khi Nhận Hàng" },
     { value: "momo", label: "Momo" },
     { value: "zalopay", label: "ZaloPay" },
+    { value: "vnpay", label: "VNPay" },
   ];
+
+  // const handleRowClick = (order: Order) => {
+  //   navigate("/admin/order-detail", { state: { order } });
+  // };
   const columns = [
     {
       title: "STT",
@@ -309,15 +306,16 @@ const OrderManagerPage = () => {
       title: "Mã Đơn Hàng",
       dataIndex: "orderNumber",
       key: "orderNumber",
-      render: (orderNumber: string, record: Order) => (
-        <span
-          onClick={() => showModal(record)}
-          className={`text-gray-950 cursor-pointer hover:text-blue-700 ${
-            record.orderStatus === "canceled" ? "text-red-600" : ""
-          }`}
-        >
-          {orderNumber}
-        </span>
+      render: (orderNumber: string, order: Order) => (
+        <Link to={`/admin/order-detail/${order._id}`}>
+          <span
+            className={`text-gray-950 cursor-pointer hover:text-blue-700 ${
+              order.orderStatus === "canceled" ? "text-red-600" : ""
+            }`}
+          >
+            {orderNumber}
+          </span>
+        </Link>
       ),
       width: 200,
     },
@@ -343,8 +341,8 @@ const OrderManagerPage = () => {
       key: "paymentMethod",
       render: (method: string) => {
         switch (method) {
-          case "bank transfer":
-            return "Chuyển Khoản";
+          case "vnpay":
+            return "VNPay";
           case "cash on delivery":
             return "Thanh Toán Khi Nhận Hàng";
           case "momo":
@@ -383,13 +381,9 @@ const OrderManagerPage = () => {
           danger
           onClick={() => handleCancelOrder(record)}
           disabled={
-            [
-              "confirmed",
-              "shipping",
-              "delivered",
-              "completed",
-              "canceled",
-            ].includes(record.orderStatus) ||
+            ["shipping", "delivered", "completed", "canceled"].includes(
+              record.orderStatus
+            ) ||
             (record.paymentStatus !== "failed" &&
               ["momo", "zalopay"].includes(record.paymentMethod))
           }
@@ -438,26 +432,33 @@ const OrderManagerPage = () => {
         paymentMethodFilter === "all" ||
         order.paymentMethod === paymentMethodFilter;
 
+      // Lọc theo mã đơn hàng
+      const orderNumberMatch =
+        orderNumberFilter === "" ||
+        order.orderNumber
+          .toLowerCase()
+          .includes(orderNumberFilter.toLowerCase());
       return (
         statusMatch &&
         priceMatch &&
         dateMatch &&
         customerMatch &&
-        paymentMethodMatch
+        paymentMethodMatch &&
+        orderNumberMatch
       );
     });
   };
 
   const paymentMethodDisplay = (method: string) => {
     switch (method) {
-      case "bank transfer":
-        return "Chuyển Khoản";
       case "cash on delivery":
         return "Thanh Toán Khi Nhận Hàng";
       case "momo":
         return "Momo";
       case "zalopay":
         return "ZaloPay";
+      case "vnpay":
+        return "VNPay";
     }
   };
 
@@ -509,25 +510,29 @@ const OrderManagerPage = () => {
     {
       title: "Size",
       dataIndex: "product_size",
-
       key: "size",
-      render: (selectedSize: { name: string }) => {
-        return selectedSize?.name || "Không có kích cỡ";
+      render: (selectedSize: { name: string; priceSize: number }) => {
+        if (!selectedSize) return "Không có kích cỡ";
+        return `${selectedSize.name} (Giá: ${formatPrice(
+          selectedSize.priceSize
+        )})`;
       },
     },
     {
       title: "Topping",
       dataIndex: "product_toppings",
-
       key: "topping",
       render: (productToppings: ProductTopping[]) => {
         if (!productToppings || !productToppings.length)
           return "Không có topping";
-        const toppings = productToppings.map(
-          (item: ProductTopping) => item.topping_id.nameTopping
-        );
 
-        return toppings.length ? toppings.join(", ") : "Không có topping";
+        const toppings = productToppings.map((item: ProductTopping) => {
+          const toppingName = item.topping_id.nameTopping;
+          const toppingPrice = item.topping_id.priceTopping;
+          return `${toppingName} (Giá: ${formatPrice(toppingPrice)})`;
+        });
+
+        return toppings.join(", ");
       },
     },
     {
@@ -592,13 +597,47 @@ const OrderManagerPage = () => {
     <>
       {contextHolder}
       <div className="flex flex-wrap items-center justify-between mb-5 space-y-4 sm:space-y-0 sm:space-x-4">
-        <Title level={3} className="text-2xl font-semibold text-gray-800">
-          Danh sách đơn hàng
-        </Title>
-        <ExportButton filteredOrders={getFilteredOrders()} />
-        <div className="grid grid-cols-2">
-          <Space>
-            {/* Filter by Status */}
+        <div className="flex items-center">
+          <Title level={3} className="text-2xl font-semibold text-gray-800">
+            Danh sách đơn hàng
+          </Title>
+
+          <Space className="ml-96">
+            <Input
+              placeholder="Tìm theo mã đơn hàng"
+              value={orderNumberFilter}
+              onChange={(e) => setOrderNumberFilter(e.target.value)}
+              className="w-48 h-8 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
+            />
+            <Input
+              placeholder="Tìm theo tên khách hàng"
+              value={customerNameFilter}
+              onChange={(e) => setCustomerNameFilter(e.target.value)}
+              className="w-48 h-8 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
+            />
+            <ExportButton filteredOrders={getFilteredOrders()} />{" "}
+          </Space>
+        </div>
+
+        <div className="grid grid-cols-4">
+          <Space className="mt-5">
+            <Select
+              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
+              value={paymentMethodFilter}
+              onChange={setPaymentMethodFilter}
+            >
+              {paymentMethods.map((method) => (
+                <Select.Option key={method.value} value={method.value}>
+                  {method.label}
+                </Select.Option>
+              ))}
+            </Select>
+            {paymentMethodFilter !== "all" && (
+              <CloseOutlined
+                onClick={() => setPaymentMethodFilter("all")}
+                className="w-4 h-4 text-gray-600 hover:text-red-600 transition duration-200 ease-in-out cursor-pointer"
+              />
+            )}
             <Select
               className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
               value={statusFilter}
@@ -625,16 +664,6 @@ const OrderManagerPage = () => {
                 className="w-4 h-4 text-gray-600 hover:text-red-600 transition duration-200 ease-in-out cursor-pointer"
               />
             )}
-
-            <Input
-              placeholder="Tìm theo tên khách hàng"
-              value={customerNameFilter}
-              onChange={(e) => setCustomerNameFilter(e.target.value)}
-              className="w-48 h-8 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
-            />
-
-            {/* Filter by Price */}
-
             <InputNumber
               placeholder="Giá tối thiểu"
               className="border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:border-gray-500 focus:ring focus:ring-gray-200 transition duration-200 ease-in-out"
@@ -658,7 +687,6 @@ const OrderManagerPage = () => {
               }}
             />
 
-            {/* Filter by Date */}
             <div className="flex flex-wrap items-center space-x-4 w-[200px]">
               <RangePicker
                 placeholder={["Từ ngày", "Đến ngày"]}
@@ -671,25 +699,6 @@ const OrderManagerPage = () => {
                 }}
               />
             </div>
-            <Select
-              className="w-48 border border-gray-300 rounded-lg shadow-sm hover:border-blue-500 focus:border-blue-600 focus:ring focus:ring-blue-300 transition duration-200 ease-in-out"
-              value={paymentMethodFilter}
-              onChange={setPaymentMethodFilter}
-            >
-              {paymentMethods.map((method) => (
-                <Select.Option key={method.value} value={method.value}>
-                  {method.label}
-                </Select.Option>
-              ))}
-            </Select>
-            {paymentMethodFilter !== "all" && (
-              <CloseOutlined
-                onClick={() => setPaymentMethodFilter("all")}
-                className="w-4 h-4 text-gray-600 hover:text-red-600 transition duration-200 ease-in-out cursor-pointer"
-              />
-            )}
-
-            {/* Export Button */}
           </Space>
         </div>
       </div>
@@ -699,7 +708,7 @@ const OrderManagerPage = () => {
         columns={columns}
         dataSource={getFilteredOrders()}
         rowKey="orderNumber"
-        scroll={{ y: 310 }}
+        scroll={{ y: 260 }}
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
@@ -709,29 +718,53 @@ const OrderManagerPage = () => {
         rowClassName={getRowClassName}
       />
       <Modal
-        title={<h2 className="text-xl font-bold text-red-500">Hủy Đơn Hàng</h2>}
+        title={
+          <h2 className="text-xl font-bold text-red-500">
+            Xác Nhận Hủy Đơn Hàng
+          </h2>
+        }
         open={isCancelModalVisible}
         onCancel={() => setIsCancelModalVisible(false)}
         footer={[
           <Button key="cancel" onClick={() => setIsCancelModalVisible(false)}>
-            Đóng
+            Thoát
           </Button>,
           <Button
             key="submit"
             type="primary"
-            className="bg-lime-500"
+            className="bg-red-500"
             onClick={handleCancelSubmit}
           >
-            Hủy Đơn
+            Xác Nhận Hủy Đơn
           </Button>,
         ]}
       >
-        <p className="mt-3 mb-2">Vui lòng nhập lý do hủy đơn hàng:</p>
+        <p className="mt-3 mb-2">Vui lòng chọn lý do hủy đơn hàng:</p>
+
+        <Select
+          className="w-full mb-3"
+          placeholder="Chọn lý do hủy đơn"
+          onChange={setCancellationReason}
+          options={[
+            { value: "Sản phẩm hết hàng", label: "Sản phẩm đã hết hàng" },
+            { value: "Lỗi đặt hàng", label: "Lỗi từ hệ thống đặt hàng" },
+            {
+              value: "Không liên hệ được",
+              label: "Không thể liên hệ khách hàng",
+            },
+            {
+              value: "Khách hàng yêu cầu hủy",
+              label: "Khách hàng yêu cầu hủy",
+            },
+            { value: "", label: "Lý do khác" },
+          ]}
+        />
+
         <Input.TextArea
           rows={4}
           value={cancellationReason}
           onChange={(e) => setCancellationReason(e.target.value)}
-          placeholder="Lý do hủy..."
+          placeholder="Chi tiết lý do hủy đơn (nếu có)..."
         />
       </Modal>
 

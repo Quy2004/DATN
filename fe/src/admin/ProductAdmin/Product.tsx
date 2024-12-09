@@ -380,7 +380,7 @@ const ProductManagerPage: React.FC = () => {
             <>
               <Popconfirm
                 title="Xóa sản phẩm"
-                description="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                description="Bạn có chắc chắn muốn xóa sản phẩm này?"
                 onConfirm={() => mutationSoftDelete.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"

@@ -26,7 +26,7 @@ const Tracking = () => {
     data: order,
     isLoading,
     isError,
-  } = useQuery<Order[]>({
+  } = useQuery<Order>({
     queryKey: ["orders", id],
     queryFn: async () => {
       const response = await instance.get(`orders/order/${id}`);
@@ -419,6 +419,8 @@ const Tracking = () => {
                             return "Thanh toán qua MoMo";
                           case "zalopay":
                             return "Thanh toán qua ZaloPay";
+                          case "vnpay":
+                            return "Thanh toán qua VNPay";
                           default:
                             return "Không xác định";
                         }
@@ -659,6 +661,8 @@ const Tracking = () => {
                           return "Thanh toán qua MoMo";
                         case "zalopay":
                           return "Thanh toán qua ZaloPay";
+                        case "vnpay":
+                          return "Thanh toán qua VNPay";
                         default:
                           return "Không xác định";
                       }

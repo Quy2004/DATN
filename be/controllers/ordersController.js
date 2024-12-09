@@ -53,19 +53,26 @@ export const getByUser = async (req, res) => {
       orderStatus: "completed", // Thêm điều kiện orderStatus
     }).populate({
       path: "orderDetail_id", // Liên kết với OrderDetail
-      match: { "product_id": product_id }, // Lọc chi tiết đơn hàng theo product_id
+      match: { product_id: product_id }, // Lọc chi tiết đơn hàng theo product_id
     });
 
     // Kiểm tra nếu không tìm thấy đơn hàng nào
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng hoàn thành cho người dùng này và sản phẩm này" });
+      return res.status(404).json({
+        message:
+          "Không tìm thấy đơn hàng hoàn thành cho người dùng này và sản phẩm này",
+      });
     }
 
     // Kiểm tra nếu trong các đơn hàng không có chi tiết đơn hàng chứa product_id
-    const filteredOrders = orders.filter(order => order.orderDetail_id.length > 0);
+    const filteredOrders = orders.filter(
+      (order) => order.orderDetail_id.length > 0
+    );
 
     if (filteredOrders.length === 0) {
-      return res.status(404).json({ message: "Không có sản phẩm này trong đơn hàng hoàn thành." });
+      return res
+        .status(404)
+        .json({ message: "Không có sản phẩm này trong đơn hàng hoàn thành." });
     }
 
     res.status(200).json({
@@ -120,7 +127,11 @@ export const createOrder = async (req, res) => {
     });
     const notification = new NotificationModel({
       title: "Đặt hàng thành công",
-      message: `Đơn hàng mã "${order._id}" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái hiện tại: "${paymentMethod}". Với trạng thái "${order.paymentStatus === 'paid' ?  'Chưa thanh toán':'Đã thanh toán'}"`,
+      message: `Đơn hàng mã "${
+        order._id
+      }" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái hiện tại: "${paymentMethod}". Với trạng thái "${
+        order.paymentStatus === "paid" ? "Chưa thanh toán" : "Đã thanh toán"
+      }"`,
 
       user_Id: userId || null, // Null nếu không đăng nhập
       order_Id: order._id, // Gắn ID đơn hàng để tiện theo dõi
@@ -620,7 +631,6 @@ export const getOrderStatusDistribution = async (req, res) => {
   }
 };
 
-// Get top products by sales volume
 export const getTopProducts = async (req, res) => {
   try {
     const topProducts = await OrderDetail.aggregate([
@@ -637,11 +647,11 @@ export const getTopProducts = async (req, res) => {
         $group: {
           _id: "$product_id",
           totalQuantity: { $sum: "$quantity" },
-          productName: { $first: "$product_info.name" },
+          product: { $first: "$product_info" },
         },
       },
       { $sort: { totalQuantity: -1 } },
-      { $limit: 10 }, // Get top 10 products
+      { $limit: 10 },
     ]);
 
     return res.status(200).json({
@@ -659,65 +669,56 @@ export const getTopProducts = async (req, res) => {
 
 export const getCustomerStats = async (req, res) => {
   try {
-    const customerStats = await Order.aggregate([
+    const { fromDate, toDate, limit = 5 } = req.query;
+
+    const matchStage = {};
+    if (fromDate && toDate) {
+      matchStage.createdAt = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
+    }
+
+    const topUsers = await Order.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$user_id",
+          orderCount: { $sum: 1 },
+          totalSpent: { $sum: "$totalPrice" },
+        },
+      },
       {
         $lookup: {
           from: "users",
-          localField: "user_id",
+          localField: "_id",
           foreignField: "_id",
           as: "user_info",
         },
       },
       { $unwind: "$user_info" },
       {
-        $lookup: {
-          from: "orderDetails",
-          localField: "_id",
-          foreignField: "order_id",
-          as: "order_details",
+        $project: {
+          _id: 1,
+          userName: "$user_info.userName",
+          email: "$user_info.email",
+          phone: "$user_info.phone",
+          totalSpent: 1,
+          orderCount: 1,
         },
       },
-      {
-        $group: {
-          _id: "$user_id",
-          userName: { $first: "$user_info.userName" },
-          email: { $first: "$user_info.email" },
-          phone: { $first: "$user_info.phone" },
-          address: { $first: "$user_info.address" },
-          totalSpent: { $sum: "$totalPrice" },
-          orderCount: { $sum: 1 },
-          orders: {
-            $push: {
-              orderId: "$_id",
-              orderNumber: "$orderNumber",
-              totalPrice: "$totalPrice",
-              orderStatus: "$orderStatus",
-              paymentStatus: "$paymentStatus",
-              createdAt: "$createdAt",
-              details: "$order_details",
-            },
-          },
-        },
-      },
-      { $sort: { totalSpent: -1 } },
-      { $limit: 10 }, // Top 10 khách hàng theo chi tiêu
+      { $sort: { orderCount: -1 } },
+      { $limit: parseInt(limit) },
     ]);
 
     return res.status(200).json({
       success: true,
-      data: customerStats,
+      data: topUsers,
     });
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Dữ liệu đầu vào không hợp lệ",
-        error: error.message,
-      });
-    }
     return res.status(500).json({
       success: false,
-      message: "Lỗi khi thống kê khách hàng",
+      message: "Lỗi khi thống kê người dùng đặt hàng nhiều nhất",
       error: error.message,
     });
   }
@@ -726,44 +727,46 @@ export const getCustomerStats = async (req, res) => {
 // Get revenue by time period (e.g., daily, weekly, monthly)
 export const getRevenueByTimePeriod = async (req, res) => {
   try {
-    const { period } = req.query; // "daily", "weekly", "monthly"
-    let groupBy;
+    const { fromDate, toDate, period } = req.query;
 
-    switch (period) {
-      case "weekly":
-        groupBy = { $week: "$createdAt" }; // Group by week number
-        break;
-      case "monthly":
-        groupBy = { $month: "$createdAt" }; // Group by month
-        break;
-      case "daily":
-      default:
-        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }; // Group by date
+    // Xây dựng bộ lọc thời gian nếu có
+    const matchStage = {};
+    if (fromDate && toDate) {
+      matchStage.createdAt = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
     }
 
-    const revenueData = await Order.aggregate([
-      { $match: { orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders
+    // Xác định cách nhóm theo chu kỳ
+    let groupBy;
+    switch (period) {
+      case "monthly":
+        groupBy = { $month: "$createdAt" };
+        break;
+      case "daily":
+        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
+        break;
+      default:
+        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
+    }
+
+    const revenueStats = await Order.aggregate([
+      { $match: { ...matchStage, orderStatus: { $ne: "canceled" } } },
       {
         $group: {
           _id: groupBy,
           totalRevenue: { $sum: "$totalPrice" },
         },
       },
-      { $sort: { _id: 1 } }, // Sort by time period
+      { $sort: { _id: 1 } },
     ]);
 
     return res.status(200).json({
       success: true,
-      data: revenueData,
+      data: revenueStats,
     });
   } catch (error) {
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Dữ liệu đầu vào không hợp lệ",
-        error: error.message,
-      });
-    }
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê doanh thu",
@@ -880,6 +883,7 @@ export const getEnhancedOrderStats = async (req, res) => {
     });
   }
 };
+
 export const getCompletedOrders = async (req, res) => {
   try {
     // Tìm các đơn hàng đã hoàn thành và sắp xếp theo ngày tạo
@@ -975,6 +979,35 @@ export const updatePaymentStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Lỗi khi cập nhật trạng thái thanh toán",
+      error: error.message,
+    });
+  }
+};
+
+export const getPendingOrders = async (req, res) => {
+  try {
+    const { fromDate, toDate } = req.query;
+
+    const matchStage = { orderStatus: "pending" }; // Trạng thái "chờ xác nhận"
+    if (fromDate && toDate) {
+      matchStage.createdAt = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
+    }
+
+    const pendingOrders = await Order.find(matchStage)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      data: pendingOrders,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi thống kê đơn hàng chờ xác nhận",
       error: error.message,
     });
   }

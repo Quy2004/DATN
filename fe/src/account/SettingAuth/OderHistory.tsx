@@ -520,9 +520,11 @@ const OderHistory = () => {
             <p className="text-sm text-gray-600 mb-4">
               Bắt đầu mua sắm để tạo đơn hàng mới.
             </p>
-            <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300">
-              Đi mua sắm
-            </button>
+            <Link to={`/menu`}>
+              <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300">
+                Đi mua sắm
+              </button>
+            </Link>
           </div>
         )}
       </div>
