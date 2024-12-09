@@ -169,11 +169,18 @@ const CartPage: React.FC<{ idcart: number }> = ({ idcart }) => {
 
   const toggleItemSelection = (item: any) => {
     const itemId = item._id; // Use the product's _id
-    setSelectedItems((prev) =>
-      prev.includes(itemId)
+    setSelectedItems((prev) => {
+      const newSelectedItems = prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
+        : [...prev, itemId];
+
+      // Log the item details if it is selected
+      if (!prev.includes(itemId)) {
+        console.log("Selected Product:", item.product);
+      }
+
+      return newSelectedItems;
+    });
   };
 
   const toggleAllItemsSelection = () => {
