@@ -119,7 +119,7 @@ const Checkout: React.FC = () => {
       }
 
       // Chuyển hướng người dùng tới trang thanh toán MoMo
-      window.location.href = payUrl;
+      window.location.href = payUrl
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
 
@@ -158,7 +158,7 @@ const Checkout: React.FC = () => {
       }
 
       // Chuyển hướng người dùng tới trang thanh toán ZaloPay
-      window.location.href = payUrl;
+      window.location.href = payUrl
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
 
@@ -173,6 +173,43 @@ const Checkout: React.FC = () => {
       throw error;
     }
   };
+  const handleVnPayPayment = async (orderData: any) => {
+    try {
+      // Tạo đơn hàng trước
+      const orderResponse = await instance.post("orders", {
+        ...orderData,
+      });
+      console.log("Order API Response:", orderResponse.data); // Kiểm tra toàn bộ data trong response
+
+      // Lấy payUrl từ phản hồi backend
+      const { payUrl } = orderResponse.data;
+
+      // Kiểm tra URL thanh toán từ VnPay
+      if (!payUrl) {
+        Swal.fire({
+          icon: "warning",
+          title: "Lỗi",
+          text: "Không nhận được URL thanh toán từ VnPay. Vui lòng thử lại sau.",
+        });
+        return;
+      }
+
+      // Chuyển hướng người dùng tới trang thanh toán VnPay
+      window.location.href = payUrl
+    } catch (error: any) {
+      console.error("Lỗi thanh toán:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Thanh toán thất bại",
+        text:
+          error.response?.data?.message ||
+          "Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.",
+      });
+
+      throw error;
+    }
+  }
   // Hàm mở modal và lấy danh sách voucher
   const openVoucherModal = async () => {
     try {
@@ -411,6 +448,9 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
           break;
         case "bank transfer":
           break;
+        case "vnpay":
+          await handleVnPayPayment(orderData);
+          break
         default:
           throw new Error("Phương thức thanh toán không hợp lệ");
       }
@@ -430,6 +470,10 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
     setPaymentMethod("zalopay");
     setIsBankTransferSelected(false);
   };
+  const handleVnPayClick = ()=>{
+    setPaymentMethod("vnpay")
+    setIsBankTransferSelected(false);
+  }
   if (isCartsLoading) {
     return <p>Đang tải dữ liệu giỏ hàng...</p>;
   }
@@ -626,6 +670,16 @@ const finalDiscountAmount = Math.min(discount, maxDiscount); // Tính giảm gi�
                       />
                       <div className="mt-2 text-center font-medium">
                         Phone Banking
+                      </div>
+                    </button>
+                    <button className="rounded-md" onClick={handleVnPayClick}>
+                      <img
+                        src="src/pages/CheckOutPage/ImageBanking/Vnpay.png"
+                        alt="VnPay"
+                        className="w-16 mx-auto border-2"
+                      />
+                      <div className="mt-2 text-center font-medium">
+                        Vnpay
                       </div>
                     </button>
                   </div>
