@@ -25,7 +25,7 @@ createMomoPayment = async (req, res) => {
     const orderInfo = `Thanh toán đơn hàng ${order.orderNumber}`;
     const redirectUrl = "http://localhost:5173/order-result";
     const cancelUrl = encodeURIComponent("http://localhost:5173/order-error");
-    const ipnUrl = "https://7e83-113-189-171-22.ngrok-free.app/payments/momo/notify"; //lưu ý thay đường dẫn ngrok mới nhất 
+    const ipnUrl = "https://94b2-113-189-171-22.ngrok-free.app/payments/momo/notify"; //lưu ý thay đường dẫn ngrok mới nhất 
     const amount = order.totalPrice.toString(); // Chuyển tổng giá trị đơn hàng thành chuỗi
     const requestType = "captureWallet";
     const extraData = ""; // Dữ liệu bổ sung (tuỳ chọn)
