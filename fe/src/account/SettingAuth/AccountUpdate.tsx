@@ -187,8 +187,8 @@ const AccountUpdate = () => {
                     >
                         <h1 className="text-2xl font-semibold mb-1">Cập nhật thông tin</h1>
                         <p className="mb-4 border-b-orange-400 w-[205px] md:w-[205px] border-b-[4px]"></p>
-                        <div className="flex items-start gap-3 h-[230px]">
-                            <div className="flex-1">
+                        <div className="flex justify-center items-start gap-3 h-auto">
+                            <div>
                                 <label className="mb-2 mx-1 font-medium">Avatar</label>
                                 <Form.Item name="avatars">
                                     <Upload
@@ -211,12 +211,12 @@ const AccountUpdate = () => {
                                     </Upload>
                                 </Form.Item>
                             </div>
-                            <div className="flex-1">
-                                <label className="space-y-2 mb-4 mx-1 font-medium">Họ và tên</label>
-                                <Form.Item name="userName">
-                                    <Input className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập họ tên" />
-                                </Form.Item>
-                            </div>
+                        </div>
+                        <div className="">
+                            <label className="space-y-2 mb-4 mx-1 font-medium">Họ và tên</label>
+                            <Form.Item name="userName">
+                                <Input className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập họ tên" />
+                            </Form.Item>
                         </div>
                         <label className="space-y-2 mb-4 mx-1 font-medium">Email</label>
                         <Form.Item name="email">
