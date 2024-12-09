@@ -119,7 +119,7 @@ const Checkout: React.FC = () => {
       }
 
       // Chuyển hướng người dùng tới trang thanh toán MoMo
-      window.location.href = payUrl
+      window.location.href = payUrl;
     } catch (error: any) {
       console.error("Lỗi thanh toán:", error);
 

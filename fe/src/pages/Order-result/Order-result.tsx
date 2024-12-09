@@ -5,24 +5,32 @@ const OrderResult = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const resultCode = searchParams.get("resultCode");
+  const paymentStatus = searchParams.get("payment_order_status"); // Thêm tham số này
 
   useEffect(() => {
-    if (resultCode === "0") {
-      // Thanh toán thành công - chuyển hướng đến trang order-success
-      navigate("/oder-success");
-    } else {
-      // Thanh toán thất bại - chuyển hướng đến trang order-error
-      navigate("/order-error");
+    if (paymentStatus !== null) {
+      // Ưu tiên kiểm tra payment_order_status nếu có
+      if (paymentStatus === "true") {
+        navigate("/oder-success");
+      } else {
+        navigate("/order-error");
+      }
+    } else if (resultCode !== null) {
+      // Nếu không có payment_order_status, kiểm tra resultCode
+      if (resultCode === "0") {
+        navigate("/order-success");
+      } else {
+        navigate("/order-error");
+      }
     }
-  }, [resultCode, navigate]);
+  }, [resultCode, paymentStatus, navigate]);
 
   return (
     <div>
-      {/* Bạn có thể để một thông báo tạm thời nếu muốn */}
-      <p>Đang xử lý...</p>
+      {/* Thông báo tạm thời */}
+      <p>Đang xử lý kết quả thanh toán...</p>
     </div>
   );
 };
 
 export default OrderResult;
-
