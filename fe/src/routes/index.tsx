@@ -62,7 +62,7 @@ import Dashboard from "../admin/Statistics/StatisticsPage";
 import BillPage from "../pages/BillPage/BillPage";
 import PrivateRouter from "./PrivateRouter";
 import ChuyenNhaDetail from "../pages/ChuyenNhaPage/ChuyenNhaDetail";
-import ChangePassword from "../account/SettingAuth/ChangePassword";
+import OrderResult from "../pages/Order-result/Order-result";
 
 
 
@@ -93,13 +93,13 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
-          <Route path="change-password" element={<ChangePassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
           <Route path="setting" element={<SettingAccount />} />
           <Route path="order-tracking/:id" element={<Tracking />} />
+          <Route path="order-result" element={<OrderResult />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
           <Route path= "bill" element={<BillPage/>}/>
