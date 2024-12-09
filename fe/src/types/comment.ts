@@ -5,7 +5,7 @@ export interface Comment {
   _id: string;
   content: string;
   image: string[];
-  status: "active" | "inactive";
+  status: string;
   product_id: Product; // Thông tin sản phẩm
   user_id: User;  // Thông tin người dùng
   productId: string; // ID sản phẩm (chỉ số)

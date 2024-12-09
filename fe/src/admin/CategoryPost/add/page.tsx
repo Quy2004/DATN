@@ -54,7 +54,7 @@ const CategoryPostAddPage = () => {
 		const productData = {
 			...values,
 			// thumbnail: image,
-			description: values.description,
+			// description: values.description,
 		};
 
 		try {
@@ -123,7 +123,7 @@ const CategoryPostAddPage = () => {
 							</Upload>
 						</Form.Item> */}
 
-						<Form.Item
+						{/* <Form.Item
 							label="Mô tả danh mục bài viết"
 							name="description"
 							rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
@@ -133,7 +133,7 @@ const CategoryPostAddPage = () => {
 								theme="snow"
 								placeholder="Nhập mô tả danh mục bài viết"
 							/>
-						</Form.Item>
+						</Form.Item> */}
 
 						<Form.Item wrapperCol={{ offset: 8, span: 16 }}>
 							<Button

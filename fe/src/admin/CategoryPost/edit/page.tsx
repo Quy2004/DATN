@@ -163,7 +163,7 @@ const CategoryPostUpdatePage = () => {
 						)}
 					</Upload>
 					</Form.Item> */}
-					<Form.Item
+					{/* <Form.Item
 						label="Mô tả danh mục"
 						name="description"
 						rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
@@ -173,7 +173,7 @@ const CategoryPostUpdatePage = () => {
 							theme="snow"
 							placeholder="Nhập mô tả danh mục"
 						/>
-					</Form.Item>
+					</Form.Item> */}
 
 					<Form.Item wrapperCol={{ offset: 8, span: 16 }}>
 						<Button
