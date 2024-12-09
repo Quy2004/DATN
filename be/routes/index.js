@@ -16,6 +16,7 @@ import postRouter from "./post.js";
 import commentRouter from "./comment.js";
 import momoRouter from "./momoRoutes.js";
 import zaloRouter from "./zaloRoter.js";
+import vnPayRouter from "./vnPay.js";
 import NotificationRouter from "./notification.js";
 
 const router = Router();
@@ -41,6 +42,7 @@ router.use("/categoryPost", categoryPostRouter);
 router.use("/posts", postRouter);
 router.use("/payments", momoRouter);
 router.use("/payments", zaloRouter);
+router.use("/vnpay", vnPayRouter);
 router.use("/notification", NotificationRouter);
 
 export default router;
