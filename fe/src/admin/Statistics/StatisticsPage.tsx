@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Spin, List, Row, Col, Typography } from "antd";
+import { Card, List, Row, Col, Typography, Spin, Select, DatePicker } from "antd";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -14,6 +14,7 @@ import instance from "../../services/api";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title);
 
 const { Title: AntTitle } = Typography;
+const { RangePicker } = DatePicker;
 
 // API Calls
 const getOrderStats = () => instance.get("/orders/order-stats");
@@ -21,23 +22,25 @@ const getOrderStatusDistribution = () =>
   instance.get("/orders/order-status-distribution");
 const getTopProducts = () => instance.get("/orders/top-products");
 const getCustomerStats = () => instance.get("/orders/customer-stats");
-const getRevenueByTime = (period: string) =>
+const getRevenueByTime = (period) =>
   instance.get(`/orders/revenue-by-time?period=${period}`);
 
 // Format currency
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    amount
+  );
+// Date Range Component
+const DateRangeSelector = ({ onChange, style }) => (
+  <RangePicker
+    style={style}
+    onChange={(dates, dateStrings) => onChange(dateStrings)}
+  />
+);
 // Order Statistics Component
 const OrderStats = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{
-    totalOrders: number;
-    totalRevenue: number;
-  } | null>(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     getOrderStats()
@@ -49,11 +52,19 @@ const OrderStats = () => {
   }, []);
 
   return (
-    <Card title="Thống kê đơn hàng" loading={loading}>
+    <Card
+      title="Thống kê đơn hàng"
+      loading={loading}
+      style={{ borderRadius: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+    >
       {data && (
         <>
-          <p>Tổng số đơn hàng: {data.totalOrders}</p>
-          <p>Tổng doanh thu: {formatCurrency(data.totalRevenue)}</p>
+          <p style={{ fontSize: "18px", fontWeight: "600" }}>
+            Tổng số đơn hàng: {data.totalOrders}
+          </p>
+          <p style={{ fontSize: "18px", fontWeight: "600" }}>
+            Tổng doanh thu: {formatCurrency(data.totalRevenue)}
+          </p>
         </>
       )}
     </Card>
@@ -63,9 +74,7 @@ const OrderStats = () => {
 // Order Status Distribution Component
 const OrderStatusDistribution = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{ _id: string; count: number }[] | null>(
-    null
-  );
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     getOrderStatusDistribution()
@@ -76,7 +85,7 @@ const OrderStatusDistribution = () => {
       .catch(() => setLoading(false));
   }, []);
 
-  const statusMap: { [key: string]: string } = {
+  const statusMap = {
     pending: "Đang chờ",
     completed: "Hoàn thành",
     canceled: "Đã hủy",
@@ -85,7 +94,11 @@ const OrderStatusDistribution = () => {
   };
 
   return (
-    <Card title="Phân phối trạng thái đơn hàng" loading={loading}>
+    <Card
+      title="Phân phối trạng thái đơn hàng"
+      loading={loading}
+      style={{ borderRadius: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+    >
       {data?.map((status) => (
         <p key={status._id}>
           {statusMap[status._id] || status._id}: {status.count}
@@ -98,24 +111,7 @@ const OrderStatusDistribution = () => {
 // Top Products Component
 const TopProducts = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<
-    | {
-        _id: string;
-        totalQuantity: number;
-        product: {
-          name: string;
-          price: number;
-          sale_price: number;
-          image: string;
-          thumbnail: string[];
-          description: string;
-          status: string;
-          discount: string;
-          slug: string;
-        };
-      }[]
-    | null
-  >(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     getTopProducts()
@@ -127,38 +123,36 @@ const TopProducts = () => {
   }, []);
 
   return (
-    <Card title="Sản phẩm bán chạy" loading={loading}>
-      <div style={{ maxHeight: "300px", overflowX: "auto", overflowY: "auto" }}>
-        <List
-          dataSource={data || []}
-          renderItem={(item) => (
-            <List.Item className="flex items-center space-x-4 p-4 border-b">
-              <img
-                src={item.product.image}
-                alt={item.product.name}
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-              <div className="flex flex-col">
-                <strong className="text-lg font-semibold">
-                  {item.product.name}
-                </strong>
-
-                <p className="text-gray-600">
-                  Giá:{" "}
-                  <span className="font-semibold">
-                    {item.product.sale_price} VND
-                  </span>{" "}
-                  (Giảm giá:{" "}
-                  <span className="text-red-600">{item.product.discount}%</span>
-                  )
-                </p>
-
-                <p className="text-gray-600">Đã bán: {item.totalQuantity}</p>
-              </div>
-            </List.Item>
-          )}
-        />
-      </div>
+    <Card
+      title="Sản phẩm bán chạy"
+      loading={loading}
+      style={{
+        borderRadius: "10px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        maxHeight: "400px",
+        overflowY: "auto",
+      }}
+    >
+      <List
+        dataSource={data || []}
+        renderItem={(item) => (
+          <List.Item className="flex items-center space-x-4 p-4 border-b">
+            <img
+              src={item.product.image}
+              alt={item.product.name}
+              style={{ width: "80px", height: "80px", borderRadius: "8px" }}
+            />
+            <div>
+              <strong style={{ fontSize: "16px" }}>{item.product.name}</strong>
+              <p style={{ margin: 0 }}>
+                Giá: {formatCurrency(item.product.sale_price)} (Giảm giá:{" "}
+                {item.product.discount}%)
+              </p>
+              <p style={{ margin: 0 }}>Đã bán: {item.totalQuantity}</p>
+            </div>
+          </List.Item>
+        )}
+      />
     </Card>
   );
 };
@@ -166,16 +160,19 @@ const TopProducts = () => {
 // Revenue by Time Component
 const RevenueByTime = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{ _id: string; totalRevenue: number }[]>([]);
+  const [data, setData] = useState([]);
+  const [period, setPeriod] = useState("daily");
+  const [dateRange, setDateRange] = useState(["", ""]);
 
   useEffect(() => {
-    getRevenueByTime("daily")
+    const [startDate, endDate] = dateRange;
+    getRevenueByTime(period, startDate, endDate)
       .then((res) => {
         setData(res.data.data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [period, dateRange]);
 
   const chartData = {
     labels: data.map((item) => item._id),
@@ -189,7 +186,32 @@ const RevenueByTime = () => {
   };
 
   return (
-    <Card title="Doanh thu theo ngày" loading={loading}>
+    <Card
+      title={
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>Doanh thu theo thời gian</span>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Select
+              defaultValue="daily"
+              onChange={setPeriod}
+              options={[
+                { value: "daily", label: "Theo ngày" },
+                { value: "monthly", label: "Theo tháng" },
+              ]}
+            />
+           
+          </div>
+        </div>
+      }
+      loading={loading}
+      style={{ borderRadius: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+    >
       <div style={{ height: "300px" }}>
         <Bar data={chartData} options={{ responsive: true }} />
       </div>
@@ -200,15 +222,7 @@ const RevenueByTime = () => {
 // Customer Stats Component
 const CustomerStats = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<
-    | {
-        _id: string;
-        userName: string;
-        totalSpent: number;
-        orderCount: number;
-      }[]
-    | null
-  >(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     getCustomerStats()
@@ -220,7 +234,11 @@ const CustomerStats = () => {
   }, []);
 
   return (
-    <Card title="Thống kê khách hàng" loading={loading}>
+    <Card
+      title="Thống kê khách hàng"
+      loading={loading}
+      style={{ borderRadius: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+    >
       <List
         dataSource={data || []}
         renderItem={(item) => (
@@ -237,23 +255,32 @@ const CustomerStats = () => {
 // Main Dashboard Component
 const Dashboard = () => {
   return (
-    <Row gutter={[16, 16]}>
-      <Col xs={24} md={12} lg={8}>
-        <OrderStats />
-      </Col>
-      <Col xs={24} md={12} lg={8}>
-        <OrderStatusDistribution />
-      </Col>
-      <Col xs={24} lg={8}>
-        <TopProducts />
-      </Col>
-      <Col xs={24} md={12}>
-        <RevenueByTime />
-      </Col>
-      <Col xs={24} md={12}>
-        <CustomerStats />
-      </Col>
-    </Row>
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#f0f2f5",
+        height: "70vh",
+        overflowY: "auto",
+      }}
+    >
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12} lg={8}>
+          <OrderStats />
+        </Col>
+        <Col xs={24} md={12} lg={8}>
+          <OrderStatusDistribution />
+        </Col>
+        <Col xs={24} lg={8}>
+          <TopProducts />
+        </Col>
+        <Col xs={24} md={12}>
+          <RevenueByTime />
+        </Col>
+        <Col xs={24} md={12}>
+          <CustomerStats />
+        </Col>
+      </Row>
+    </div>
   );
 };
 
