@@ -42,9 +42,10 @@ const PostUpdatePage: React.FC = () => {
         form.setFieldsValue({
           title: postData.title,
           excerpt: postData.excerpt,
-          categoryPost: postData.categoryPost.title,
+          categoryPost: postData.categoryPost._id, 
           content: postData.content,
         });
+
         setImageUrl(postData.imagePost);
         setGalleryUrls(postData.galleryPost || []);
       } catch (error) {
@@ -135,16 +136,20 @@ const PostUpdatePage: React.FC = () => {
       message.error("Vui lòng upload ảnh trước khi cập nhật bài viết!");
       return;
     }
+
+    // Chắc chắn rằng bạn đang gửi _id thay vì title
     const updatedPost: PostType = {
       title: values.title,
-      categoryPost: values.categoryPost,
+      categoryPost: values.categoryPost, // Nếu categoryPost là _id, thì không cần chỉnh sửa
       imagePost: imageUrl,
       galleryPost: galleryUrls,
       content: values.content,
       excerpt: values.excerpt,
     };
+
     mutate(updatedPost);
   };
+
 
   return (
     <>

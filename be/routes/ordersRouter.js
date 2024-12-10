@@ -23,7 +23,7 @@ router.get("/statistics", getEnhancedOrderStats);
 // Endpoint để lấy tổng doanh thu và số lượng đơn hàng
 router.get("/order-stats", getOrderStats);
 
-router.get("/:user_id/:product_id", getByUser);
+
 
 // Endpoint để lấy phân phối trạng thái đơn hàng
 router.get("/order-status-distribution", getOrderStatusDistribution);

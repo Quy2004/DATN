@@ -190,13 +190,13 @@ const ProductAddPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="w-full mx-auto max-h-[450px] overflow-y-auto">
+      <div className="w-full mx-auto max-h-[480px] overflow-y-auto">
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          style={{ width: 500, marginLeft: 240 }}
           onFinish={onFinish}
           initialValues={{
             status: "available",
