@@ -942,7 +942,6 @@ export const updatePaymentStatus = async (req, res) => {
 
     // Kiểm tra trạng thái thanh toán hợp lệ
     const validPaymentStatuses = ["pending", "paid", "failed"];
-
     if (!validPaymentStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -950,18 +949,25 @@ export const updatePaymentStatus = async (req, res) => {
       });
     }
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { paymentStatus: status },
-      { new: true }
-    );
-
+    // Lấy đơn hàng từ database
+    const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy đơn hàng",
       });
     }
+
+    // Cập nhật trạng thái thanh toán
+    order.paymentStatus = status;
+
+    // Nếu trạng thái đơn hàng là "delivered", tự động cập nhật thành "paid"
+    if (order.orderStatus === "delivered" && status !== "paid") {
+      order.paymentStatus = "paid";
+    }
+
+    // Lưu đơn hàng
+    await order.save();
 
     // Mapping trạng thái thanh toán sang tiếng Việt
     const paymentStatusMapping = {

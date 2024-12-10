@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
-  Spin,
+
   Tag,
   Result,
-  Typography,
+
   Button,
   Tooltip,
   Input,
@@ -73,7 +73,7 @@ const InvoiceManagement: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [dateRange, setDateRange] = useState<
     [moment.Moment | null, moment.Moment | null]
@@ -97,49 +97,50 @@ const InvoiceManagement: React.FC = () => {
     navigate("/admin/invoice-detail", { state: { order } });
   };
 
-  useEffect(() => {
-    const filterOrders = () => {
-      let result = [...orders]; // Tạo bản sao của danh sách đơn hàng
 
-      // Lọc theo từ khóa tìm kiếm
-      if (searchTerm) {
-        const lowerCaseTerm = searchTerm.toLowerCase();
-        result = result.filter(
-          (order) =>
-            order.orderNumber.toLowerCase().includes(lowerCaseTerm) || // Mã hóa đơn
-            order.customerInfo?.name?.toLowerCase().includes(lowerCaseTerm) || // Tên khách hàng
-            order.customerInfo?.phone?.toLowerCase().includes(lowerCaseTerm) || // Số điện thoại
-            order.orderDetail_id.some(
-              (detail) =>
-                detail.product_id.name.toLowerCase().includes(lowerCaseTerm) // Tên sản phẩm
-            )
-        );
-      }
+  const filterOrders = (orders, searchTerm, dateRange, priceRange) => {
+    let result = [...orders]; // Create a copy of the orders array
 
-      // Lọc theo khoảng thời gian
-      if (dateRange[0] && dateRange[1]) {
-        const [startDate, endDate] = dateRange;
-        result = result.filter((order) => {
-          const orderDate = moment(order.createdAt);
-          return orderDate.isBetween(startDate, endDate, "day", "[]");
-        });
-      }
+    // Filter by search term
+    if (searchTerm) {
+      const lowerCaseTerm = searchTerm.toLowerCase();
+      result = result.filter(
+        (order) =>
+          order.orderNumber.toLowerCase().includes(lowerCaseTerm) || // Order number
+          order.customerInfo?.name?.toLowerCase().includes(lowerCaseTerm) || // Customer name
+          order.customerInfo?.phone?.toLowerCase().includes(lowerCaseTerm) || // Customer phone
+          order.orderDetail_id.some(
+            (detail) =>
+              detail.product_id.name.toLowerCase().includes(lowerCaseTerm) // Product name
+          )
+      );
+    }
 
-      // Lọc theo khoảng giá
-      if (priceRange[0] !== 0 || priceRange[1] !== 1000000) {
-        result = result.filter(
-          (order) =>
-            order.totalPrice >= priceRange[0] &&
-            order.totalPrice <= priceRange[1]
-        );
-      }
+    // Filter by date range
+    if (dateRange[0] && dateRange[1]) {
+      const [startDate, endDate] = dateRange;
+      result = result.filter((order) => {
+        const orderDate = moment(order.createdAt);
+        return orderDate.isBetween(startDate, endDate, "day", "[]");
+      });
+    }
 
-      setFilteredOrders(result);
-    };
+    // Filter by price range
+    if (priceRange[0] !== 0 || priceRange[1] !== 1000000) {
+      result = result.filter(
+        (order) =>
+          order.totalPrice >= priceRange[0] && order.totalPrice <= priceRange[1]
+      );
+    }
 
-    filterOrders();
-  }, [searchTerm, dateRange, priceRange, orders]);
+    return result;
+  };
 
+  // Memoized filtered orders to avoid recalculating on every render
+  const filteredOrders = useMemo(
+    () => filterOrders(orders, searchTerm, dateRange, priceRange),
+    [orders, searchTerm, dateRange, priceRange]
+  );
   const columns = [
     {
       title: "STT",
@@ -151,7 +152,7 @@ const InvoiceManagement: React.FC = () => {
       title: "Mã Hóa Đơn",
       dataIndex: "orderNumber",
       key: "orderNumber",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
     },
     {
       title: "Tên Khách Hàng",
@@ -165,7 +166,7 @@ const InvoiceManagement: React.FC = () => {
       title: "Số Điện Thoại",
       dataIndex: "customerInfo",
       key: "phone",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (customerInfo: Order["customerInfo"]) =>
         customerInfo?.phone || "N/A",
     },
@@ -173,21 +174,21 @@ const InvoiceManagement: React.FC = () => {
       title: "Ngày Tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (text: string) => new Date(text).toLocaleDateString(),
     },
     {
       title: "Tổng Giá",
       dataIndex: "totalPrice",
       key: "totalPrice",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (text: number) => `${text.toLocaleString()} đ`,
     },
     {
       title: "Trạng Thái",
       dataIndex: "orderStatus",
       key: "orderStatus",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (text: string) => {
         if (text === "completed") {
           return <Tag color="green">Hoàn thành</Tag>;
@@ -197,7 +198,7 @@ const InvoiceManagement: React.FC = () => {
     },
     {
       key: "actions",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (_: string, record: Order) => (
         <Tooltip title="Xem chi tiết">
           <Button
@@ -229,7 +230,6 @@ const InvoiceManagement: React.FC = () => {
               className="w-[250px]"
             />
           </div>
-         
           {/* Khoảng giá */}
           <div>
             <Slider
@@ -247,6 +247,7 @@ const InvoiceManagement: React.FC = () => {
               }}
             />
           </div>
+          
         </Space>
       </div>
       {filteredOrders.length === 0 && orders.length > 0 ? (

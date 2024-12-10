@@ -203,7 +203,7 @@ const AuthPage = () => {
                 <Components.Input
                     type="email"
                     name="email"
-                    placeholder="Email / Số điện thoại"
+                    placeholder="Email"
                     value={loginData.email}
                     onChange={handleLoginChange}
                 />

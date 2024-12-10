@@ -200,6 +200,11 @@ const OrderDetail: React.FC = () => {
       );
     },
   });
+  useEffect(() => {
+    if (order?.orderStatus === "delivered" && order?.paymentStatus !== "paid") {
+      updatePaymentStatus({ orderId: order._id, newStatus: "paid" });
+    }
+  }, [order?.orderStatus, order?.paymentStatus]);
 
   const handleChangePaymentStatus = (newStatus: string) => {
     updatePaymentStatus({ orderId: order._id, newStatus });
