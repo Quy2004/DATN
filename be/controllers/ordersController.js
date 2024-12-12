@@ -3,6 +3,7 @@ import Cart from "../models/Cart.js";
 import OrderDetail from "../models/OrderDetailModel.js";
 import axios from "axios";
 import NotificationModel from "../models/NotificationModel.js";
+import User from "../models/UserModel.js";
 
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
@@ -204,7 +205,7 @@ export const createOrder = async (req, res) => {
     // Xóa giỏ hàng theo điều kiện phương thức thanh toán
     if (paymentMethod === "cash on delivery") {
       // Nếu là thanh toán khi nhận hàng, xóa  nhung san pham da mua theo product id
-      const productIds = cartItems.products.map(item => (item.product._id))
+      const productIds = cartItems.products.map((item) => item.product._id);
       if (Array.isArray(productIds) && productIds.length > 0) {
         try {
           // Xóa các sản phẩm trong giỏ hàng của userId
@@ -604,23 +605,95 @@ export const getOrderById = async (req, res) => {
     });
   }
 };
+
 // Get total revenue and order count
 export const getOrderStats = async (req, res) => {
   try {
+    // Thống kê cơ bản
     const totalOrders = await Order.countDocuments();
-    const totalRevenue = await Order.aggregate([
-      { $match: { orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders
+
+    const successfulOrders = await Order.countDocuments({
+      orderStatus: { $in: ["completed", "delivered"] },
+    });
+
+    // Tính tổng doanh thu (bỏ qua đơn hàng đã hủy)
+    const totalRevenueResult = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "canceled" } } },
       { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
     ]);
+    const totalRevenue = totalRevenueResult[0]?.totalRevenue || 0;
 
+    // Tổng số lượng sản phẩm đã bán
+    const totalSoldQuantityResult = await OrderDetail.aggregate([
+      {
+        $lookup: {
+          from: "orders",
+          localField: "order_id",
+          foreignField: "_id",
+          as: "order_info",
+        },
+      },
+      { $unwind: "$order_info" },
+      {
+        $match: {
+          "order_info.orderStatus": { $in: ["completed", "delivered"] },
+        },
+      },
+      { $group: { _id: null, totalQuantity: { $sum: "$quantity" } } },
+    ]);
+    const totalSoldQuantity = totalSoldQuantityResult[0]?.totalQuantity || 0;
+
+    // Doanh thu theo tháng/năm
+    const revenueByMonth = await Order.aggregate([
+      { $match: { orderStatus: { $in: ["completed", "delivered"] } } },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          revenue: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { "_id.year": -1, "_id.month": -1 } },
+    ]);
+
+    // Số đơn theo ngày trong tuần
+    const ordersByDayOfWeek = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+    // Thống kê phương thức thanh toán
+    const paymentMethodStats = await Order.aggregate([
+      {
+        $group: {
+          _id: "$paymentMethod",
+          count: { $sum: 1 },
+          totalAmount: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+    const totalUser = await User.countDocuments({ role: "user" });
     return res.status(200).json({
       success: true,
       data: {
-        totalOrders,
-        totalRevenue: totalRevenue[0]?.totalRevenue || 0,
+        totalOrders: totalOrders || 0,
+        successfulOrders: successfulOrders || 0,
+        totalRevenue: totalRevenue || 0,
+        totalSoldQuantity: totalSoldQuantity || 0,
+        totalUser: totalUser || 0,
+        revenueByMonth: revenueByMonth.length ? revenueByMonth : [],
+        ordersByDayOfWeek: ordersByDayOfWeek.length ? ordersByDayOfWeek : [],
+        paymentMethodStats: paymentMethodStats.length ? paymentMethodStats : [],
       },
     });
   } catch (error) {
+    console.error("Error while fetching order stats:", error); // Logging for debugging
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê đơn hàng",
@@ -690,7 +763,9 @@ export const getCustomerStats = async (req, res) => {
   try {
     const { fromDate, toDate, limit = 5 } = req.query;
 
-    const matchStage = {};
+    const matchStage = {
+      orderStatus: { $in: ["completed", "delivered"] },
+    };
     if (fromDate && toDate) {
       matchStage.createdAt = {
         $gte: new Date(fromDate),

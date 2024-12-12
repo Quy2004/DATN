@@ -9,6 +9,7 @@ import { Post } from "../../../types/post";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CategoryPost } from "../../../types/categoryPost";
 import ReactQuill from "react-quill";
+import TextArea from "antd/es/input/TextArea";
 
 type PostType = {
   title: string;
@@ -42,7 +43,7 @@ const PostUpdatePage: React.FC = () => {
         form.setFieldsValue({
           title: postData.title,
           excerpt: postData.excerpt,
-          categoryPost: postData.categoryPost._id, 
+          categoryPost: postData.categoryPost._id,
           content: postData.content,
         });
 
@@ -149,7 +150,14 @@ const PostUpdatePage: React.FC = () => {
 
     mutate(updatedPost);
   };
+  const handleReset = () => {
+    // Reset form về trạng thái ban đầu
+    form.resetFields();
 
+    // Đặt lại trạng thái ảnh về rỗng
+    setImageUrl("");
+    setGalleryUrls([]);
+  };
 
   return (
     <>
@@ -171,17 +179,47 @@ const PostUpdatePage: React.FC = () => {
           wrapperCol={{ span: 16 }}
           style={{ maxWidth: 600 }}
           onFinish={onFinish}
+          onReset={handleReset}
         >
           <Form.Item
             label="Tiêu đề"
+            required
             name="title"
             rules={[
-              { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(new Error("Vui lòng nhập tiêu đề!"));
+                  }
+                  const trimmedValue = value.trim();
+
+                  // Lấy ID bài viết hiện tại từ URL
+                  const currentPostId = id; // Giả sử bạn đã import hoặc có biến id từ useParams
+
+                  // Kiểm tra danh mục đã tồn tại
+                  const response = await instance.get(
+                    `/posts?title=${encodeURIComponent(trimmedValue)}`
+                  );
+                  const existingPost = response.data.data.find(
+                    (post: Post) =>
+                      post.title.toLowerCase().trim() ===
+                        trimmedValue.toLowerCase() && post._id !== currentPostId // Loại trừ bài viết hiện tại
+                  );
+
+                  if (existingPost) {
+                    return Promise.reject(
+                      new Error("Tiêu đề đã tồn tại. Vui lòng chọn tên khác!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
-            <Input
-              className="Input-antd text-sm placeholder-gray-400"
+            <TextArea
+              autoSize={{ minRows: 3, maxRows: 5 }}
               placeholder="Nhập tiêu đề"
             />
           </Form.Item>
@@ -203,7 +241,7 @@ const PostUpdatePage: React.FC = () => {
               ))}
             </Select>
           </Form.Item>
-         
+
           <Form.Item
             label="Ảnh bài viết"
             name="imagePost"
@@ -276,6 +314,12 @@ const PostUpdatePage: React.FC = () => {
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Cập nhật
+            </Button>
+            <Button
+              htmlType="reset"
+              className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2"
+            >
+              Làm mới
             </Button>
           </Form.Item>
         </Form>

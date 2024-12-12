@@ -390,11 +390,14 @@ const OderHistory = () => {
                         className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900">
-                          <a className="text-blue-500 hover:underline">
-                            {item.product_id.name}
-                          </a>
-                        </h3>
+                        <Link to={`/detail/${item.product_id._id}`}>
+                          <h3 className="text-sm font-medium text-gray-900">
+                            <a className="text-blue-500 hover:underline">
+                              {item.product_id.name}
+                            </a>
+                          </h3>
+                        </Link>
+
                         <div className="mt-1 text-sm text-gray-500 space-y-1">
                           <p>
                             Size: {item.size || item.product_size?.name}{" "}

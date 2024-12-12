@@ -9,6 +9,7 @@ import { Post } from "../../../types/post";
 import { Link, useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import { CategoryPost } from "../../../types/categoryPost";
+import TextArea from "antd/es/input/TextArea";
 
 const PostAddPage: React.FC = () => {
   const [form] = Form.useForm();
@@ -120,7 +121,7 @@ const PostAddPage: React.FC = () => {
       isDeleted: false,
     };
     mutate(newPost);
-    console.log(newPost)
+    console.log(newPost);
   };
 
   if (isLoadingCategoryPost) {
@@ -154,14 +155,39 @@ const PostAddPage: React.FC = () => {
         >
           <Form.Item
             label="Tiêu đề"
+            required
             name="title"
             rules={[
-              { required: true, message: "Vui lòng nhập tiêu đề" },
               { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(new Error("Vui lòng nhập tiêu đề!"));
+                  }
+                  const trimmedValue = value.trim();
+
+                  // Kiểm tra danh mục đã tồn tại
+                  const response = await instance.get(
+                    `/posts?title=${trimmedValue}`
+                  );
+                  const existingCategory = response.data.data.find(
+                    (category: CategoryPost) =>
+                      category.title.toLowerCase() ===
+                      trimmedValue.toLowerCase()
+                  );
+                  if (existingCategory) {
+                    return Promise.reject(
+                      new Error("Tiêu đề đã tồn tại. Vui lòng chọn tên khác!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
-            <Input
-              className="Input-antd text-sm placeholder-gray-400"
+            <TextArea
+              autoSize={{ minRows: 3, maxRows: 5 }}
               placeholder="Nhập tiêu đề"
             />
           </Form.Item>
@@ -241,6 +267,12 @@ const PostAddPage: React.FC = () => {
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm bài viết
+            </Button>
+            <Button
+              htmlType="reset"
+              className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2"
+            >
+              Làm mới
             </Button>
           </Form.Item>
         </Form>

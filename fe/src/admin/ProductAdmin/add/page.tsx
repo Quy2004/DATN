@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { DoubleLeftOutlined, FileImageOutlined } from "@ant-design/icons";
 
 import {
+  Product,
   ProductFormValues,
   ProductSize,
   ProductTopping,
@@ -208,9 +209,54 @@ const ProductAddPage: React.FC = () => {
           <Form.Item
             label="Tên sản phẩm"
             name="name"
+            required
             rules={[
-              { required: true, message: "Vui lòng nhập tên sản phẩm" },
               { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên sản phẩm")
+                    );
+                  }
+
+                  const trimmedValue = value.trim();
+                  const hasNumber = /\d/;
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
+
+                  // Kiểm tra số và ký tự đặc biệt
+                  if (hasNumber.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên sản phẩm không được chứa số!")
+                    );
+                  }
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên sản phẩm không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  const response = await instance.get(
+                    `/products?name=${trimmedValue}&limit=50`
+                  );
+
+                  const existingProduct = response.data.data.find(
+                    (product: Product) =>
+                      product.name.toLowerCase() === trimmedValue.toLowerCase()
+                  );
+
+                  if (existingProduct) {
+                    return Promise.reject(
+                      new Error(
+                        "Tên sản phẩm đã tồn tại. Vui lòng chọn tên khác!"
+                      )
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input
@@ -261,6 +307,7 @@ const ProductAddPage: React.FC = () => {
                       new Error("Giá sản phẩm phải lớn hơn 0")
                     );
                   }
+
                   return Promise.resolve();
                 },
               },

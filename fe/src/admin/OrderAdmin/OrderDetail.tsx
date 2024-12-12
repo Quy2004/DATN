@@ -12,7 +12,7 @@ import {
 } from "antd";
 
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Product, ProductTopping } from "../../types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
@@ -592,7 +592,7 @@ const OrderDetail: React.FC = () => {
                     />
                     Ghi chú:
                     <span className="font-medium text-gray-900 ml-2">
-                      {order.note}
+                      {order.note ? order.note : "Không có ghi chú"}
                     </span>
                   </p>
                 </div>
@@ -628,7 +628,18 @@ const OrderDetail: React.FC = () => {
                   <p className="text-sm text-gray-600 flex items-center">
                     <FontAwesomeIcon icon={faCreditCard} className="mr-2" />
                     Phương thức thanh toán:{" "}
-                    <span className="font-medium text-gray-900">
+                    <span
+                      className={`font-medium ${
+                        [
+                          "momo",
+                          "zalopay",
+                          "vnpay",
+                          "cash on delivery",
+                        ].includes(order.paymentMethod)
+                          ? "text-blue-600" // Highlight text with blue color
+                          : "text-gray-900"
+                      }`}
+                    >
                       {paymentMethodDisplay(order.paymentMethod)}
                     </span>
                   </p>
@@ -644,7 +655,14 @@ const OrderDetail: React.FC = () => {
                             className="mr-2"
                           />
                           Trạng thái thanh toán:
-                          <span className="font-medium text-gray-900 ml-1">
+                          <span
+                            className={`font-medium ml-1 ${
+                              order.orderStatus === "delivered" ||
+                              order.orderStatus === "completed"
+                                ? "text-green-600" // Highlight with green color
+                                : "text-gray-900"
+                            }`}
+                          >
                             {order.orderStatus === "delivered" ||
                             order.orderStatus === "completed"
                               ? " Đã Thanh Toán "
