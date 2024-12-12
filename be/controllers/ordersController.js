@@ -94,6 +94,7 @@ export const createOrder = async (req, res) => {
       totalPrice,
       note,
       discountAmount,
+      cartItems,
     } = req.body;
     // Validate required fields
     if (!userId || !customerInfo || !paymentMethod) {
@@ -104,7 +105,8 @@ export const createOrder = async (req, res) => {
     }
 
     // Get cart and validate
-    const cart = await Cart.findOne({ userId }).populate("products.product");
+    const cart = cartItems;
+    // const cart = await Cart.findOne({ userId }).populate("products.product");
 
     if (!cart?.products?.length) {
       return res.status(400).json({
@@ -201,8 +203,25 @@ export const createOrder = async (req, res) => {
 
     // Xóa giỏ hàng theo điều kiện phương thức thanh toán
     if (paymentMethod === "cash on delivery") {
-      // Nếu là thanh toán khi nhận hàng, xóa toàn bộ giỏ hàng
-      await Cart.findOneAndDelete({ userId });
+      // Nếu là thanh toán khi nhận hàng, xóa  nhung san pham da mua theo product id
+      const productIds = cartItems.products.map(item => (item.product._id))
+      if (Array.isArray(productIds) && productIds.length > 0) {
+        try {
+          // Xóa các sản phẩm trong giỏ hàng của userId
+          const result = await Cart.updateOne(
+            { userId: userId }, // Tìm giỏ hàng theo userId
+            {
+              $pull: {
+                products: {
+                  product: { $in: productIds }, // Loại bỏ các sản phẩm đã mua
+                },
+              },
+            }
+          );
+        } catch (error) {
+          console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
+        }
+      }
     }
 
     // Nếu phương thức thanh toán là MoMo

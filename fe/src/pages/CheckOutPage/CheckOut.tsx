@@ -9,23 +9,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   const navigate = useNavigate();
-  const {
-    data: carts,
-    isLoading: isCartsLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const response = await instance.get(`/cart/${userId}`);
-      console.log("Response from API:", response.data);
-      return response.data.cart;
-    },
-  });
-
+  const location = useLocation();
+  const cartItems = location.state;
+  console.log("SELECT ->", cartItems);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
   // Thêm state để quản lý voucher
-
   const [discountAmount, setDiscountAmount] = useState<number>(0); // Số tiền giảm giá
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Trạng thái popup
   const [voucherList, setVoucherList] = useState<any[]>([]); // Danh sách voucher
@@ -47,7 +36,7 @@ const Checkout: React.FC = () => {
 
   // Hàm tính tổng giá
   const getTotalPrice = () => {
-    const originalTotal = carts.reduce((total: number, item: any) => {
+    const originalTotal = cartItems.reduce((total: number, item: any) => {
       const salePrice = item.product?.sale_price || 0;
       const sizePrice = item.product_sizes?.priceSize || 0;
       const toppingsPrice =
@@ -266,7 +255,7 @@ const Checkout: React.FC = () => {
       // Kiểm tra sản phẩm trong giỏ hàng
       const isValidForProducts =
         voucher.applicableProducts && voucher.applicableProducts.length > 0
-          ? carts.some((cartItem: any) =>
+          ? cartItems.some((cartItem: any) =>
               voucher.applicableProducts.includes(cartItem.product?._id)
             )
           : false;
@@ -274,7 +263,7 @@ const Checkout: React.FC = () => {
       // Kiểm tra danh mục sản phẩm trong giỏ hàng
       const isValidForCategories =
         voucher.applicableCategories && voucher.applicableCategories.length > 0
-          ? carts.some((cartItem: any) =>
+          ? cartItems.some((cartItem: any) =>
               voucher.applicableCategories.includes(
                 cartItem.product?.category?._id
               )
@@ -334,14 +323,14 @@ const Checkout: React.FC = () => {
     const isValidForProducts =
       !voucher.applicableProducts || voucher.applicableProducts.length === 0
         ? true
-        : carts.some((cartItem: any) =>
+        : cartItems.some((cartItem: any) =>
             voucher.applicableProducts.includes(cartItem.product?._id)
           );
 
     const isValidForCategories =
       !voucher.applicableCategories || voucher.applicableCategories.length === 0
         ? true
-        : carts.some((cartItem: any) =>
+        : cartItems.some((cartItem: any) =>
             voucher.applicableCategories.includes(
               cartItem.product?.category?._id
             )
@@ -396,7 +385,7 @@ const Checkout: React.FC = () => {
     }
 
     // Kiểm tra giỏ hàng có sản phẩm không
-    if (!carts || carts.length === 0) {
+    if (!cartItems || cartItems.length === 0) {
       Swal.fire({
         icon: "warning",
         title: "Giỏ hàng trống",
@@ -404,18 +393,22 @@ const Checkout: React.FC = () => {
       });
       return;
     }
+
     const { finalTotal, roundedDiscount } = getTotalPrice();
     console.log("Tổng giá trị đơn hàng:", finalTotal);
     console.log("Giảm giá từ voucher:", roundedDiscount);
+
+    console.log("cartItems", cartItems);
     const orderData = {
       userId,
-      customerInfo: data,
+      customerInfo: data, // Thông tin khách hàng từ form
       paymentMethod: paymentMethod,
       note: data.note,
       totalPrice: finalTotal,
       discountAmount: roundedDiscount, // Thêm giảm giá vào orderData
       paymentStatus:
         paymentMethod === "cash on delivery" ? "pending" : "unpaid",
+      cartItems: { products: cartItems },
     };
 
     try {
@@ -472,13 +465,13 @@ const Checkout: React.FC = () => {
     setPaymentMethod("vnpay");
     setIsBankTransferSelected(false);
   };
-  if (isCartsLoading) {
-    return <p>Đang tải dữ liệu giỏ hàng...</p>;
-  }
+  // if (isCartsLoading) {
+  //   return <p>Đang tải dữ liệu giỏ hàng...</p>;
+  // }
 
-  if (isError) {
-    return <p>Đã xảy ra lỗi khi tải giỏ hàng. Vui lòng thử lại sau.</p>;
-  }
+  // if (isError) {
+  //   return <p>Đã xảy ra lỗi khi tải giỏ hàng. Vui lòng thử lại sau.</p>;
+  // }
 
   return (
     <>
@@ -660,16 +653,6 @@ const Checkout: React.FC = () => {
                         ZaloPay
                       </div>
                     </button>
-                    <button className="rounded-md">
-                      <img
-                        src="src/pages/CheckOutPage/ImageBanking/PhoneBanking.png"
-                        alt="Phone Banking"
-                        className="w-16 mx-auto border-2"
-                      />
-                      <div className="mt-2 text-center font-medium">
-                        Phone Banking
-                      </div>
-                    </button>
                     <button className="rounded-md" onClick={handleVnPayClick}>
                       <img
                         src="src/pages/CheckOutPage/ImageBanking/Vnpay.png"
@@ -695,7 +678,7 @@ const Checkout: React.FC = () => {
           <section className="w-full md:w-1/2 bg-gray-50 rounded-lg shadow-md p-6">
             <h6 className="text-lg font-semibold mb-4">Sản phẩm</h6>
             <div className="flex flex-col space-y-4 mb-6">
-              {carts.map((item: any) => (
+              {cartItems.map((item: any) => (
                 <div
                   key={item.product._id}
                   className="flex flex-col md:flex-row p-4 bg-white rounded-lg shadow-sm"
