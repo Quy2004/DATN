@@ -222,18 +222,7 @@ const AccountUpdate = () => {
                         <Form.Item name="email">
                             <Input placeholder="Nhập email" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        <label className="space-y-2 mb-4 mx-1 font-medium">Địa chỉ</label>
-                        <Form.Item name="address">
-                            <Input placeholder="Nhập địa chỉ" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
-                        </Form.Item>
-                        <label className="space-y-2 mb-4 mx-1 font-medium">Tên người nhận</label>
-                        <Form.Item name="name">
-                            <Input placeholder="Nhập tên người nhận" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
-                        </Form.Item>
-                        <label className="space-y-2 mb-4 mx-1 font-medium">Số điện thoại người nhận</label>
-                        <Form.Item name="phone">
-                            <Input placeholder="Nhập số điện thoại" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
-                        </Form.Item>
+                        
                         <Button htmlType="submit" className="w-full mt-2 px-4 py-5 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">
                             Lưu thay đổi
                         </Button>
