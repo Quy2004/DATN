@@ -13,6 +13,7 @@ import {
   getRevenueByTimePeriod,
   getEnhancedOrderStats,
   getCompletedOrders,
+  updatePaymentStatus,
 } from "../controllers/ordersController";
 
 const router = express.Router();
@@ -45,4 +46,6 @@ router.put("/status/:orderId", updateOrderStatus);
 router.put("/cancel/:orderId", cancelOrder);
 //Hóa đơn
 router.get("/invoice/order", getCompletedOrders);
+// thay đổi trạng thái thanh toán
+router.put("/payment-status/:orderId", updatePaymentStatus);
 export default router;

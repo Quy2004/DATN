@@ -1,4 +1,3 @@
-
 import { Route, Routes } from "react-router-dom";
 import WebsiteLayout from "../pages/Layout/WebsiteLayout";
 import HomePage from "../pages/HomePage/HomePage";
@@ -8,8 +7,7 @@ import MenuPage from "../pages/MenuPage/MenuPage";
 import ChuyenNhaPage from "../pages/ChuyenNhaPage/ChuyenNha";
 import AllHomes from "../pages/ChuyenNhaPage/Tabs/AllHomes";
 import CoffeHolicTab from "../pages/ChuyenNhaPage/Tabs/CoffeeHome";
-import TeaHolicTab from "../pages/ChuyenNhaPage/Tabs/TeaHomes";
-import BlogTab from "../pages/ChuyenNhaPage/Tabs/BlogHomes";
+
 import Forgot from "../account/forgotPassword/forgot";
 import AdminLayout from "../pages/Layout/AdminLayout";
 
@@ -62,9 +60,10 @@ import Dashboard from "../admin/Statistics/StatisticsPage";
 import BillPage from "../pages/BillPage/BillPage";
 import PrivateRouter from "./PrivateRouter";
 import ChuyenNhaDetail from "../pages/ChuyenNhaPage/ChuyenNhaDetail";
-import ChangePassword from "../account/SettingAuth/ChangePassword";
-
-
+import OrderDetail from "../admin/OrderAdmin/OrderDetail";
+import InvoiceManagement from "../admin/Invoice/page";
+import InvoiceDetail from "../admin/Invoice/InvoiceDetail";
+import OrderResult from "../pages/Order-result/Order-result";
 
 const Router = () => {
   return (
@@ -82,10 +81,9 @@ const Router = () => {
           <Route path="cart" element={<CartPage />} />
           <Route path="chuyennha" element={<ChuyenNhaPage />}>
             <Route path="" element={<AllHomes />} />
-            <Route path="coffeeholic" element={<CoffeHolicTab />} />
-            <Route path="teaholic" element={<TeaHolicTab />} />
-            <Route path="blog" element={<BlogTab />} />
+            <Route path=":categoryId" element={<CoffeHolicTab />} />
           </Route>
+
           <Route path="chuyennha-detail/:id" element={<ChuyenNhaDetail />} />
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
@@ -93,16 +91,16 @@ const Router = () => {
           <Route path="login" element={<AuthPage />} />
           <Route path="register" element={<AuthPage />} />
           <Route path="forgot" element={<Forgot />} />
-          <Route path="change-password" element={<ChangePassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="account-update" element={<AccountUpdate />} />
           <Route path="tracking" element={<Tracking />} />
           <Route path="oder-history" element={<OderHistory />} />
           <Route path="setting" element={<SettingAccount />} />
           <Route path="order-tracking/:id" element={<Tracking />} />
+          <Route path="order-result" element={<OrderResult />} />
           <Route path="oder-success" element={<OrderSuccess />} />
           <Route path="order-error" element={<OrderErr />} />
-          <Route path= "bill" element={<BillPage/>}/>
+          <Route path="bill" element={<BillPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         <Route element={<PrivateRouter />}>
@@ -110,7 +108,10 @@ const Router = () => {
             <Route index element={<Dashboard />} />
             <Route path="category" element={<CategoryManagerPage />} />
             <Route path="category/add" element={<CategoryAddPage />} />
-            <Route path="category/:id/update" element={<CategoryUpdatePage />} />
+            <Route
+              path="category/:id/update"
+              element={<CategoryUpdatePage />}
+            />
 
             <Route path="size" element={<SizeManagerPage />} />
             <Route path="size/add" element={<SizeAddPage />} />
@@ -128,6 +129,7 @@ const Router = () => {
             <Route path="topping/add" element={<ToppingAddPage />} />
             <Route path="topping/:id/update" element={<ToppingUpdatePage />} />
             <Route path="order" element={<OrderAdmin />} />
+            <Route path="order-detail/:id" element={<OrderDetail />} />
             <Route path="comment" element={<CommentAdmin />} />
             <Route path="client" element={<ClientAdmin />} />
 
@@ -145,6 +147,9 @@ const Router = () => {
             <Route path="post" element={<PostManagerPage />} />
             <Route path="post/add" element={<PostAddPage />} />
             <Route path="post/:id/update" element={<PostUpdatePage />} />
+
+            <Route path="invoice" element={<InvoiceManagement />} />
+            <Route path="invoice-detail" element={<InvoiceDetail />} />
           </Route>
         </Route>
       </Routes>

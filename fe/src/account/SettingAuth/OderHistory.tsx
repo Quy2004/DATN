@@ -16,6 +16,11 @@ const OderHistory = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  const [searchedOrderIds, setSearchedOrderIds] = useState<string[]>([]);
+  const [visibleProductsMap, setVisibleProductsMap] = useState<{
+    [orderId: string]: number;
+  }>({});
+
   const [messageApi, contextHolder] = message.useMessage();
   const formatNumberVND = (number: number) => {
     return number.toLocaleString("vi-VN", {
@@ -194,15 +199,23 @@ const OderHistory = () => {
   }, []);
 
   useEffect(() => {
-    if (activeTab === "Tất cả") {
-      setFilteredOrders(orderHistory);
-    } else {
-      const filtered = orderHistory.filter(
+    let filtered = orderHistory;
+    if (searchTerm) {
+      filtered = filtered.filter((order: Order) =>
+        order.orderDetail_id.some((item: any) =>
+          item.product_id.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+
+    if (activeTab !== "Tất cả") {
+      filtered = filtered.filter(
         (order: Order) => getStatusString(order?.orderStatus) === activeTab
       );
-      setFilteredOrders(filtered);
     }
-  }, [activeTab, orderHistory]);
+
+    setFilteredOrders(filtered);
+  }, [searchTerm, activeTab, orderHistory]);
 
   // Thêm mutation để xác nhận đã nhận hàng
   const confirmDeliveryMutation = useMutation({
@@ -234,11 +247,42 @@ const OderHistory = () => {
       },
     });
   };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+
+    if (searchValue) {
+      const matchingOrderIds = orderHistory
+        .filter((order: Order) =>
+          order.orderDetail_id.some((item: any) =>
+            item.product_id.name
+              .toLowerCase()
+              .includes(searchValue.toLowerCase())
+          )
+        )
+        .map((order: Order) => order._id);
+
+      setSearchedOrderIds(matchingOrderIds);
+    } else {
+      setSearchedOrderIds([]);
+    }
+  };
+
+  const toggleProductVisibility = (orderId: string) => {
+    setVisibleProductsMap((prev) => ({
+      ...prev,
+      [orderId]: (prev[orderId] || 1) + 1,
+    }));
+  };
+
   useEffect(() => {
     let filtered = orderHistory;
+
     if (searchTerm) {
       filtered = filtered.filter((order: Order) =>
-        order?.orderNumber.includes(searchTerm)
+        order.orderDetail_id.some((item: any) =>
+          item.product_id.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       );
     }
 
@@ -250,11 +294,6 @@ const OderHistory = () => {
 
     setFilteredOrders(filtered);
   }, [searchTerm, activeTab, orderHistory]);
-
-  // Hàm xử lý thay đổi giá trị tìm kiếm
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
 
   return (
     <section className="bg-gray-50 min-h-screen">
@@ -288,10 +327,11 @@ const OderHistory = () => {
             <input
               type="search"
               className="w-full pl-10 pr-4 py-3 rounded-lg bg-white border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-colors duration-200"
-              placeholder="Tìm kiếm theo mã đơn hàng..."
+              placeholder="Tìm kiếm theo mã đơn hàng hoặc Tên sản phẩm"
               value={searchTerm}
               onChange={handleSearchChange}
             />
+
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
                 className="h-5 w-5 text-gray-400"
@@ -337,8 +377,8 @@ const OderHistory = () => {
                     {new Date(order?.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-{/* Order Items */}
-<div className="px-4 sm:px-6 py-4 space-y-4">
+                {/* Order Items */}
+                <div className="px-4 sm:px-6 py-4 space-y-4">
                   {order.orderDetail_id.map((item: any, index: number) => (
                     <div
                       key={index}
@@ -350,13 +390,14 @@ const OderHistory = () => {
                         className="w-20 h-20 object-cover rounded-md flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900">
-                          <a
-                            className="text-blue-500 hover:underline"
-                          >
-                            {item.product_id.name}
-                          </a>
-                        </h3>
+                        <Link to={`/detail/${item.product_id._id}`}>
+                          <h3 className="text-sm font-medium text-gray-900">
+                            <a className="text-blue-500 hover:underline">
+                              {item.product_id.name}
+                            </a>
+                          </h3>
+                        </Link>
+
                         <div className="mt-1 text-sm text-gray-500 space-y-1">
                           <p>
                             Size: {item.size || item.product_size?.name}{" "}
@@ -384,7 +425,6 @@ const OderHistory = () => {
                               : "Không có topping"}
                           </p>
                         </div>
-                        
                       </div>
                       <div className="text-right">
                         {item?.product_id?.sale_price &&
@@ -412,8 +452,8 @@ const OderHistory = () => {
                   ))}
                 </div>
 
-               {/* Order Footer */}
-               <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
+                {/* Order Footer */}
+                <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
                   <div className="flex flex-col sm:flex-row justify-between items-center">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-x-4 sm:space-y-0">
                       {(order?.orderStatus === "pending" ||
@@ -483,9 +523,11 @@ const OderHistory = () => {
             <p className="text-sm text-gray-600 mb-4">
               Bắt đầu mua sắm để tạo đơn hàng mới.
             </p>
-            <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300">
-              Đi mua sắm
-            </button>
+            <Link to={`/menu`}>
+              <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300">
+                Đi mua sắm
+              </button>
+            </Link>
           </div>
         )}
       </div>

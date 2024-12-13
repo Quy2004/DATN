@@ -1,10 +1,9 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import * as Components from "./AuthComponents";
 import instance from "../../services/api";
 import { useNavigate } from "react-router-dom";
-
 
 interface RegisterData {
     userName: string;
@@ -28,13 +27,17 @@ const AuthPage = () => {
         email: "",
         password: "",
     });
+
+    // Khai báo state để lưu trữ lỗi
+    const [registerErrors, setRegisterErrors] = useState<{ [key: string]: string }>({});
+    const [loginErrors, setLoginErrors] = useState<{ [key: string]: string }>({});
+    
     const navigate = useNavigate();
 
-    // Kiểm tra nếu có dữ liệu người dùng trong localStorage để tự động đăng nhập
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token) {
-            setSignIn(false); // Nếu đã có token, chuyển sang trạng thái đã đăng nhập
+            setSignIn(false); // Nếu có token, chuyển sang trạng thái đã đăng nhập
         }
     }, []);
 
@@ -50,61 +53,95 @@ const AuthPage = () => {
 
     const handleRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        try {
-          const response = await instance.post("/auth/register", registerData);
     
-          // Kiểm tra response.data trước khi sử dụng
-          if (response.data && response.data.data) {
-            toast.success("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.", {
-              duration: 3000,
-            });
+        // Xóa lỗi cũ trước khi kiểm tra mới
+        setRegisterErrors({});
     
-            // Lưu thông tin user từ response.data.data
-            localStorage.setItem("user", JSON.stringify(response.data.data));
+        const errors: { [key: string]: string } = {};
     
-            setSignIn(true);
-            setRegisterData({ userName: "", email: "", password: "" });
-          }
-        } catch (error: any) {
-          // Hiển thị message lỗi từ server nếu có
-          const errorMessage =
-            error.response?.data?.message || "Có lỗi xảy ra khi đăng ký.";
-          toast.error(errorMessage, { duration: 3000 });
+        if (!registerData.userName.trim()) {
+            errors.userName = "Tên người dùng không được để trống.";
         }
-      };
     
-      const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        if (!registerData.email.trim()) {
+            errors.email = "Email không được để trống.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)) {
+            errors.email = "Email không hợp lệ.";
+        }
+    
+        if (!registerData.password) {
+            errors.password = "Mật khẩu không được để trống.";
+        } else if (registerData.password.length < 6) {
+            errors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+        }
+    
+        if (Object.keys(errors).length > 0) {
+            setRegisterErrors(errors); // Cập nhật lỗi vào state
+            toast.error("Vui lòng kiểm tra lại thông tin đăng ký.", { duration: 3000 });
+            return;
+        }
+    
+        try {
+            // Kiểm tra email đã tồn tại hay chưa
+            const emailExistsResponse = await instance.get(`/auth/check-email/${registerData.email}`);
+            if (emailExistsResponse.data.exists) {
+                setRegisterErrors({ email: "Email này đã được đăng ký." });         
+                return;
+            }
+    
+            // Tiến hành đăng ký nếu email chưa tồn tại
+            const response = await instance.post("/auth/register", registerData);
+            if (response.data && response.data.data) {
+                toast.success("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.", { duration: 3000 });
+                localStorage.setItem("user", JSON.stringify(response.data.data));
+                setSignIn(true);
+                setRegisterData({ userName: "", email: "", password: "" });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        try {
-          const response = await instance.post("/auth/login", loginData);
-    
-          // Kiểm tra response.data trước khi sử dụng
-          if (response.data && response.data.user && response.data.token) {
-            toast.success("Đăng nhập thành công! Chào mừng bạn trở lại.", {
-              duration: 2000,
-            });
-    
-            // Lưu thông tin user và token
-            localStorage.setItem("user", JSON.stringify(response.data.user));
-            localStorage.setItem("token", response.data.token);
-    
-            // Cập nhật instance headers với token mới
-            instance.defaults.headers.common[
-              "Authorization"
-            ] = `Bearer ${response.data.token}`;
-    
-            setTimeout(() => {
-              navigate("/");
-              window.location.reload();
-            }, 1500);
-          }
-        } catch (error: any) {
-          // Hiển thị message lỗi từ server nếu có
-          const errorMessage =
-            error.response?.data?.message || "Email hoặc mật khẩu không chính xác.";
-          toast.error(errorMessage, { duration: 3000 });
+
+        // Xóa lỗi cũ trước khi kiểm tra mới
+        setLoginErrors({});
+
+        const errors: { [key: string]: string } = {};
+
+        if (!loginData.email.trim()) {
+            errors.email = "Email không được để trống.";
         }
-      };
+
+        if (!loginData.password) {
+            errors.password = "Mật khẩu không được để trống.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setLoginErrors(errors); // Cập nhật lỗi vào state
+            toast.error("Vui lòng kiểm tra lại thông tin đăng nhập.", { duration: 3000 });
+            return;
+        }
+
+        try {
+            const response = await instance.post("/auth/login", loginData);
+            if (response.data && response.data.user && response.data.token) {
+                toast.success("Đăng nhập thành công! Chào mừng bạn trở lại.", { duration: 2000 });
+                localStorage.setItem("user", JSON.stringify(response.data.user));
+                localStorage.setItem("token", response.data.token);
+                instance.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+                setTimeout(() => {
+                    navigate("/");
+                    window.location.reload();
+                }, 1500);
+            }
+        } catch (error: any) {
+            const errorMessage =
+                error.response?.data?.message || "Email hoặc mật khẩu không chính xác.";
+            toast.error(errorMessage, { duration: 3000 });
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem("user");
@@ -117,118 +154,104 @@ const AuthPage = () => {
     return (
         <>
             <Components.Section className="hidden md:block">
-                <Components.MidContainer>
-                    <Components.RegisterContainer $signinIn={signIn}>
-                        <Components.Form onSubmit={handleRegisterSubmit}>
-                            <Components.Title>Tạo Tài Khoản</Components.Title>
-                            <Components.Input
-                                type="text"
-                                name="userName"
-                                placeholder="Tên người dùng"
-                                value={registerData.userName}
-                                onChange={handleRegisterChange}
-                            />
-                            <Components.Input
-                                type="email"
-                                name="email"
-                                placeholder="Email"
-                                value={registerData.email}
-                                onChange={handleRegisterChange}
-                            />
-                            <Components.Input
-                                type="password"
-                                name="password"
-                                placeholder="Mật khẩu"
-                                value={registerData.password}
-                                onChange={handleRegisterChange}
-                            />
-                            <Components.Button type="submit">Đăng Ký</Components.Button>
-                        </Components.Form>
-                    </Components.RegisterContainer>
+    <Components.MidContainer>
+        <Components.RegisterContainer $signinIn={signIn}>
+            <Components.Form onSubmit={handleRegisterSubmit}>
+                <Components.Title>Tạo Tài Khoản</Components.Title>
+                
+                <Components.Input
+                    type="text"
+                    name="userName"
+                    placeholder="Tên người dùng"
+                    value={registerData.userName}
+                    onChange={handleRegisterChange}
+                />
+                {registerErrors.userName && (
+                    <p className="text-red-500">{registerErrors.userName}</p>
+                )}
+                
+                <Components.Input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={registerData.email}
+                    onChange={handleRegisterChange}
+                />
+                {registerErrors.email && (
+                    <p className="text-red-500">{registerErrors.email}</p>
+                )}
+                
+                <Components.Input
+                    type="password"
+                    name="password"
+                    placeholder="Mật khẩu"
+                    value={registerData.password}
+                    onChange={handleRegisterChange}
+                />
+                {registerErrors.password && (
+                    <p className="text-red-500">{registerErrors.password}</p>
+                )}
+                
+                <Components.Button type="submit">Đăng Ký</Components.Button>
+            </Components.Form>
+        </Components.RegisterContainer>
+        
+        {/* Đoạn mã đăng nhập không thay đổi */}
+        <Components.LoginContainer $signinIn={signIn}>
+            <Components.Form onSubmit={handleLoginSubmit}>
+                <Components.Title>Đăng Nhập</Components.Title>
+                <Components.Input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={loginData.email}
+                    onChange={handleLoginChange}
+                />
+                {loginErrors.email && (
+                    <p className="text-red-500">{loginErrors.email}</p>
+                )}
+                <Components.Input
+                    type="password"
+                    name="password"
+                    placeholder="Mật khẩu"
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                />
+                {loginErrors.password && (
+                    <p className="text-red-500">{loginErrors.password}</p>
+                )}
+                <Link className="my-5 hover:text-blue-700" to="/forgot">Quên mật khẩu?</Link>
+                <Components.Button type="submit">Đăng Nhập</Components.Button>
+            </Components.Form>
+        </Components.LoginContainer>
+        
+        {/* Đoạn mã Overlay không thay đổi */}
+        <Components.OverlayContainer $signinIn={signIn}>
+            <Components.Overlay $signinIn={signIn}>
+                <Components.LeftOverlayPanel $signinIn={signIn}>
+                    <Components.Greeting>Chào mừng trở lại!</Components.Greeting>
+                    <Components.Paragraph>
+                        Để giữ liên lạc với chúng tôi, vui lòng đăng nhập bằng thông tin
+                        cá nhân của bạn.
+                    </Components.Paragraph>
+                    <Components.GhostButton onClick={() => setSignIn(true)}>
+                        Đăng Ký
+                    </Components.GhostButton>
+                </Components.LeftOverlayPanel>
+                <Components.RightOverlayPanel $signinIn={signIn}>
+                    <Components.Greeting>Chào bạn!</Components.Greeting>
+                    <Components.Paragraph>
+                        Nếu bạn chưa có tài khoản, vui lòng đăng ký để bắt đầu.
+                    </Components.Paragraph>
+                    <Components.GhostButton onClick={() => setSignIn(false)}>
+                        Đăng Nhập
+                    </Components.GhostButton>
+                </Components.RightOverlayPanel>
+            </Components.Overlay>
+        </Components.OverlayContainer>
+    </Components.MidContainer>
+</Components.Section>
 
-                    <Components.LoginContainer $signinIn={signIn}>
-                        <Components.Form onSubmit={handleLoginSubmit}>
-                            <Components.Title>Đăng Nhập</Components.Title>
-                            <Components.Input
-                                type="email"
-                                name="email"
-                                placeholder="Email / Số điện thoại"
-                                value={loginData.email}
-                                onChange={handleLoginChange}
-                            />
-                            <Components.Input
-                                type="password"
-                                name="password"
-                                placeholder="Mật khẩu"
-                                value={loginData.password}
-                                onChange={handleLoginChange}
-                            />
-                            <Link className="my-5 hover:text-blue-700" to="/forgot">Quên mật khẩu?</Link>
-                            <Components.Button type="submit">Đăng Nhập</Components.Button>
-                        </Components.Form>
-                    </Components.LoginContainer>
-
-                    <Components.OverlayContainer $signinIn={signIn}>
-                        <Components.Overlay $signinIn={signIn}>
-                            <Components.LeftOverlayPanel $signinIn={signIn}>
-                                <Components.Greeting>Chào mừng trở lại!</Components.Greeting>
-                                <Components.Paragraph>
-                                    Để giữ liên lạc với chúng tôi, vui lòng đăng nhập bằng thông tin
-                                    cá nhân của bạn.
-                                </Components.Paragraph>
-                                <Components.GhostButton onClick={() => setSignIn(true)}>
-                                    Đăng Nhập
-                                </Components.GhostButton>
-                            </Components.LeftOverlayPanel>
-
-                            <Components.RightOverlayPanel $signinIn={signIn}>
-                                <Components.Greeting>Xin chào, bạn!</Components.Greeting>
-                                <Components.Paragraph>
-                                    Nhập thông tin cá nhân của bạn và bắt đầu hành trình cùng chúng
-                                    tôi.
-                                </Components.Paragraph>
-                                <Components.GhostButton onClick={() => setSignIn(false)}>
-                                    Đăng Ký
-                                    <i className="lni lni-arrow-right register"></i>
-                                </Components.GhostButton>
-                            </Components.RightOverlayPanel>
-                        </Components.Overlay>
-                    </Components.OverlayContainer>
-
-                    {/* Nút Đăng Xuất */}
-                    {!signIn && (
-                        <Components.Button onClick={handleLogout}>Đăng Xuất</Components.Button>
-                    )}
-                </Components.MidContainer>
-            </Components.Section>
-            <Components.NavMobile className="md:hidden">
-                <main className="relative mt-20 mb-10 mx-auto z-50 w-[350px] h-[500px] overflow-hidden rounded-lg bg-[url('src/account/AuthPage/Bg-coffee.jpg')] bg-cover bg-no-repeat">
-                    <input type="checkbox" id="chk" aria-hidden="true" className="hidden" />
-                    <div className="register relative w-full h-full ">
-                        <form action="" onSubmit={handleRegisterSubmit}>
-                            <label htmlFor="chk" aria-hidden="true" className="flex justify-center m-[60px] text-[#fff] text-[25px] font-bold cursor-pointer transition ease-in-out duration-700 ">Đăng ký</label>
-                            <input type="text" name="userName" placeholder="Tên người dùng" value={registerData.userName} onChange={handleRegisterChange}
-                                className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleRegisterChange}
-                                className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="password" name="password" placeholder="Mật khẩu" value={registerData.password} onChange={handleRegisterChange}
-                                className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <button className="w-[50%] h-[40px] mx-auto my-[10px] block justify-center text-[#fff] bg-[#ea8025] text-[1em] font-bold mt-5 cursor-pointer transition ease-in-out outline-none border-none duration-700">Đăng ký</button>
-                        </form>
-                    </div>
-                    <div className="login h-[460px] bg-[#fff] rounded-custum tranform -translate-y-[180px] transition ease-in-out duration-700 ">
-                        <form action="" onSubmit={handleLoginSubmit}>
-                            <label htmlFor="chk" aria-hidden="true" className="flex justify-center m-[60px] py-3 text-[25px] font-bold transition ease-in-out duration-700 cursor-pointer">Đăng nhập</label>
-                            <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange}
-                                className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <input type="password" name="password" placeholder="Mật khẩu" value={loginData.password} onChange={handleLoginChange}
-                                className="w-[70%] h-[40px] bg-[#eee] flex justify-center mx-auto my-3 p-[10px] border-none outline-none rounded" />
-                            <button className="w-[50%] h-[40px] mx-auto my-[10px] block justify-center text-[#fff] bg-[#ea8025] text-[1em] font-bold mt-5 cursor-pointer transition ease-in-out outline-none border-none duration-700">Đăng nhập</button>
-
-                        </form>
-                    </div>
-                </main>
-            </Components.NavMobile>
         </>
     );
 };

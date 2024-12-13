@@ -16,7 +16,7 @@ export const register = async (req, res) => {
     const emailExists = await User.findOne({ email });
     console.log(emailExists)
     if (emailExists) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã tồn tại!" });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Email đã được đăng ký!" });
     }
     
     // Mã hóa mật khẩu
@@ -170,5 +170,23 @@ export const updateUser = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Lỗi máy chủ' });
   }
 };
+export const checkEmail = async (req, res) => {
+  const { email } = req.params;
 
+    try {
+        // Tìm kiếm người dùng với email này trong cơ sở dữ liệu
+        const user = await User.findOne({ email: email });
+
+        // Nếu tìm thấy người dùng, trả về thông báo rằng email đã tồn tại
+        if (user) {
+            return res.status(400).json({ exists: true, message: 'Email này đã được đăng ký.' });
+        }
+
+        // Nếu không tìm thấy người dùng, email có thể được sử dụng
+        res.status(200).json({ exists: false, message: 'Email có thể được sử dụng.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Có lỗi xảy ra trong quá trình kiểm tra email.' });
+    }
+}
 

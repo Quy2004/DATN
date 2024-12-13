@@ -44,6 +44,7 @@ export interface Order {
     paymentStatus: "unpaid" | "paid" | "failed";
     orderNumber?: string;
     note?: string;
+    discountAmount: number,
     cancellationReason?: string;
     createdAt: Date;
     updatedAt: Date;

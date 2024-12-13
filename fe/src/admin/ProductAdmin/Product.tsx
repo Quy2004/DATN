@@ -380,7 +380,7 @@ const ProductManagerPage: React.FC = () => {
             <>
               <Popconfirm
                 title="Xóa sản phẩm"
-                description="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                description="Bạn có chắc chắn muốn xóa sản phẩm này?"
                 onConfirm={() => mutationSoftDelete.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"
@@ -597,16 +597,17 @@ const ProductManagerPage: React.FC = () => {
                 />
               </Descriptions.Item>
               {/* Kích thước sản phẩm */}
-              <Descriptions.Item label="Kích thước và trạng thái" span={2}>
+              <Descriptions.Item label="Size" span={2}>
                 <span className="text-gray-700">
                   {selectedProduct.product_sizes
-                    .map(
-                      (size: ProductSize) =>
-                        `${size.size_id?.name} - ${
-                          size.status === "available" ? "Có sẵn" : "Hết hàng"
-                        }`
-                    )
-                    .join(", ")}
+                    .filter((size: ProductSize) => size.size_id)
+                    .map((size: ProductSize) => {
+                      if (!size.size_id?.name) {
+                        return "Size không xác định";
+                      }
+                      return `${size.size_id.name}`;
+                    })
+                    .join(", ") || "Không có thông tin size"}
                 </span>
               </Descriptions.Item>
 
