@@ -12,7 +12,7 @@ const ChangePassword = () => {
   // Lấy thông tin người dùng từ localStorage
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : {};
-  const nav= useNavigate()
+  const nav = useNavigate()
 
   // State để kiểm soát trạng thái loading của mutation
   // Mutation để gọi API đổi mật khẩu
@@ -50,7 +50,10 @@ const ChangePassword = () => {
 
   return (
     <div className="mt-[100px] w-[500px] mx-auto">
-      <h3 className="text-center text-[30px]">Đổi mật khẩu</h3>
+      <div className="*:mx-auto mb-6 *:md:mx-0 md:mb-8">
+        <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">Đổi mật khẩu</h1>
+        <p className=" border-b-orange-400 w-[62px] md:w-[182px] border-b-[4px]"></p>
+      </div>
       <Form layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           label="Mật khẩu cũ"
