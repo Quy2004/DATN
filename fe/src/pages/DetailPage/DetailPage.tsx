@@ -99,10 +99,22 @@ const DetailPage = () => {
     return totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuantity = parseInt(event.target.value, 10);
+  const handleQuantityChange = (
+    eventOrValue: React.ChangeEvent<HTMLInputElement> | number
+  ) => {
+    let newQuantity;
+
+    // Kiểm tra nếu đầu vào là sự kiện từ input
+    if (typeof eventOrValue === "number") {
+      newQuantity = eventOrValue;
+    } else {
+      newQuantity = parseInt(eventOrValue.target.value, 10);
+    }
+
+    // Đảm bảo số lượng không nhỏ hơn 1
     setQuantity(newQuantity >= 1 ? newQuantity : 1);
   };
+
   const calculateTotalPrice = () => {
     const basePrice = product?.sale_price || product?.price || 0; // Use sale_price if available
     const sizePrice = selectedSize?.size_id?.priceSize || 0;
@@ -260,61 +272,88 @@ const DetailPage = () => {
                       )}
 
                       {/* Phần chọn topping */}
-                      <div className="my-6">
-                        <h2 className="font-medium text-lg mb-2">
-                          Chọn topping
-                        </h2>
-                        {selectedProduct ? (
-                          <form className="bg-white shadow-xl my-1 rounded-md">
-                            {selectedProduct.product_toppings.map((topping) => (
-                              <div
-                                key={topping?.topping_id?._id}
-                                className="flex items-center gap-2 px-6 py-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedToppings?.some(
-                                    (t: any) =>
-                                      t.topping_id === topping.topping_id
-                                  )}
-                                  onChange={() => handleToppingChange(topping)}
-                                  disabled={topping?.stock <= 0}
-                                  className="text-[#ea8025] border-[#ea8025] border-2"
-                                />
-                                <label htmlFor="">
-                                  {topping?.topping_id?.nameTopping}{" "}
-                                  {topping?.priceTopping &&
-                                    `(+${listPrice(topping?.priceTopping)} đ)`}
+
+                      {selectedProduct?.product_toppings?.length > 0 && (
+                        <div className="space-y-4 mt-4">
+                          <h2 className="text-lg font-semibold">
+                            Chọn topping
+                          </h2>
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedProduct?.product_toppings.map(
+                              (topping) => (
+                                <label
+                                  key={topping?.topping_id?._id}
+                                  className={`
+            border rounded-lg p-3 flex items-center justify-between cursor-pointer
+            ${selectedToppings?.some((t) => t.topping_id === topping.topping_id)
+                                      ? "border-[#ea8025] bg-[#ea8025]/10"
+                                      : "border-gray-200"
+                                    }
+            ${topping?.stock <= 0 ? "opacity-50 cursor-not-allowed" : ""}
+          `}
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedToppings?.some(
+                                        (t) =>
+                                          t.topping_id === topping.topping_id
+                                      )}
+                                      onChange={() =>
+                                        handleToppingChange(topping)
+                                      }
+                                      disabled={topping?.stock <= 0}
+                                      className="form-checkbox text-[#ea8025] rounded focus:ring-[#ea8025]"
+                                    />
+                                    <span className="text-gray-700">
+                                      {topping?.topping_id?.nameTopping}
+                                    </span>
+                                  </div>
+                                  <span className="text-[#ea8025] font-semibold">
+                                    {topping?.priceTopping
+                                      ? `+${listPrice(topping?.priceTopping)} đ`
+                                      : ""}
+                                  </span>
                                 </label>
-                              </div>
-                            ))}
-                          </form>
-                        ) : (
-                          <p className="px-6 text-gray-500">
-                            Không có topping nào có sẵn.
-                          </p>
-                        )}
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-6 sm:mb-8 md:mb-10">
+                    <label
+                      htmlFor="quantity"
+                      className="block text-lg font-medium text-gray-700 mb-1 sm:mb-2"
+                    >
+                      Số lượng:
+                    </label>
+                    <div className="mt-4 flex items-center justify-between gap-6 md:order-3 md:mt-0">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleQuantityChange(quantity - 1)}
+                          className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
+                          disabled={quantity <= 1}
+                        >
+                          -
+                        </button>
+                        <input
+                          value={quantity}
+                          readOnly
+                          className="w-12 h-10 text-center bg-white border-2 border-gray-200 rounded-lg shadow-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
+                        />
+                        <button
+                          onClick={() => handleQuantityChange(quantity + 1)}
+                          className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <label
-                      htmlFor="quantity"
-                      className="block text-lg font-medium text-gray-700 mb-1"
-                    >
-                      Số lượng:
-                    </label>
-                    <input
-                      type="number"
-                      id="quantity"
-                      name="quantity"
-                      min={1}
-                      value={quantity}
-                      onChange={handleQuantityChange} // Gọi hàm khi số lượng thay đổi
-                      className="w-16 mt-2 text-center rounded-md border-[#ea8025] shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    />
-                  </div>
                   <div className="flex space-x-4 mb-6">
                     {product?.isDeleted === false &&
                       product?.status === "unavailable" ? (

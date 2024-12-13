@@ -221,12 +221,12 @@ const CartPage: React.FC<{
   
 
   return (
-    <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
+    <section className="containerAll mx-auto bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+        <h2 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:pt-6 md:mt-0 md:text-3xl md:mb-3">
           Giỏ hàng
         </h2>
-        <p className="border-b-orange-400 w-24 border-b-[4px] my-1"></p>
+        <p className="border-b-orange-400 w-20 border-b-[4px] my-1 md:w-[122px]"></p>
         <div className="mt-6 sm:mt-8 md:gap-8 lg:flex lg:items-start xl:gap-10">
           {/* Main Cart Content */}
           <div className="mx-auto w-full flex-none lg:max-w-3xl xl:max-w-4xl">
