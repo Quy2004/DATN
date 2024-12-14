@@ -484,7 +484,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Họ và tên
+                  Họ và tên <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -502,7 +502,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Địa chỉ
+                  Địa chỉ <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -522,7 +522,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Số điện thoại
+                  Số điện thoại <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -543,15 +543,35 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   {...register("email", {
                     required: "Vui lòng nhập email",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Email không hợp lệ",
+                    validate: {
+                      required: (value) =>
+                        !!value || "Email không được để trống",
+                      matchPattern: (value) => {
+                        const emailRegex =
+                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                        return emailRegex.test(value) || "Email không hợp lệ";
+                      },
+                      maxLength: (value) =>
+                        value.length <= 255 ||
+                        "Email không được vượt quá 255 ký tự",
+                      noConsecutiveDots: (value) =>
+                        !value.includes("..") ||
+                        "Email không được chứa hai dấu chấm liên tiếp",
+                      validDomain: (value) => {
+                        const domain = value.split("@")[1];
+                        const validDomainRegex =
+                          /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                        return (
+                          validDomainRegex.test(domain) ||
+                          "Tên miền email không hợp lệ"
+                        );
+                      },
                     },
                   })}
                   placeholder="Nhập email"
