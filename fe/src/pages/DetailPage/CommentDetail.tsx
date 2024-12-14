@@ -38,7 +38,7 @@ const CommentDetail: React.FC = () => {
 		queryKey: ["order", user, id],
 		queryFn: async () => {
 			if (!id) throw new Error("Thiếu Product ID");
-			const response = await instance.get(`/orders/${user._id}/${id}`);
+			const response = await instance.get(`/orders-detail/${user._id}/${id}`);
 			console.log("Dữ liệu API trả về:", response.data); // Log dữ liệu API trả về
 			return response.data;
 		},
@@ -190,96 +190,21 @@ const CommentDetail: React.FC = () => {
 					{/* Gửi bình luận */}
 					<div className="flex justify-end">
 						<Form.Item>
-							{checkComments &&
-							checkComments.data &&
-							checkComments.data.length > 0 &&
-							checkComments.data[0].orderStatus === "completed" ? (
-								<Button
+						<Button
 									type="primary"
 									htmlType="submit"
 									className="bg-red-500"
 								>
-									Gửi
+									Gửi đánh giá
 								</Button>
-							) : (
-								<span className="text-gray-500">
-									Sau khi hoàn thành đơn hàng mới có thể đánh giá
-								</span>
-							)}
 						</Form.Item>
 					</div>
 				</Form>
 			</div>
 
-      <div className="mt-6">
-      <h1 className="text-lg font-semibold">Nội dung đánh giá</h1>
-        </div>
+      
 
-			{/* Tổng đánh giá */}
-			<div className="border-y mt-2 p-4 md:border">
-				{/* Danh sách đánh giá */}
-        
-				<div className="space-y-6">
-					{comments?.map((review: Comment) => (
-						<div
-							key={review._id}
-							className="flex space-x-4 items-start border-b pb-4"
-						>
-							<div className="w-10 h-10 rounded-full bg-gray-200"></div>
-							<div className="flex-1">
-								<p className="font-bold">{review.user_id.userName}</p>
-								<p className="text-gray-500 text-sm">
-									Ngày bình luận:{" "}
-									{new Date(review.createdAt).toLocaleString("vi-VN", {
-										dateStyle: "short",
-										timeStyle: "short",
-										timeZone: "Asia/Ho_Chi_Minh",
-									})}
-								</p>
-								<p className="mt-2 text-sm">{review.content}</p>
-								<div className="flex flex-wrap gap-2 mt-2">
-									{review.image?.map((img, idx) => (
-										<img
-											key={idx}
-											src={img}
-											alt={`image-${idx}`}
-											className="w-16 h-16 object-cover rounded"
-										/>
-									))}
-								</div>
-
-								{/* Phản hồi */}
-								{showReplies && (
-									<div className="mt-4 pl-6">
-										{replies.map(reply => (
-											<div
-												key={reply._id}
-												className="flex items-start space-x-4"
-											>
-												<div className="w-8 h-8 rounded-full bg-gray-300"></div>
-												<div className="flex-1">
-													<p className="font-semibold">
-														{reply.user_id.userName}
-													</p>
-													<p className="text-sm">{reply.content}</p>
-												</div>
-											</div>
-										))}
-									</div>
-								)}
-
-								{/* Hiển thị/ẩn phản hồi */}
-								<Button
-									type="link"
-									onClick={() => handleToggleReplies(review._id)}
-								>
-									{showReplies ? "Ẩn phản hồi" : "Xem phản hồi"}
-								</Button>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
+			
 		</div>
 	);
 };

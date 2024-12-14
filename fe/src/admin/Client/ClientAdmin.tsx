@@ -72,7 +72,7 @@ const ClientAdmin = () => {
 			try {
 				const trashParam = isDelete ? `&isDeleted=true` : "";
 				const response = await instance.get(
-					`/users?&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}${trashParam}`, // Thêm điều kiện vai trò
+					`/users?&search=${searchTerm}&role=user&page=${currentPage}&limit=${pageSize}${trashParam}`, // Thêm điều kiện vai trò
 				);
 				return response.data;
 			} catch (error) {
@@ -360,16 +360,16 @@ const ClientAdmin = () => {
 					>
 						{isDelete ? "" : ""}
 					</Button>
-					<Select
+					{/* <Select
 						value={filterRole}
 						style={{ width: 200 }}
 						onChange={handleRoleFilterChange} // Gọi hàm thay đổi vai trò
 					>
 						<Option value="allUser">Tất cả vai trò</Option>
 						<Option value="admin">Quản lý</Option>
-						{/* <Option value="manager">Nhân viên</Option> */}
+						<Option value="manager">Nhân viên</Option>
 						<Option value="user">Người dùng</Option>
-					</Select>
+					</Select> */}
 				</div>
 			</div>
 			<Table

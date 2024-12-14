@@ -64,7 +64,6 @@ const CartPage: React.FC<{
   useEffect(() => {
     fetchCart();
   }, []);
-  
 
   useEffect(() => {
     updateTotalPrice(cart, selectedItems); // Recalculate when selectedItems change
@@ -140,18 +139,41 @@ const CartPage: React.FC<{
     }
 
     try {
-      const response = await instance.delete("/cart/selected", {
-        data: { itemIds: selectedItems },
+      const itemsToDelete = cart
+        .filter((item: any) =>
+          selectedItems.includes(
+            `${item.product._id}-${
+              item.product_sizes?._id
+            }-${item.product_toppings
+              ?.map((topping: any) => topping.topping_id._id)
+              .join(",")}`
+          )
+        )
+        .map((item: any) => item._id);
+
+      const response = await instance.delete(`/cart/${user._id}/selected`, {
+        data: { itemIds: itemsToDelete },
       });
+
       if (response.status === 200) {
-        fetchCart();
+        const updatedCart = cart.filter(
+          (item: any) => !itemsToDelete.includes(item._id)
+        );
+        setCart(updatedCart);
+
         setSelectedItems([]);
-        toast.success("Xóa các sản phẩm đã chọn thành công");
+
+        // Show success toast
+        toast.success(`Đã xóa ${itemsToDelete.length} sản phẩm thành công`);
+      } else {
+        toast.error("Không thể xóa sản phẩm. Vui lòng thử lại.");
       }
     } catch (error) {
-      console.error("Error deleting selected items:", error);
+      console.error("Error deleting items:", error);
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
+
   // Xóa tất cả sản phẩm
   const deleteAllItems = async () => {
     const confirmation = await Swal.fire({
@@ -176,18 +198,30 @@ const CartPage: React.FC<{
       }
     }
   };
-  // Item selection handling
+
   const toggleItemSelection = (item: any) => {
-    const itemId = `${item.product._id}-${
-      item.product_sizes?._id
-    }-${item.product_toppings
-      ?.map((topping: any) => topping.topping_id._id)
-      .join(",")}`;
-    setSelectedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
+    const generateItemId = (cartItem: any): string => {
+      const productId = cartItem.product._id;
+      const sizeId = cartItem.product_sizes?._id || "no-size";
+      const toppingIds = cartItem.product_toppings
+        ? cartItem.product_toppings
+            .map((topping: any) => topping.topping_id._id)
+            .sort() // Ensure consistent ordering
+            .join(",")
+        : "no-toppings";
+
+      return `${productId}-${sizeId}-${toppingIds}`;
+    };
+
+    const itemId = generateItemId(item);
+
+    setSelectedItems((prevSelectedItems) => {
+      if (prevSelectedItems.includes(itemId)) {
+        return prevSelectedItems.filter((id) => id !== itemId);
+      }
+
+      return [...prevSelectedItems, itemId];
+    });
   };
 
   const toggleAllItemsSelection = () => {
@@ -218,7 +252,6 @@ const CartPage: React.FC<{
     // Tổng giá từng sản phẩm = (Giá cơ bản + Giá kích thước + Giá topping) * Số lượng
     return (basePrice + sizePrice + toppingsPrice) * item.quantity;
   };
-  
 
   return (
     <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
@@ -422,17 +455,15 @@ const CartPage: React.FC<{
                   to={{
                     pathname: "/checkout",
                   }}
-                  state={
-                    cart.filter((item: any) =>
-                      selectedItems.includes(
-                        `${item.product._id}-${
-                          item.product_sizes?._id
-                        }-${item.product_toppings
-                          ?.map((topping: any) => topping.topping_id._id)
-                          .join(",")}`
-                      )
+                  state={cart.filter((item: any) =>
+                    selectedItems.includes(
+                      `${item.product._id}-${
+                        item.product_sizes?._id
+                      }-${item.product_toppings
+                        ?.map((topping: any) => topping.topping_id._id)
+                        .join(",")}`
                     )
-                  }
+                  )}
                   className={`mt-6 block w-full rounded-lg ${
                     selectedItems.length === 0
                       ? "bg-gray-300 cursor-not-allowed"

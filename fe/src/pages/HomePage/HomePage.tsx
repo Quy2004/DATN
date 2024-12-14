@@ -585,14 +585,6 @@ const HomePage: React.FC = () => {
               className="h-52 object-cover md:h-[600px] "
               alt="Banner 3"
             />
-            <Link
-              className="absolute bottom-1 md:mx-0 w-full md:bottom-14 md:right-4  block md:w-[535px] bg-[#778B37] text-center text-white text-[16px] leading-[40px] px-[15px] font-semibold rounded-lg"
-              to="/menu"
-              target="_blank"
-              title="Thử ngay"
-            >
-              <span>Thử ngay</span>
-            </Link>
           </div>
         </div>
         <Homes />
@@ -641,14 +633,6 @@ const HomePage: React.FC = () => {
                         </p>
                       </div>
                     )}
-
-                    <i
-                      className="text-sm text-black"
-                      dangerouslySetInnerHTML={{
-                        __html: selectedProduct.description,
-                      }}
-                    ></i>
-
                     <div className="flex gap-10 items-center py-4">
                       <form className="max-w-xs py-1">
                         <div className="relative flex items-center">
