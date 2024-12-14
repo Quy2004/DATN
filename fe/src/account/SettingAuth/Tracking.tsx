@@ -581,36 +581,57 @@ const Tracking = () => {
 										</p>
 									</div>
 								</div>
-
-								<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
-									{detail.price &&
-									detail.sale_price &&
-									detail.sale_price !== detail.price ? (
-										<>
+								{order.orderStatus === "completed" ? (
+									<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
+										{detail.price &&
+										detail.sale_price &&
+										detail.sale_price !== detail.price ? (
+											<>
+												<span className="text-red-600 ml-[-20px]">
+													{detail.sale_price.toLocaleString("vi-VN")} ₫
+												</span>
+												<span className="line-through text-gray-400 ml-2">
+													{detail.price.toLocaleString("vi-VN")} ₫
+												</span>
+											</>
+										) : (
 											<span className="text-red-600 ml-[-20px]">
-												{detail.sale_price.toLocaleString("vi-VN")} ₫
+												{detail.price?.toLocaleString("vi-VN") ||
+													detail.sale_price?.toLocaleString("vi-VN") ||
+													"N/A"}{" "}
+												₫
 											</span>
-											<span className="line-through text-gray-400 ml-2">
-												{detail.price.toLocaleString("vi-VN")} ₫
-											</span>
-										</>
-									) : (
-										<span className="text-red-600 ml-[-20px]">
-											{detail.price?.toLocaleString("vi-VN") ||
-												detail.sale_price?.toLocaleString("vi-VN") ||
-												"N/A"}{" "}
-											₫
-										</span>
-									)}
-									{order.orderStatus === "completed" ?(
+										)}
 										<Link
-										to={`/review/${detail.product_id._id}`}
-										className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
-									>
-										Đánh giá
-									</Link>
-									): ""}
-								</p>
+											to={`/review/${detail.product_id._id}`}
+											className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
+										>
+											Đánh giá
+										</Link>
+									</p>
+								) : (
+									<p className="font-medium mt-4 sm:mt-0 ">
+										{detail.price &&
+										detail.sale_price &&
+										detail.sale_price !== detail.price ? (
+											<>
+												<span className="text-red-600 ml-[-20px]">
+													{detail.sale_price.toLocaleString("vi-VN")} ₫
+												</span>
+												<span className="line-through text-gray-400 ml-2">
+													{detail.price.toLocaleString("vi-VN")} ₫
+												</span>
+											</>
+										) : (
+											<span className="text-red-600 ml-[-20px]">
+												{detail.price?.toLocaleString("vi-VN") ||
+													detail.sale_price?.toLocaleString("vi-VN") ||
+													"N/A"}{" "}
+												₫
+											</span>
+										)}
+									</p>
+								)}
 							</div>
 						))}
 						<div className="border-t pt-4">
