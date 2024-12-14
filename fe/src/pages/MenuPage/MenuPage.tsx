@@ -359,7 +359,7 @@ const MenuPage: React.FC = () => {
                       </h3>
                     </Link>
                     <p className="text-gray-500 md:text-base">
-                      {formatPrice(product.price)} đ
+                      {formatPrice(product.price)} VNĐ
                     </p>
                   </div>
                 ))

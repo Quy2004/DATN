@@ -44,7 +44,7 @@ const TeaPage: React.FC = () => {
                             <Link to="#">
                                 <h3 className="text-2xl mt-0 md:mt-2">{tea.name}</h3>
                             </Link>
-                            <p className="text-sm font-semibold">{formatPrice(tea.price)} VNĐ</p>
+                            <p className="text-sm text-gray-500">{formatPrice(tea.price)} VNĐ</p>
                         </div>
                     </div>
                 ))}
