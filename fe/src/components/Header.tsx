@@ -8,6 +8,7 @@ import instance from "../services/api";
 import { Product } from "../types/product";
 import CartItem from "./CartItem";
 import { useClickOutside, useClickOutside2 } from "./ClickOutSide";
+import { Button } from "antd";
 
 const Header: React.FC = () => {
 	const storedUser = localStorage.getItem("user");
@@ -60,6 +61,11 @@ const Header: React.FC = () => {
 			return response.data.data;
 		},
 	});
+
+	const handleDelete = async (id: string) => {
+		const response = await instance.delete(`/notification/${id}`);
+		return response.data.data;
+	};
 
 	const handleSearch = (value: string) => {
 		setSearchTerm(value);
@@ -157,27 +163,24 @@ const Header: React.FC = () => {
 
 	// số lượng thông báo chưa đọc
 
-	const { data: unreadCount, refetch: queryRefetch } = useQuery(
-		{
-		  queryKey: ["unreadNotificationCount", user._id],
-		  queryFn: async () => {
+	const { data: unreadCount, refetch: queryRefetch } = useQuery({
+		queryKey: ["unreadNotificationCount", user._id],
+		queryFn: async () => {
 			const response = await instance.get(
-			  `/notification/count-unread/${user._id}`
+				`/notification/count-unread/${user._id}`,
 			);
 			return response.data.count; // Số lượng thông báo chưa đọc
-		  },
-		  refetchInterval: false, // Không tự động polling
-		}
-	  );
-	  
-	  useEffect(() => {
+		},
+		refetchInterval: false, // Không tự động polling
+	});
+
+	useEffect(() => {
 		const intervalId = setInterval(() => {
-		  queryRefetch(); // Gọi lại API để cập nhật số lượng
+			queryRefetch(); // Gọi lại API để cập nhật số lượng
 		}, 800); // Tải lại sau mỗi 0.8s
-	  
+
 		return () => clearInterval(intervalId); // Clear interval khi component bị unmount
-	  }, [queryRefetch]); // Khi refetch thay đổi thì hiệu ứng sẽ chạy lại
-	  
+	}, [queryRefetch]); // Khi refetch thay đổi thì hiệu ứng sẽ chạy lại
 
 	return (
 		<>
@@ -451,7 +454,7 @@ const Header: React.FC = () => {
 												{unreadCount >= 0 && <span>{unreadCount}</span>}
 											</span>
 											{isDropdownOpen2 && (
-												<div className="z-10 ml-[-160px] *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md w-[400px] max-h-[700px] dark:bg-gray-700 absolute -left-32 top-8 mt-4">
+												<div className="z-10 ml-[-160px] *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md w-[400px] max-h-[500px] dark:bg-gray-700 absolute -left-32 top-8 mt-4">
 													<h2 className="text-2xl font-bold ml-20">
 														Thông báo của bạn
 													</h2>
@@ -468,11 +471,12 @@ const Header: React.FC = () => {
 																		key={notification._id}
 																		onClick={() => markAsRead(notification._id)} // Đánh dấu thông báo đã đọc khi nhấp
 																	>
-																		<div className="p-4 border rounded-lg shadow">
+																		<div className="p-4 border rounded-lg shadow group">
 																			<div className="flex items-center">
 																				<h3 className="font-semibold text-[20px] w-[390px] truncate">
 																					{notification.title}
 																				</h3>
+
 																				<p className="ml-auto w-[10px] flex justify-center">
 																					{notification.isRead ? (
 																						""
@@ -480,9 +484,23 @@ const Header: React.FC = () => {
 																						<span className="bg-red-500 w-3 h-3 rounded-full inline-block"></span>
 																					)}
 																				</p>
+																				<div className="hidden group-hover:block">
+																					<Button className="px-2 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-300 transition-all"
+         
+																						onClick={e => {
+																							e.preventDefault(); // Ngăn chặn hành vi mặc định của Link
+																							e.stopPropagation(); // Ngăn sự kiện lan truyền lên thẻ Link
+																							handleDelete(notification._id);
+																						}}
+																					>
+																						xóa
+																					</Button>
+																				</div>
 																			</div>
 
-																			<p className="text-[12px] font-normal ml-[10px]">{notification.message}</p>
+																			<p className="text-[12px] font-normal ml-[10px]">
+																				{notification.message}
+																			</p>
 																		</div>
 																	</Link>
 																),
