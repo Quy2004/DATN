@@ -4,6 +4,7 @@ import { Button, Form, FormProps, Input, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
+import { Topping } from "../../../types/topping";
 
 type FieldType = {
   nameTopping: string;
@@ -75,11 +76,38 @@ const ToppingAddPage = () => {
           <Form.Item<FieldType>
             label="Tên Topping"
             name="nameTopping"
+            required
             rules={[
-              { required: true, message: "Vui lòng nhập tên Topping!" },
               { whitespace: true, message: "Tên Topping không được để trống!" },
               { min: 2, message: "Tên Topping phải có ít nhất 2 ký tự!" },
               { max: 50, message: "Tên Topping không được quá 50 ký tự!" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên Topping!")
+                    );
+                  }
+                  const trimmedValue = value.trim();
+                  const hasNumber = /\d/;
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
+
+                  // Kiểm tra số và ký tự đặc biệt
+                  if (hasNumber.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên Topping không được chứa số!")
+                    );
+                  }
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên Topping không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input
@@ -87,6 +115,7 @@ const ToppingAddPage = () => {
               placeholder="Nhập tên topping"
             />
           </Form.Item>
+
           <Form.Item
             label="Danh mục"
             name="category_id"
@@ -109,6 +138,7 @@ const ToppingAddPage = () => {
           <Form.Item<FieldType>
             label="Giá Topping"
             name="priceTopping"
+            required
             rules={[
               {
                 validator: (_, value) => {
@@ -119,6 +149,11 @@ const ToppingAddPage = () => {
                   }
                   if (value <= 0) {
                     return Promise.reject(new Error("Giá phải lớn hơn 0!"));
+                  }
+                  if (value > 20000) {
+                    return Promise.reject(
+                      new Error("Giá topping không được vượt quá 20.000!")
+                    );
                   }
                   return Promise.resolve();
                 },
@@ -135,6 +170,12 @@ const ToppingAddPage = () => {
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Thêm Topping
+            </Button>
+            <Button
+              htmlType="reset"
+              className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2"
+            >
+              Làm mới
             </Button>
           </Form.Item>
         </Form>

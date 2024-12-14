@@ -9,6 +9,10 @@ const ChangePassword = () => {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
+  // Lấy thông tin người dùng từ localStorage
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : {};
+  const nav = useNavigate()
 	// Lấy thông tin người dùng từ localStorage
 	const storedUser = localStorage.getItem("user");
 	const user = storedUser ? JSON.parse(storedUser) : {};
@@ -56,6 +60,55 @@ const ChangePassword = () => {
 		changePasswordMutation.mutate(passwordData);
 	};
 
+  return (
+    <div className="mt-[100px] w-[500px] mx-auto">
+      <div className="*:mx-auto mb-6 *:md:mx-0 md:mb-8">
+        <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">Đổi mật khẩu</h1>
+        <p className=" border-b-orange-400 w-[62px] md:w-[182px] border-b-[4px]"></p>
+      </div>
+      <Form layout="vertical" onFinish={handleSubmit}>
+        <Form.Item
+          label="Mật khẩu cũ"
+          name="currentPassword"
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ!" }]}
+        >
+          <Input.Password
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="Nhập mật khẩu cũ"
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Mật khẩu mới"
+          name="newPassword"
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới!" }]}
+        >
+          <Input.Password
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Nhập mật khẩu mới"
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Nhập lại mật khẩu mới"
+          name="confirmNewPassword"
+          rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu mới!" }]}
+        >
+          <Input.Password
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            placeholder="Nhập lại mật khẩu mới"
+          />
+        </Form.Item>
+
+        <Button type="primary" htmlType="submit">
+          Đổi mật khẩu
+        </Button>
+      </Form>
+    </div>
+  );
 	return (
 		<div className="relative bg-cover bg-center h-screen flex items-center justify-center bg-orange-200">
 			{/* Lớp che phủ mờ cho toàn bộ nền */}

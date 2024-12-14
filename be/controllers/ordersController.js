@@ -3,6 +3,7 @@ import Cart from "../models/Cart.js";
 import OrderDetail from "../models/OrderDetailModel.js";
 import axios from "axios";
 import NotificationModel from "../models/NotificationModel.js";
+import User from "../models/UserModel.js";
 
 // Get all orders with populated data
 export const getAllOrders = async (req, res) => {
@@ -94,6 +95,7 @@ export const createOrder = async (req, res) => {
       totalPrice,
       note,
       discountAmount,
+      cartItems,
     } = req.body;
     // Validate required fields
     if (!userId || !customerInfo || !paymentMethod) {
@@ -104,7 +106,8 @@ export const createOrder = async (req, res) => {
     }
 
     // Get cart and validate
-    const cart = await Cart.findOne({ userId }).populate("products.product");
+    const cart = cartItems;
+    // const cart = await Cart.findOne({ userId }).populate("products.product");
 
     if (!cart?.products?.length) {
       return res.status(400).json({
@@ -201,8 +204,25 @@ export const createOrder = async (req, res) => {
 
     // Xóa giỏ hàng theo điều kiện phương thức thanh toán
     if (paymentMethod === "cash on delivery") {
-      // Nếu là thanh toán khi nhận hàng, xóa toàn bộ giỏ hàng
-      await Cart.findOneAndDelete({ userId });
+      // Nếu là thanh toán khi nhận hàng, xóa  nhung san pham da mua theo product id
+      const productIds = cartItems.products.map((item) => item.product._id);
+      if (Array.isArray(productIds) && productIds.length > 0) {
+        try {
+          // Xóa các sản phẩm trong giỏ hàng của userId
+          const result = await Cart.updateOne(
+            { userId: userId }, // Tìm giỏ hàng theo userId
+            {
+              $pull: {
+                products: {
+                  product: { $in: productIds }, // Loại bỏ các sản phẩm đã mua
+                },
+              },
+            }
+          );
+        } catch (error) {
+          console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
+        }
+      }
     }
 
     // Nếu phương thức thanh toán là MoMo
@@ -585,23 +605,95 @@ export const getOrderById = async (req, res) => {
     });
   }
 };
+
 // Get total revenue and order count
 export const getOrderStats = async (req, res) => {
   try {
+    // Thống kê cơ bản
     const totalOrders = await Order.countDocuments();
-    const totalRevenue = await Order.aggregate([
-      { $match: { orderStatus: { $ne: "canceled" } } }, // Exclude canceled orders
+
+    const successfulOrders = await Order.countDocuments({
+      orderStatus: { $in: ["completed", "delivered"] },
+    });
+
+    // Tính tổng doanh thu (bỏ qua đơn hàng đã hủy)
+    const totalRevenueResult = await Order.aggregate([
+      { $match: { orderStatus: { $ne: "canceled" } } },
       { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
     ]);
+    const totalRevenue = totalRevenueResult[0]?.totalRevenue || 0;
 
+    // Tổng số lượng sản phẩm đã bán
+    const totalSoldQuantityResult = await OrderDetail.aggregate([
+      {
+        $lookup: {
+          from: "orders",
+          localField: "order_id",
+          foreignField: "_id",
+          as: "order_info",
+        },
+      },
+      { $unwind: "$order_info" },
+      {
+        $match: {
+          "order_info.orderStatus": { $in: ["completed", "delivered"] },
+        },
+      },
+      { $group: { _id: null, totalQuantity: { $sum: "$quantity" } } },
+    ]);
+    const totalSoldQuantity = totalSoldQuantityResult[0]?.totalQuantity || 0;
+
+    // Doanh thu theo tháng/năm
+    const revenueByMonth = await Order.aggregate([
+      { $match: { orderStatus: { $in: ["completed", "delivered"] } } },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+          revenue: { $sum: "$totalPrice" },
+        },
+      },
+      { $sort: { "_id.year": -1, "_id.month": -1 } },
+    ]);
+
+    // Số đơn theo ngày trong tuần
+    const ordersByDayOfWeek = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+    // Thống kê phương thức thanh toán
+    const paymentMethodStats = await Order.aggregate([
+      {
+        $group: {
+          _id: "$paymentMethod",
+          count: { $sum: 1 },
+          totalAmount: { $sum: "$totalPrice" },
+        },
+      },
+    ]);
+    const totalUser = await User.countDocuments({ role: "user" });
     return res.status(200).json({
       success: true,
       data: {
-        totalOrders,
-        totalRevenue: totalRevenue[0]?.totalRevenue || 0,
+        totalOrders: totalOrders || 0,
+        successfulOrders: successfulOrders || 0,
+        totalRevenue: totalRevenue || 0,
+        totalSoldQuantity: totalSoldQuantity || 0,
+        totalUser: totalUser || 0,
+        revenueByMonth: revenueByMonth.length ? revenueByMonth : [],
+        ordersByDayOfWeek: ordersByDayOfWeek.length ? ordersByDayOfWeek : [],
+        paymentMethodStats: paymentMethodStats.length ? paymentMethodStats : [],
       },
     });
   } catch (error) {
+    console.error("Error while fetching order stats:", error); // Logging for debugging
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê đơn hàng",
@@ -671,7 +763,9 @@ export const getCustomerStats = async (req, res) => {
   try {
     const { fromDate, toDate, limit = 5 } = req.query;
 
-    const matchStage = {};
+    const matchStage = {
+      orderStatus: { $in: ["completed", "delivered"] },
+    };
     if (fromDate && toDate) {
       matchStage.createdAt = {
         $gte: new Date(fromDate),
@@ -942,7 +1036,6 @@ export const updatePaymentStatus = async (req, res) => {
 
     // Kiểm tra trạng thái thanh toán hợp lệ
     const validPaymentStatuses = ["pending", "paid", "failed"];
-
     if (!validPaymentStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -950,18 +1043,25 @@ export const updatePaymentStatus = async (req, res) => {
       });
     }
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { paymentStatus: status },
-      { new: true }
-    );
-
+    // Lấy đơn hàng từ database
+    const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy đơn hàng",
       });
     }
+
+    // Cập nhật trạng thái thanh toán
+    order.paymentStatus = status;
+
+    // Nếu trạng thái đơn hàng là "delivered", tự động cập nhật thành "paid"
+    if (order.orderStatus === "delivered" && status !== "paid") {
+      order.paymentStatus = "paid";
+    }
+
+    // Lưu đơn hàng
+    await order.save();
 
     // Mapping trạng thái thanh toán sang tiếng Việt
     const paymentStatusMapping = {
