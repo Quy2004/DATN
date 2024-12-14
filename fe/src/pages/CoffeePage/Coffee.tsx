@@ -44,7 +44,7 @@ const CoffeePage: React.FC = () => {
                             <Link to="#">
                                 <h3 className="text-2xl mt-0 md:mt-2">{coffee.name}</h3>
                             </Link>
-                            <p className="text-sm font-semibold">{formatPrice(coffee.price)} VNĐ</p>
+                            <p className="text-sm text-gray-500">{formatPrice(coffee.price)} VNĐ</p>
                         </div>
                     </div>
                 ))}

@@ -384,6 +384,28 @@ const MenuPage: React.FC = () => {
               </div>
             </div>
 
+          {loadingProducts ? (
+            <div>Đang tải sản phẩm...</div>
+          ) : (
+            <div className="flex flex-wrap justify-between gap-y-4 md:grid md:grid-cols-3 md:gap-y-8">
+              {filteredProducts && filteredProducts.length > 0 ? (
+                filteredProducts.map((product: Product) => (
+                  <div key={product._id} className="">
+                    <Link to={`/detail/${product._id}`}>
+                      <img
+                        src={`${product.image}`}
+                        className="w-[190px] h-[190px] md:w-[250px] md:h-[250px] border object-cover rounded-xl"
+                        alt={product.name}
+                      />
+                    </Link>
+                    <Link to={`/detail/${product._id}`}>
+                      <h3 className="mt-2 text-sm md:text-base font-medium">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    <p className="text-gray-500 md:text-base">
+                      {formatPrice(product.price)} VNĐ
+                    </p>
             {loadingProducts ? (
               <div>Đang tải sản phẩm...</div>
             ) : (
