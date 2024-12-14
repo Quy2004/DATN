@@ -194,30 +194,34 @@ export const getCart = async (req, res) => {
     }
 
     // Xử lý giỏ hàng để kết hợp các sản phẩm có cùng tên, size và topping
-    const combinedProducts = [];
+   const combinedProducts = [];
 
-    cart.products.forEach((item) => {
-      // Tìm sản phẩm với tên, size và topping trùng
-      const existingProduct = combinedProducts.find(
-        (product) =>
-          product.product._id.toString() === item.product._id.toString() &&
-          product.product_sizes._id.toString() ===
-            item.product_sizes._id.toString() &&
-          product.product_toppings.every(
-            (topping, index) =>
-              topping.topping_id._id.toString() ===
-              item.product_toppings[index]?.topping_id._id.toString()
-          )
-      );
+   cart.products.forEach((item) => {
+     // So sánh chi tiết hơn với sản phẩm, size và topping
+     const existingProduct = combinedProducts.find(
+       (product) =>
+         product.product._id.toString() === item.product._id.toString() &&
+         product.product_sizes._id.toString() ===
+           item.product_sizes._id.toString() &&
+         // So sánh toàn bộ danh sách topping đã sắp xếp
+         JSON.stringify(
+           product.product_toppings
+             .map((topping) => topping.topping_id._id.toString())
+             .sort()
+         ) ===
+           JSON.stringify(
+             item.product_toppings
+               .map((topping) => topping.topping_id._id.toString())
+               .sort()
+           )
+     );
 
-      // Nếu sản phẩm đã tồn tại trong danh sách kết hợp, tăng số lượng
-      if (existingProduct) {
-        existingProduct.quantity += item.quantity;
-      } else {
-        combinedProducts.push(item); // Thêm sản phẩm mới nếu không tìm thấy
-      }
-    });
-
+     if (existingProduct) {
+       existingProduct.quantity += item.quantity;
+     } else {
+       combinedProducts.push(item);
+     }
+   });
     // Tính lại tổng giá trị
     const totalPrice = combinedProducts.reduce((total, item) => {
       const product = item.product;
@@ -248,8 +252,7 @@ export const getCart = async (req, res) => {
     cart.products = combinedProducts;
     cart.totalprice = Math.round(totalPrice * 100) / 100;
     await cart.save();
-
-    return res.status(200).json({
+return res.status(200).json({
       message: "Giỏ hàng đã được lấy thành công.",
       cart: cart.products,
       totalPrice: cart.totalprice,
