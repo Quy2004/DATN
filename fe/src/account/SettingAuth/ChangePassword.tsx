@@ -13,10 +13,6 @@ const ChangePassword = () => {
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : {};
   const nav = useNavigate()
-	// Lấy thông tin người dùng từ localStorage
-	const storedUser = localStorage.getItem("user");
-	const user = storedUser ? JSON.parse(storedUser) : {};
-	const nav = useNavigate();
 
 	// State để kiểm soát trạng thái loading của mutation
 	// Mutation để gọi API đổi mật khẩu
