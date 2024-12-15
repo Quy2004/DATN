@@ -35,7 +35,7 @@ export const CategoryManagerPage = () => {
   const [isDelete, setIsDelete] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
+  const [selectedParentId, setSelectedParentId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -147,11 +147,7 @@ export const CategoryManagerPage = () => {
       messageApi.error(`Lỗi: ${error.message}`);
     },
   });
-  // Xử lý thay đổi trạng thái bộ lọc
-  const handleFilterChange = (value: string) => {
-    setFilterStatus(value);
-    setCurrentPage(1);
-  };
+
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -299,14 +295,6 @@ export const CategoryManagerPage = () => {
             allowClear
             style={{ width: 300 }}
           />
-          <Select
-            value={filterStatus}
-            style={{ width: 200 }}
-            onChange={handleFilterChange}
-          >
-            <Option value="all">Tất cả danh mục</Option>
-            <Option value="active">Danh mục hoạt động</Option>
-          </Select>
 
           <Tooltip title="Sản phẩm đã xóa mềm">
             <Button
@@ -318,16 +306,19 @@ export const CategoryManagerPage = () => {
               onClick={handleIsDeleteToggle}
             ></Button>
           </Tooltip>
-        </div>
-        <Link to="/admin/category/add" className="flex items-center space-x-2">
-          <Button
-            type="primary"
-            className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+          <Link
+            to="/admin/category/add"
+            className="flex items-center space-x-2"
           >
-            <PlusCircleFilled />
-            <span>Thêm danh mục</span>
-          </Button>
-        </Link>
+            <Button
+              type="primary"
+              className="flex items-center justify-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium text-white shadow-md transition duration-300 ease-in-out"
+            >
+              <PlusCircleFilled />
+              <span>Thêm danh mục</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Table

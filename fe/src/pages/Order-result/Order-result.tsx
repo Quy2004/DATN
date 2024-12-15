@@ -18,7 +18,7 @@ const OrderResult = () => {
     } else if (resultCode !== null) {
       // Nếu không có payment_order_status, kiểm tra resultCode
       if (resultCode === "0") {
-        navigate("/order-success");
+        navigate("/oder-success");
       } else {
         navigate("/order-error");
       }

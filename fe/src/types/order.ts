@@ -40,7 +40,7 @@ export interface Order {
         price: number;
         sale_price: number;
     }>;
-    paymentMethod: "bank transfer" | "cash on delivery" | "momo" | "zalopay";
+    paymentMethod: "bank transfer" | "cash on delivery" | "momo" | "zalopay" | "vnpay";
     paymentStatus: "unpaid" | "paid" | "failed";
     orderNumber?: string;
     note?: string;

@@ -239,7 +239,9 @@ const ProductManagerPage: React.FC = () => {
     setIsModalVisible(false);
     setSelectedProduct(null); // Reset sản phẩm khi đóng Modal
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   // Cột trong bảng
   const columns = [
     {
@@ -442,9 +444,9 @@ const ProductManagerPage: React.FC = () => {
             placeholder="Chọn danh mục"
             options={[
               { label: "Tất cả", value: "allCategory" },
-              ...(categories?.data?.map((category: Category) => ({
-                label: category.title,
-                value: category._id,
+              ...(subcategories?.map((subcategories: Category) => ({
+                label: subcategories.title,
+                value: subcategories._id,
               })) || []),
             ]}
           />

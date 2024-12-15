@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import instance from "../../services/api";
@@ -10,7 +10,28 @@ const Checkout: React.FC = () => {
   const userId = JSON.parse(localStorage.getItem("user") || "{}")._id;
   const navigate = useNavigate();
   const location = useLocation();
-  const cartItems = location.state;
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Kiểm tra nếu không có state khi reload
+    if (!location.state?.length) {
+      // Lấy dữ liệu từ localStorage hoặc gọi API để lấy lại giỏ hàng
+      const savedCartItems = JSON.parse(
+        localStorage.getItem("cartItems") || "[]"
+      );
+
+      if (savedCartItems.length > 0) {
+        setCartItems(savedCartItems);
+      } else {
+        // Nếu không có dữ liệu, chuyển hướng về trang giỏ hàng
+        navigate("/cart");
+      }
+    } else {
+      // Nếu có state, set vào state và lưu vào localStorage
+      setCartItems(location.state);
+      localStorage.setItem("cartItems", JSON.stringify(location.state));
+    }
+  }, [location.state, navigate]);
   console.log("SELECT ->", cartItems);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isBankTransferSelected, setIsBankTransferSelected] = useState(false);
@@ -484,7 +505,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Họ và tên
+                  Họ và tên <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -502,7 +523,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Địa chỉ
+                  Địa chỉ <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -522,7 +543,7 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Số điện thoại
+                  Số điện thoại <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -543,15 +564,35 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   {...register("email", {
                     required: "Vui lòng nhập email",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Email không hợp lệ",
+                    validate: {
+                      required: (value) =>
+                        !!value || "Email không được để trống",
+                      matchPattern: (value) => {
+                        const emailRegex =
+                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                        return emailRegex.test(value) || "Email không hợp lệ";
+                      },
+                      maxLength: (value) =>
+                        value.length <= 255 ||
+                        "Email không được vượt quá 255 ký tự",
+                      noConsecutiveDots: (value) =>
+                        !value.includes("..") ||
+                        "Email không được chứa hai dấu chấm liên tiếp",
+                      validDomain: (value) => {
+                        const domain = value.split("@")[1];
+                        const validDomainRegex =
+                          /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                        return (
+                          validDomainRegex.test(domain) ||
+                          "Tên miền email không hợp lệ"
+                        );
+                      },
                     },
                   })}
                   placeholder="Nhập email"
@@ -731,15 +772,13 @@ const Checkout: React.FC = () => {
                           <span className="text-gray-600">Size:</span>
                           <div className="text-gray-700 flex items-center">
                             {item.product_sizes?.name || "Không có kích thước"}
-                            {item.product_sizes?.priceSize && (
-                              <span className="ml-2 text-xs text-gray-500">
-                                (+
-                                {item.product_sizes.priceSize.toLocaleString(
-                                  "vi-VN"
-                                )}{" "}
-                                VNĐ)
-                              </span>
-                            )}
+                            <span className="ml-2 text-xs text-gray-500">
+                              (
+                              {item.product_sizes?.priceSize?.toLocaleString(
+                                "vi-VN"
+                              ) || "0"}{" "}
+                              VNĐ)
+                            </span>
                           </div>
                         </div>
 
@@ -754,8 +793,9 @@ const Checkout: React.FC = () => {
                                   (topping: any, index: number) => (
                                     <div
                                       key={topping._id}
-                                      className="flex items-center"
+                                      className="flex items-center justify-between"
                                     >
+
                                       <span>
                                         {topping.topping_id?.nameTopping}
                                       </span>

@@ -1,24 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Table,
-
-  Tag,
-  Result,
-
-  Button,
-  Tooltip,
-  Input,
-  Space,
-} from "antd";
-
+import { Table, Tag, Result, Button, Tooltip, Input, Space } from "antd";
 import instance from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Title from "antd/es/typography/Title";
-import { EyeOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  EyeOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import moment from "moment";
-
-import { DatePicker, Slider } from "antd";
-import type { RangeValue } from "rc-picker/lib/interface";
+import { Slider } from "antd";
+import * as XLSX from "xlsx";
 interface Product {
   _id: string;
   name: string;
@@ -78,7 +70,8 @@ const InvoiceManagement: React.FC = () => {
   const [dateRange, setDateRange] = useState<
     [moment.Moment | null, moment.Moment | null]
   >([null, null]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]); // Adjust max price as needed
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -97,25 +90,51 @@ const InvoiceManagement: React.FC = () => {
     navigate("/admin/invoice-detail", { state: { order } });
   };
 
-
   const filterOrders = (orders, searchTerm, dateRange, priceRange) => {
     let result = [...orders]; // Create a copy of the orders array
 
     // Filter by search term
     if (searchTerm) {
-      const lowerCaseTerm = searchTerm.toLowerCase();
+      // Trim the search term and replace multiple spaces with a single space
+      const cleanedSearchTerm = searchTerm
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+
       result = result.filter(
         (order) =>
-          order.orderNumber.toLowerCase().includes(lowerCaseTerm) || // Order number
-          order.customerInfo?.name?.toLowerCase().includes(lowerCaseTerm) || // Customer name
-          order.customerInfo?.phone?.toLowerCase().includes(lowerCaseTerm) || // Customer phone
-          order.orderDetail_id.some(
-            (detail) =>
-              detail.product_id.name.toLowerCase().includes(lowerCaseTerm) // Product name
+          // Trim and normalize order number before comparison
+          order.orderNumber.trim().toLowerCase().replace(/\s+/g, " ") ===
+            cleanedSearchTerm ||
+          // Check if order number includes the cleaned search term
+          order.orderNumber
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .includes(cleanedSearchTerm) ||
+          // Similar normalization for other searchable fields
+          order.customerInfo?.name
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .includes(cleanedSearchTerm) ||
+          order.customerInfo?.phone
+            ?.trim()
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .includes(cleanedSearchTerm) ||
+          // For product names, check if any product matches
+          order.orderDetail_id.some((detail) =>
+            detail.product_id.name
+              .trim()
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+              .includes(cleanedSearchTerm)
           )
       );
     }
 
+    // Rest of the function remains the same
     // Filter by date range
     if (dateRange[0] && dateRange[1]) {
       const [startDate, endDate] = dateRange;
@@ -141,12 +160,61 @@ const InvoiceManagement: React.FC = () => {
     () => filterOrders(orders, searchTerm, dateRange, priceRange),
     [orders, searchTerm, dateRange, priceRange]
   );
+  const exportToExcel = () => {
+    const exportData = filteredOrders.map((order, index) => {
+      let paymentMethodInVietnamese = "N/A";
+
+      switch (order.paymentMethod) {
+        case "cash on delivery":
+          paymentMethodInVietnamese = "Thanh toán khi nhận hàng";
+          break;
+        case "momo":
+          paymentMethodInVietnamese = "MOMO";
+          break;
+        case "zalopay":
+          paymentMethodInVietnamese = "ZaloPay";
+          break;
+        case "vnpay":
+          paymentMethodInVietnamese = "VNPAY";
+          break;
+        default:
+          paymentMethodInVietnamese = "N/A";
+          break;
+      }
+
+      return {
+        STT: index + 1,
+        "Mã Hóa Đơn": order.orderNumber,
+        "Tên Khách Hàng": order.customerInfo?.name || "N/A",
+        "Số Điện Thoại": order.customerInfo?.phone || "N/A",
+        "Ngày Tạo": moment(order.createdAt).format("DD/MM/YYYY"),
+        "Tổng Giá": `${order.totalPrice.toLocaleString()} đ`,
+        "Trạng Thái":
+          order.orderStatus === "completed" ? "Hoàn thành" : order.orderStatus,
+        "Ghi Chú": order.note || "",
+        "Phương Thức Thanh Toán": paymentMethodInVietnamese,
+        Email: order.customerInfo?.email || "N/A",
+        "Địa Chỉ": order.customerInfo?.address || "N/A",
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Danh Sách Hóa Đơn");
+
+    XLSX.writeFile(
+      workbook,
+      `Danh_Sach_Hoa_Don_${moment().format("DDMMYYYY")}.xlsx`
+    );
+  };
+
   const columns = [
     {
       title: "STT",
       key: "index",
       width: 70,
-      render: (_: string, record: Order, index: number) => index + 1, // index + 1 để bắt đầu từ 1
+      render: (_: string, record: Order, index: number) => index + 1,
     },
     {
       title: "Mã Hóa Đơn",
@@ -158,7 +226,7 @@ const InvoiceManagement: React.FC = () => {
       title: "Tên Khách Hàng",
       dataIndex: "customerInfo",
       key: "name",
-      ellipsis: true, // Thêm thuộc tính ellipsis
+      ellipsis: true,
       render: (customerInfo: Order["customerInfo"]) =>
         customerInfo?.name || "N/A",
     },
@@ -213,12 +281,11 @@ const InvoiceManagement: React.FC = () => {
 
   return (
     <div>
-      <div className="flex">
+      <div className="flex justify-between">
         <Title level={3} className="text-2xl font-semibold text-gray-800 mb-4">
           Danh sách hóa đơn
         </Title>
         <Space>
-          {" "}
           {/* Tìm kiếm */}
           <div className="">
             <Input
@@ -231,24 +298,31 @@ const InvoiceManagement: React.FC = () => {
             />
           </div>
           {/* Khoảng giá */}
-          <div>
+          <div className="ml-5">
             <Slider
               className="w-[200px]"
               range
               value={priceRange}
               onChange={(values) => setPriceRange(values)}
               min={0}
-              max={100000}
-              step={2}
+              max={500000}
+              step={10000}
               marks={{
                 0: "0đ",
-                50000: "50k",
-                100000: "100k",
+                250000: "250k",
+                500000: "500k",
               }}
             />
           </div>
-          
         </Space>
+        <Button
+          type="primary"
+          icon={<DownloadOutlined />}
+          onClick={exportToExcel}
+          disabled={filteredOrders.length === 0}
+        >
+          Xuất Excel
+        </Button>
       </div>
       {filteredOrders.length === 0 && orders.length > 0 ? (
         <div className="flex justify-center items-center p-6">
@@ -268,7 +342,7 @@ const InvoiceManagement: React.FC = () => {
             pageSize: 10,
             showSizeChanger: true,
           }}
-          scroll={{ x: "max-content", y: 380 }}
+          scroll={{ x: "max-content", y: 340 }}
         />
       )}
     </div>

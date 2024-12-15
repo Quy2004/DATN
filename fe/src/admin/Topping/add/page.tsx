@@ -4,7 +4,6 @@ import { Button, Form, FormProps, Input, message, Select } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../../services/api";
 import { Category } from "../../../types/category";
-import { Topping } from "../../../types/topping";
 
 type FieldType = {
   nameTopping: string;
@@ -48,7 +47,9 @@ const ToppingAddPage = () => {
     console.log("Success:", values);
     mutate(values);
   };
-
+  const subcategories = categories.data.filter(
+    (category: Category) => category.parent_id !== null
+  );
   return (
     <>
       <div className="flex items-center justify-between mb-5">
@@ -127,9 +128,9 @@ const ToppingAddPage = () => {
               placeholder="Chọn danh mục"
               disabled={isLoadingCategories}
             >
-              {categories?.data?.map((category: Category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.title}
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
                 </Select.Option>
               ))}
             </Select>

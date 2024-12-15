@@ -166,14 +166,23 @@ const OrderManagerPage = () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       messageApi.success("Đơn hàng đã được hủy thành công.");
 
-      // Cập nhật trạng thái đơn hàng
+      // Update the order status to canceled if payment status is failed
       if (orders) {
-        const updatedOrders = orders.map((order) =>
-          order._id === orderId ? { ...order, orderStatus: "canceled" } : order
-        );
+        const updatedOrders = orders.map((order) => {
+          if (order._id === orderId) {
+            // If paymentStatus is failed, set orderStatus to canceled
+            return {
+              ...order,
+              orderStatus:
+                order.paymentStatus === "failed"
+                  ? "canceled"
+                  : order.orderStatus,
+            };
+          }
+          return order;
+        });
         queryClient.setQueryData(["orders"], updatedOrders);
       }
-      // Đóng modal
       setIsCancelModalVisible(false);
       setCancellationReason("");
     },
@@ -261,6 +270,12 @@ const OrderManagerPage = () => {
       "completed",
     ];
 
+    // Check if the payment status is failed
+    if (order.paymentStatus === "failed") {
+      messageApi.error("Đơn hàng này đã hủy do thanh toán thất bại.");
+      return;
+    }
+
     if (nonCancellableStatuses.includes(order.orderStatus)) {
       messageApi.error("Đơn hàng này không thể hủy ở trạng thái hiện tại.");
       return;
@@ -292,9 +307,6 @@ const OrderManagerPage = () => {
     { value: "vnpay", label: "VNPay" },
   ];
 
-  // const handleRowClick = (order: Order) => {
-  //   navigate("/admin/order-detail", { state: { order } });
-  // };
   const columns = [
     {
       title: "STT",
@@ -373,6 +385,7 @@ const OrderManagerPage = () => {
         );
       },
     },
+
     {
       title: "Hành Động",
       render: (text: string, record: Order) => (
@@ -404,175 +417,61 @@ const OrderManagerPage = () => {
     if (!orders) return [];
 
     return orders.filter((order) => {
-      // Lọc theo trạng thái
+      // Xử lý từ khóa, loại bỏ toàn bộ khoảng trắng
+      const processSearchTerm = (term: string) => {
+        return term
+          .trim()
+          .replace(/\s+/g, "") // Loại bỏ TOÀN BỘ khoảng trắng
+          .toLowerCase();
+      };
+
+      // Xử lý từ khóa tìm kiếm
+      const processedOrderNumberFilter = processSearchTerm(orderNumberFilter);
+      const processedCustomerNameFilter = processSearchTerm(customerNameFilter);
+
+      // Kiểm tra mã đơn hàng
+      const orderNumberMatch =
+        processedOrderNumberFilter === "" ||
+        order.orderNumber
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(processedOrderNumberFilter);
+
+      const customerNameMatch =
+        processedCustomerNameFilter === "" ||
+        order.customerInfo?.name
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(processedCustomerNameFilter);
+
+      // Các điều kiện lọc khác giữ nguyên
       const statusMatch =
         statusFilter === "all" || order.orderStatus === statusFilter;
 
-      // Lọc theo giá
       const priceMatch =
         (!priceFilter.min || order.totalPrice >= priceFilter.min) &&
         (!priceFilter.max || order.totalPrice <= priceFilter.max);
 
-      // Lọc theo ngày
       const dateMatch =
         (!dateFilter.startDate ||
           new Date(order.createdAt) >= dateFilter.startDate) &&
         (!dateFilter.endDate ||
           new Date(order.createdAt) <= dateFilter.endDate);
 
-      // Lọc theo tên khách hàng
-      const customerMatch =
-        !customerNameFilter ||
-        order.customerInfo?.name
-          .toLowerCase()
-          .includes(customerNameFilter.toLowerCase());
-
-      // Lọc theo phương thức thanh toán
       const paymentMethodMatch =
         paymentMethodFilter === "all" ||
         order.paymentMethod === paymentMethodFilter;
 
-      // Lọc theo mã đơn hàng
-      const orderNumberMatch =
-        orderNumberFilter === "" ||
-        order.orderNumber
-          .toLowerCase()
-          .includes(orderNumberFilter.toLowerCase());
       return (
         statusMatch &&
         priceMatch &&
         dateMatch &&
-        customerMatch &&
+        customerNameMatch &&
         paymentMethodMatch &&
         orderNumberMatch
       );
     });
   };
-
-  const paymentMethodDisplay = (method: string) => {
-    switch (method) {
-      case "cash on delivery":
-        return "Thanh Toán Khi Nhận Hàng";
-      case "momo":
-        return "Momo";
-      case "zalopay":
-        return "ZaloPay";
-      case "vnpay":
-        return "VNPay";
-    }
-  };
-
-  const paymentStatusDisplay = (status: string) => {
-    switch (status) {
-      case "unpaid":
-        return "Chưa Thanh Toán";
-      case "paid":
-        return "Đã Thanh Toán";
-      case "failed":
-        return "Thanh Toán Thất Bại";
-    }
-  };
-
-  const itemColumns = [
-    {
-      title: "Sản phẩm",
-      dataIndex: "product_id",
-      key: "product_id",
-      width: 200,
-      render: (product: Product) => {
-        const maxLength = 20;
-        const truncatedName =
-          product.name.length > maxLength
-            ? product.name.substring(0, maxLength) + "..."
-            : product.name;
-
-        return truncatedName;
-      },
-    },
-    {
-      title: "Ảnh",
-      dataIndex: "image",
-      key: "image",
-      width: 200,
-      render: (image: string) => {
-        return image ? (
-          <Image
-            src={image}
-            alt="Product"
-            style={{ width: 50, height: 50 }}
-            preview={true}
-          />
-        ) : (
-          <span>Không có hình ảnh</span>
-        );
-      },
-    },
-    {
-      title: "Size",
-      dataIndex: "product_size",
-      key: "size",
-      render: (selectedSize: { name: string; priceSize: number }) => {
-        if (!selectedSize) return "Không có kích cỡ";
-        return `${selectedSize.name} (Giá: ${formatPrice(
-          selectedSize.priceSize
-        )})`;
-      },
-    },
-    {
-      title: "Topping",
-      dataIndex: "product_toppings",
-      key: "topping",
-      render: (productToppings: ProductTopping[]) => {
-        if (!productToppings || !productToppings.length)
-          return "Không có topping";
-
-        const toppings = productToppings.map((item: ProductTopping) => {
-          const toppingName = item.topping_id.nameTopping;
-          const toppingPrice = item.topping_id.priceTopping;
-          return `${toppingName} (Giá: ${formatPrice(toppingPrice)})`;
-        });
-
-        return toppings.join(", ");
-      },
-    },
-    {
-      title: "Giá",
-      width: 200,
-      dataIndex: "price",
-      key: "price",
-      render: (price: PriceType, record: Product) => {
-        const priceToShow = record.sale_price || price;
-        return formatPrice(priceToShow);
-      },
-    },
-    {
-      title: "Số lượng",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-
-    {
-      title: "Giá tổng",
-      dataIndex: "totalPrice",
-      key: "totalPrice",
-      width: 200,
-      render: (text: string, record: any) => {
-        const productPrice = record.sale_price || record.price || 0;
-        const sizePrice = record.product_size?.priceSize || 0;
-        const toppingsPrice =
-          record.product_toppings?.reduce(
-            (total: string, topping: ProductTopping) => {
-              return total + (topping.topping_id?.priceTopping || 0);
-            },
-            0
-          ) || 0;
-        const totalPrice =
-          (productPrice + sizePrice + toppingsPrice) * record.quantity;
-
-        return formatPrice(totalPrice);
-      },
-    },
-  ];
 
   if (isLoading) {
     return (
@@ -596,13 +495,13 @@ const OrderManagerPage = () => {
   return (
     <>
       {contextHolder}
-      <div className="flex flex-wrap items-center justify-between mb-5 space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="flex items-center">
+      <div className="">
+        <div className="flex items-center justify-between">
           <Title level={3} className="text-2xl font-semibold text-gray-800">
             Danh sách đơn hàng
           </Title>
 
-          <Space className="ml-96">
+          <Space className="ml-60">
             <Input
               placeholder="Tìm theo mã đơn hàng"
               value={orderNumberFilter}
@@ -767,164 +666,6 @@ const OrderManagerPage = () => {
           placeholder="Chi tiết lý do hủy đơn (nếu có)..."
         />
       </Modal>
-
-      <Drawer
-        title={<h2 className="text-xl font-bold">Chi tiết đơn hàng</h2>}
-        open={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        width={600}
-        destroyOnClose
-        footer={[
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button key="close" onClick={() => setIsModalVisible(false)}>
-              Đóng
-            </Button>
-          </div>,
-        ]}
-      >
-        {selectedOrder && (
-          <>
-            <div className="p-6 bg-white shadow-lg rounded-lg mb-6 transition-transform transform hover:scale-105 hover:shadow-xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cột 1 */}
-                <div className="space-y-4">
-                  <p className="text-sm font-medium text-gray-700">
-                    Mã đơn hàng:{" "}
-                    <span className="font-semibold text-gray-900">
-                      #{selectedOrder.orderNumber}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-700">
-                    Ngày đặt hàng:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {new Date(selectedOrder.createdAt).toLocaleString(
-                        "vi-VN"
-                      )}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-700">
-                    Ngày cập nhật:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {new Date(selectedOrder.updatedAt).toLocaleString(
-                        "vi-VN"
-                      )}
-                    </span>
-                  </p>
-                </div>
-
-                {/* Cột 2 */}
-                <div className="space-y-4">
-                  <p className="text-sm font-medium text-gray-700">
-                    Tên khách hàng:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {selectedOrder.customerInfo?.name || "N/A"}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-700">
-                    Email:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {selectedOrder.customerInfo?.email || "N/A"}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-700">
-                    Tổng đơn hàng:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {formatPrice(selectedOrder.totalPrice)}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-700">
-                    PTTT:{" "}
-                    <span className="font-semibold text-gray-900">
-                      {paymentMethodDisplay(selectedOrder.paymentMethod)}
-                    </span>{" "}
-                    {selectedOrder.paymentMethod === "momo" ||
-                    selectedOrder.paymentMethod === "zalopay" ? (
-                      <>
-                        - Trạng thái:{" "}
-                        <span className="font-semibold text-gray-900">
-                          {paymentStatusDisplay(selectedOrder.paymentStatus)}
-                        </span>
-                      </>
-                    ) : null}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 bg-white shadow-md rounded-md mb-6 transition duration-300 hover:shadow-lg hover:bg-gray-50">
-              <p className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-600">
-                  Trạng thái:
-                </span>
-                <Select
-                  className="w-40"
-                  value={selectedOrder.orderStatus}
-                  onChange={(newStatus) =>
-                    handleStatusChange(newStatus, selectedOrder)
-                  }
-                  disabled={["completed", "canceled"].includes(
-                    selectedOrder.orderStatus
-                  )}
-                >
-                  {Object.entries(OrderStatusLabels).map(([key, label]) => (
-                    <Select.Option key={key} value={key}>
-                      <span
-                        className={`font-semibold px-2 py-1 rounded-md block w-full ${getStatusColor(
-                          key as OrderStatus
-                        )}`}
-                      >
-                        {label}
-                      </span>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </p>
-
-              {selectedOrder.orderStatus === "canceled" &&
-                selectedOrder.cancellationReason && (
-                  <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <svg
-                        className="w-5 h-5 text-red-500 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <h4 className="text-lg font-semibold text-red-700">
-                        Đơn hàng bị hủy
-                      </h4>
-                    </div>
-                    <p className="mt-2 text-gray-700">
-                      <strong className="font-medium">Lý do hủy: </strong>
-                      {selectedOrder.cancellationReason || "Chưa có lý do hủy"}
-                    </p>
-                  </div>
-                )}
-            </div>
-
-            <div>
-              <h4 className="text-lg font-semibold mb-4 text-gray-800">
-                Chi tiết sản phẩm:
-              </h4>
-              <Table
-                columns={itemColumns}
-                dataSource={selectedOrder.orderDetail_id}
-                pagination={false}
-                rowKey="_id"
-                className="border border-gray-200 rounded-md shadow-md"
-                style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}
-              />
-            </div>
-          </>
-        )}
-      </Drawer>
 
       <style>{`
         .row-canceled {
