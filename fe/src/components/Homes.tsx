@@ -36,12 +36,18 @@ const Homes: React.FC = () => {
     },
   });
 
-  // Nhóm bài viết theo danh mục
+  // Nhóm bài viết theo danh mục, bỏ qua các bài viết và danh mục bị isDeleted = true
   const postsByCategory = useMemo(() => {
     if (!posts?.data || !categoryPost?.data) return {};
 
-    return categoryPost.data.reduce((acc, category) => {
-      acc[category._id] = posts.data.filter(
+    const filteredCategories = categoryPost.data.filter(
+      (category) => !category.isDeleted
+    );
+
+    const filteredPosts = posts.data.filter((post) => !post.isDeleted);
+
+    return filteredCategories.reduce((acc, category) => {
+      acc[category._id] = filteredPosts.filter(
         (post) => post.categoryPost?._id === category._id
       );
       return acc;
@@ -58,36 +64,38 @@ const Homes: React.FC = () => {
           {category.title}
         </h2>
         <div className="row grid grid-cols-1 md:grid-cols-3 gap-5">
-          {categoryPosts.map((post) => (
-            <div key={post._id} className="rounded-[10px] overflow-hidden">
-              <ul className="img_homes">
-                <li>
+          {categoryPosts
+            .filter((post) => !post.isDeleted) // Lọc các bài viết không bị xóa
+            .map((post) => (
+              <div key={post._id} className="rounded-[10px] overflow-hidden">
+                <ul className="img_homes">
+                  <li>
+                    <Link to={`chuyennha-detail/${post._id}`}>
+                      <img
+                        src={post.imagePost}
+                        alt={post.title}
+                        loading="lazy"
+                        className="hover:scale-110 ease-in-out duration-300 object-cover w-full h-auto rounded-[10px]"
+                      />
+                    </Link>
+                  </li>
+                </ul>
+                <nav className="mx-3 md:mx-0">
+                  <p className="my-2 text-left text-gray-500">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </p>
                   <Link to={`chuyennha-detail/${post._id}`}>
-                    <img
-                      src={post.imagePost}
-                      alt={post.title}
-                      loading="lazy"
-                      className="hover:scale-110 ease-in-out duration-300 object-cover w-full h-auto rounded-[10px]"
-                    />
+                    <h3 className="uppercase truncate text-[17px] font-semibold pb-1">
+                      {post.title}
+                    </h3>
                   </Link>
-                </li>
-              </ul>
-              <nav className="mx-3 md:mx-0">
-                <p className="my-2 text-left text-gray-500">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </p>
-                   <Link to={`chuyennha-detail/${post._id}`}>
-                  <h3 className="uppercase truncate text-[17px] font-semibold pb-1">
-                    {post.title}
-                  </h3>
-                </Link>
-                <p
-                  className="text-[15px] text-gray-700 line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: post.excerpt }}
-                />
-              </nav>
-            </div>
-          ))}
+                  <p
+                    className="text-[15px] text-gray-700 line-clamp-2"
+                    dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                  />
+                </nav>
+              </div>
+            ))}
         </div>
       </div>
     );

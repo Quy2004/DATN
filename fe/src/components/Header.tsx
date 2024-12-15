@@ -185,7 +185,7 @@ const Header: React.FC = () => {
 	return (
 		<>
 			<header className="absolute z-10 w-full">
-				<div className="flex h-16 container bg-white sm:justify-evenly md:justify-between items-center mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="flex h-16 container bg-white sm:justify-evenly items-center mx-auto px-4 sm:px-6">
 					{/* Hamburger Menu - Hiển thị khi màn hình nhỏ */}
 					<button
 						onClick={() => setIsOpenMenu(true)}
@@ -450,9 +450,14 @@ const Header: React.FC = () => {
 													d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
 												/>
 											</svg>
-											<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
-												{unreadCount >= 0 && <span>{unreadCount}</span>}
-											</span>
+											{
+												userName ? (
+
+													<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+														{unreadCount >= 0 && <span>{unreadCount}</span>}
+													</span>
+												) : ("")
+											}
 											{isDropdownOpen2 && (
 												<div className="z-10 ml-[-160px] *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md w-[400px] max-h-[500px] dark:bg-gray-700 absolute -left-32 top-8 mt-4">
 													<h2 className="text-2xl font-bold ml-20">
@@ -486,7 +491,7 @@ const Header: React.FC = () => {
 																				</p>
 																				<div className="hidden group-hover:block">
 																					<Button className="px-2 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-300 transition-all"
-         
+
 																						onClick={e => {
 																							e.preventDefault(); // Ngăn chặn hành vi mặc định của Link
 																							e.stopPropagation(); // Ngăn sự kiện lan truyền lên thẻ Link
@@ -531,9 +536,14 @@ const Header: React.FC = () => {
 												d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
 											/>
 										</svg>
-										<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
-											{cartItems?.length ? cartItems.length : 0}
-										</span>
+										{
+											userName ? (
+
+												<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+													{cartItems?.length ? cartItems.length : 0}
+												</span>
+											) : ("")
+										}
 									</button>
 								</nav>
 							</div>
@@ -557,9 +567,13 @@ const Header: React.FC = () => {
 											d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
 										/>
 									</svg>
-									<span className="absolute bg-red-500 bottom-3 left-3 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
-										{cartItems?.length ? cartItems.length : 0}
-									</span>
+									{
+										userName ? (
+											<span className="absolute bg-red-500 bottom-3 left-3 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
+												{cartItems?.length ? cartItems.length : 0}
+											</span>
+										) : ("")
+									}
 								</Link>
 							</div>
 						</div>
@@ -742,11 +756,22 @@ const Header: React.FC = () => {
 						/>
 					))}
 					<div className="flex gap-2">
-						<Link to={"cart"}>
-							<button className="w-[250px] mt-2 py-[6px] mx-5 rounded-lg px-4 text-center font-medium text-white bg-[#ea8025] hover:bg-[#FF6600]">
-								Kiểm tra giỏ hàng
-							</button>
-						</Link>
+						{
+							userName ? (
+								<Link to={"cart"}>
+									<button className="w-[250px] mt-2 py-[6px] mx-5 rounded-lg px-4 text-center font-medium text-white bg-[#ea8025] hover:bg-[#FF6600]">
+										Kiểm tra giỏ hàng
+									</button>
+								</Link>
+							) : (
+								<Link to={"login"}>
+									<button className="w-[250px] mt-2 py-[6px] mx-5 rounded-lg px-4 text-center font-medium text-white bg-[#ea8025] hover:bg-[#FF6600]">
+										Đăng nhập
+									</button>
+								</Link>
+							)
+						}
+
 						{/* <Button
 							onClick={toggleModal}
 							className="inline-flex w-full rounded-lg bg-cyan-700 px-4 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"

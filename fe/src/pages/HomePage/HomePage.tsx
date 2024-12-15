@@ -96,18 +96,24 @@ const HomePage: React.FC = () => {
     },
   });
 
-  const images: string[] = banners?.data
-    ? banners.data.map((banner: Banner) => banner.imageBanner).slice(2, 5)
+  const validBanners = banners?.data
+    ? banners.data.filter((banner: Banner) => !banner.isDeleted)
     : [];
 
   const [bannerFull, bannerApp] = [
-    banners?.data?.[0]?.imageBanner || null,
-    banners?.data?.[1]?.imageBanner || null,
+    validBanners[0]?.imageBanner || null,
+    validBanners[1]?.imageBanner || null,
   ];
+
+  // Images slice from position 2 to 5
+  const images: string[] = validBanners
+    .slice(2, 5)
+    .map((banner: Banner) => banner.imageBanner);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 2000); // Thay đổi 3000 thành khoảng thời gian bạn muốn giữa các hình ảnh
+    }, 100000); // Thay đổi 3000 thành khoảng thời gian bạn muốn giữa các hình ảnh
 
     return () => clearInterval(interval);
   }, [currentIndex, images.length]);
@@ -278,14 +284,27 @@ const HomePage: React.FC = () => {
   return (
     <>
       <div>
-        <img
-          src={images[currentIndex]}
-          alt="Banner"
-          className="w-full h-52 mt-[65px] object-cover md:mt-12 md:h-[480px]"
-        />
+        <div className="overflow-hidden w-full">
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`, // Dịch chuyển ngang
+            }}
+          >
+            {[...images, images[0]].map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Slide ${index + 1}`}
+                className="w-full h-52 mt-[65px] object-cover md:mt-12 md:h-[500px] flex-shrink-0"
+              />
+            ))}
+          </div>
+        </div>
+
         <div className="containerAll mx-auto overflow-hidden home">
           <h1 className="font-medium text-lg py-1 mx-4 md:py-3 md:mx-0 md:font-semibold md:text-3xl">
-            Sản Phẩm Hot
+            Sản Phẩm Mới
           </h1>
           <div className="flex flex-wrap gap-0 text-left h-auto md:flex-row md:gap-6 md:h-[330px]">
             <div className="cow_left mx-4 md:mx-0">
@@ -321,7 +340,7 @@ const HomePage: React.FC = () => {
                             key={product._id}
                             onClick={() => toggleModal(product)}
                             className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-              left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
+                              left-[50%] top-[37%] transform -translate-x-1/2 flex items-center justify-center"
                           >
                             {/* SVG và nội dung của nút */}
                             <svg
@@ -344,7 +363,7 @@ const HomePage: React.FC = () => {
                       ) : (
                         <button
                           className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-            left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
+                            left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -365,39 +384,39 @@ const HomePage: React.FC = () => {
                       )}
                     </div>
                     {/* Thông tin tên và giá sản phẩm */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex justify-between">
                       <div>
                         <Link to={`detail/${product._id}`}>
                           <h3 className="text-lg font-semibold">
                             {product.name}
                           </h3>
                         </Link>
-                        <div className="flex items-center space-x-2 text-sm md:text-[14px]">
+                        <div className="flex items-center space-x-2 text-sm md:text-base">
                           {/* Hiển thị giá */}
                           {product.price !== product.sale_price ? (
                             <>
                               <p className="text-gray-500 line-through italic">
                                 {formatPrice(product.price)} VNĐ
                               </p>
-                              <p className="text-red-600 font-medium text-lg md:text-[14px]">
+                              <p className="text-red-600 font-medium text-sm md:text-base">
                                 {formatPrice(product.sale_price)} VNĐ
                               </p>
                             </>
                           ) : (
-                            <p className="text-gray-600 text-lg md:text-[14px]">
+                            <p className="text-gray-600 text-sm md:text-base">
                               {formatPrice(product.sale_price)} VNĐ
                             </p>
                           )}
                         </div>
                       </div>
                       <div>
-                        <i className="text-sm">
+                        <p className="text-sm flex">
                           {product.status === "available" ? (
                             ""
                           ) : (
-                            <span className="text-red-500">Hết hàng</span>
+                            <span className="text-red-500 font-medium mt-7 -ml-3 md:mt-8">Hết hàng</span>
                           )}
-                        </i>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -476,41 +495,41 @@ const HomePage: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <Link to={`detail/${product._id}`}>
-                                <h3 className="text-lg font-semibold">
-                                  {product.name}
-                                </h3>
-                              </Link>
-                              <div className="flex items-center space-x-2 text-sm md:text-[14px]">
-                                {/* Hiển thị giá */}
-                                {product.price !== product.sale_price ? (
-                                  <>
-                                    <p className="text-gray-500 line-through italic">
-                                      {formatPrice(product.price)} VNĐ
-                                    </p>
-                                    <p className="text-red-600 font-medium text-lg md:text-[14px]">
-                                      {formatPrice(product.sale_price)} VNĐ
-                                    </p>
-                                  </>
-                                ) : (
-                                  <p className="text-gray-600 text-lg md:text-[14px]">
-                                    {formatPrice(product.sale_price)} VNĐ
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <div>
-                              <i className="text-sm">
-                                {product.status === "available" ? (
-                                  ""
-                                ) : (
-                                  <span className="text-red-500">Hết hàng</span>
-                                )}
-                              </i>
-                            </div>
-                          </div>
+                        <div className="flex justify-between">
+                      <div>
+                        <Link to={`detail/${product._id}`}>
+                          <h3 className="text-lg font-semibold">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        <div className="flex items-center space-x-2 text-sm md:text-base">
+                          {/* Hiển thị giá */}
+                          {product.price !== product.sale_price ? (
+                            <>
+                              <p className="text-gray-500 line-through italic">
+                                {formatPrice(product.price)} VNĐ
+                              </p>
+                              <p className="text-red-600 font-medium text-sm md:text-base">
+                                {formatPrice(product.sale_price)} VNĐ
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-gray-600 text-sm md:text-base">
+                              {formatPrice(product.sale_price)} VNĐ
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <i className="text-sm flex">
+                          {product.status === "available" ? (
+                            ""
+                          ) : (
+                            <span className="text-red-500 mt-7 -ml-3 md:ml-0">Hết hàng</span>
+                          )}
+                        </i>
+                      </div>
+                    </div>
                         </div>
                       </div>
                     </div>
