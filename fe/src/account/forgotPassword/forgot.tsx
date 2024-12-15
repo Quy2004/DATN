@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaEnvelope, FaArrowLeft } from "react-icons/fa";
 import instance from "../../services/api";
+import Swal from "sweetalert2";
 
 const Forgot = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +22,27 @@ const Forgot = () => {
       const response = await instance.post("/auth/forgot-password", { email });
       setMessage(response.data.message);
       setIsError(false);
-    } catch (error: any) {
-      setMessage(
-        error.response?.data?.message || "Lỗi khi gửi yêu cầu quên mật khẩu"
-      );
+      Swal.fire({
+        title: "Thành công!",
+        text: "Email đã được gửi thành công.",
+        icon: "success",  
+      });
+      setTimeout(() => {
+        navigate("/login");
+      }, 4000
+    )     
+      
+    } catch (error: unknown) {
+      Swal.fire({
+        title: "Thành công!",
+        text: "Email đã được gửi thành công.",
+        icon: "success",
+      });
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 4000
+    )
       setIsError(true);
     } finally {
       setLoading(false);
