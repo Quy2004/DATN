@@ -62,7 +62,7 @@ const ChuyenNhaDetail: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
       {/* Breadcrumb */}
-      <nav className="sm:flex mb-6 sm:mb-8 text-sm text-gray-600 mt-16">
+      <nav className="flex mb-6 sm:mb-8 text-sm text-gray-600 mt-16">
         <a href="/" className="hover:text-brown-600 text-gray-700 font-medium">
           Trang chủ
         </a>
@@ -81,7 +81,7 @@ const ChuyenNhaDetail: React.FC = () => {
       {/* Article Header */}
       <article className="prose prose-sm sm:prose lg:prose-xl max-w-none">
         <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
             {post.title}
           </h1>
 
@@ -151,11 +151,11 @@ const ChuyenNhaDetail: React.FC = () => {
                     <img
                       src={relatedPost.imagePost || "/placeholder-image.jpg"} // Thêm hình ảnh mặc định nếu không có
                       alt={relatedPost.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   </Link>
                 </div>
-                <div className="p-4">
+                <div className="py-2 md:p-4">
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                     <Link
                       to={`/chuyennha-detail/${relatedPost._id}`}
