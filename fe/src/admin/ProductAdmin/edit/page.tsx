@@ -417,7 +417,9 @@ const ProductEditPage: React.FC = () => {
       message.error("Không thể kiểm tra trạng thái danh mục");
     }
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   if (
     isLoadingProduct ||
     isLoadingCategories ||
@@ -473,7 +475,7 @@ const ProductEditPage: React.FC = () => {
                     );
                   }
 
-                  // Loại bỏ khoảng trắng thừa ở đầu và cuối, và thay thế nhiều khoảng trắng bằng 1 khoảng
+                  // Loại bỏ khoảng trắng thừa ở đầu và cuối, và thay thế nhiều khoảng trắng bằng 1 khoảng trắng
                   const trimmedValue = value.trim().replace(/\s+/g, " ");
                   const hasNumber = /\d/;
                   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
@@ -497,12 +499,15 @@ const ProductEditPage: React.FC = () => {
                         trimmedValue
                       )}&limit=50`
                     );
+
+                    // Loại trừ sản phẩm hiện tại bằng cách kiểm tra id
                     const existingProduct = response.data.data.find(
                       (product: Product) =>
                         product.name
                           .trim()
                           .replace(/\s+/g, " ")
-                          .toLowerCase() === trimmedValue.toLowerCase()
+                          .toLowerCase() === trimmedValue.toLowerCase() &&
+                        product._id !== id // Loại trừ sản phẩm hiện tại
                     );
 
                     if (existingProduct) {
@@ -536,10 +541,10 @@ const ProductEditPage: React.FC = () => {
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
             <Select placeholder="Chọn danh mục" onChange={handleCategoryChange}>
-              {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
-                  {category.title}
-                </Option>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -565,6 +570,11 @@ const ProductEditPage: React.FC = () => {
                   if (numericValue <= 0) {
                     return Promise.reject(
                       new Error("Giá sản phẩm phải lớn hơn 0")
+                    );
+                  }
+                  if (numericValue > 100000) {
+                    return Promise.reject(
+                      new Error("Giá sản phẩm không được lớn hơn 100.000 đ")
                     );
                   }
                   return Promise.resolve();

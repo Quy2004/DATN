@@ -149,7 +149,9 @@ const ToppingManagerPage = () => {
             .join(", ")
         : item.category_id?.title || "",
     }));
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   const columns: ColumnsType<Topping> = [
     {
       title: "STT",
@@ -178,15 +180,15 @@ const ToppingManagerPage = () => {
       key: "priceTopping",
       render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
       filters: [
-        { text: "Dưới 10,000 VND", value: "low" },
-        { text: "Từ 10,000 VND - 50,000 VND", value: "medium" },
-        { text: "Trên 50,000 VND", value: "high" },
+        { text: "Dưới 5,000 VND", value: "low" },
+        { text: "Từ 5,000 VND - 10,000 VND", value: "medium" },
+        { text: "Trên 10,000 VND", value: "high" },
       ],
       onFilter: (value, record) => {
-        if (value === "low") return record.priceTopping < 10000;
+        if (value === "low") return record.priceTopping < 5000;
         if (value === "medium")
-          return record.priceTopping >= 10000 && record.priceTopping <= 50000;
-        if (value === "high") return record.priceTopping > 50000;
+          return record.priceTopping >= 5000 && record.priceTopping <= 10000;
+        if (value === "high") return record.priceTopping > 10000;
         return true;
       },
     },
@@ -195,9 +197,9 @@ const ToppingManagerPage = () => {
       dataIndex: "categoryTitle",
       key: "categoryTitle",
       filters:
-        categories?.data?.map((category: Category) => ({
-          text: category.title,
-          value: category.title,
+        subcategories?.map((subcategories: Category) => ({
+          text: subcategories.title,
+          value: subcategories.title,
         })) || [],
       onFilter: (value, record) => record.categoryTitle === value,
       render: (categoryTitle) => <span>{categoryTitle}</span>,
@@ -372,7 +374,7 @@ const ToppingManagerPage = () => {
           showSizeChanger: true,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
-        scroll={{ x: "max-content", y: 350 }}
+        scroll={{ x: "max-content", y: 310 }}
       />
     </>
   );

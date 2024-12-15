@@ -84,26 +84,59 @@ class ProductController {
 
   async getTeaProducts(req, res) {
     try {
-      // Tìm danh mục có tên là "Trà"
+      const { page = 1, limit = 8 } = req.query; // Lấy tham số phân trang
+
+      // Tìm danh mục "Trà"
       const category = await Category.findOne({ title: "Trà" });
       if (!category) {
-        return res.status(404).json({ message: "Danh mục 'Trà' không tồn tại" });
+        return res
+          .status(404)
+          .json({ message: "Danh mục 'Trà' không tồn tại" });
       }
-  
-      // Tìm các sản phẩm thuộc danh mục "Trà"
-      const products = await Product.find({ 
-        category_id: category._id, 
+
+      // Tìm tất cả danh mục con của "Trà" (bao gồm cả danh mục "Trà" chính)
+      const subCategories = await Category.find({ parent_id: category._id });
+      const categoryIds = [
+        category._id,
+        ...subCategories.map((subCategory) => subCategory._id),
+      ];
+
+      // Tìm các sản phẩm thuộc các danh mục con của "Trà" và có trạng thái "available"
+      const products = await Product.find({
+        category_id: { $in: categoryIds },
+        isDeleted: false, // Sản phẩm chưa bị xóa
+        active: { $ne: false }, // Loại bỏ sản phẩm có active = true
+      })
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit) // Phân trang: bỏ qua các sản phẩm trước đó
+        .limit(limit) // Giới hạn số lượng sản phẩm mỗi trang
+        .populate([
+          { path: "category_id", select: "title" },
+          { path: "product_sizes.size_id", select: "name" },
+          { path: "product_toppings.topping_id", select: "nameTopping" },
+        ]);
+
+      // Thêm logic để kiểm tra trạng thái của sản phẩm (còn hàng hay hết hàng)
+      const updatedProducts = products.map((product) => ({
+        ...product.toObject(),
+        stockStatus: product.status === "available" ? "còn hàng" : "hết hàng",
+      }));
+
+      // Tính tổng số sản phẩm và tổng số trang
+      const totalProducts = await Product.countDocuments({
+        category_id: { $in: categoryIds },
         isDeleted: false,
-        status: "available"
-      }).populate([
-        { path: "category_id", select: "title" },
-        { path: "product_sizes.size_id", select: "name" },
-        { path: "product_toppings.topping_id", select: "nameTopping" },
-      ]);
-  
+        active: { $ne: true }, // Loại bỏ sản phẩm có active = true khi đếm
+      });
+
+      const totalPages = Math.ceil(totalProducts / limit);
+
       res.status(200).json({
-        message: "Lấy sản phẩm thuộc danh mục 'Trà' thành công",
-        data: products,
+        message:
+          "Lấy sản phẩm thuộc danh mục 'Trà' và các danh mục con thành công",
+        data: updatedProducts,
+        totalPages,
+        currentPage: page,
       });
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -112,26 +145,68 @@ class ProductController {
 
   async getCoffeProducts(req, res) {
     try {
-      // Tìm danh mục có tên là "Coffe"
+      // Lấy số trang từ query, mặc định là trang 1
+      const { page = 1, limit = 8 } = req.query; // Lấy tham số phân trang
+
+      // Tìm danh mục "Cà phê"
       const category = await Category.findOne({ title: "Cà phê" });
       if (!category) {
-        return res.status(404).json({ message: "Danh mục 'Cà phê' không tồn tại" });
+        return res
+          .status(404)
+          .json({ message: "Danh mục 'Cà phê' không tồn tại" });
       }
-  
-      // Tìm các sản phẩm thuộc danh mục "Coffe"
-      const products = await Product.find({ 
-        category_id: category._id, 
+
+      // Tìm tất cả danh mục con của "Cà phê" (bao gồm cả danh mục "Cà phê" chính)
+      const subCategories = await Category.find({ parent_id: category._id });
+
+      // Tạo mảng các category_id để tìm sản phẩm
+      const categoryIds = [
+        category._id,
+        ...subCategories.map((subCategory) => subCategory._id),
+      ];
+
+      // Tính toán số sản phẩm cần bỏ qua (skip) cho trang hiện tại
+      const skip = (page - 1) * limit;
+
+      // Tìm các sản phẩm thuộc các danh mục con của "Cà phê" với phân trang
+      const products = await Product.find({
+        category_id: { $in: categoryIds },
+        isDeleted: false, // Sản phẩm chưa bị xóa
+        active: { $ne: false }, // Loại bỏ sản phẩm có active = true
+      })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate([
+          { path: "category_id", select: "title" },
+          { path: "product_sizes.size_id", select: "name" },
+          { path: "product_toppings.topping_id", select: "nameTopping" },
+        ]);
+      // Thêm logic để kiểm tra trạng thái của sản phẩm (còn hàng hay hết hàng)
+      const updatedProducts = products.map((product) => ({
+        ...product.toObject(),
+        stockStatus: product.status === "available" ? "còn hàng" : "hết hàng",
+      }));
+
+      // Đếm tổng số sản phẩm để tính số trang
+      const totalProducts = await Product.countDocuments({
+        category_id: { $in: categoryIds },
         isDeleted: false,
-        status: "available"
-      }).populate([
-        { path: "category_id", select: "title" },
-        { path: "product_sizes.size_id", select: "name" },
-        { path: "product_toppings.topping_id", select: "nameTopping" },
-      ]);
-  
+        status: "available",
+      });
+
+      // Tính toán tổng số trang
+      const totalPages = Math.ceil(totalProducts / limit);
+
       res.status(200).json({
-        message: "Lấy sản phẩm thuộc danh mục 'Coffe' thành công",
-        data: products,
+        message:
+          "Lấy sản phẩm thuộc danh mục 'Cà phê' và các danh mục con thành công",
+        data: updatedProducts,
+        pagination: {
+          currentPage: page,
+          totalPages: totalPages,
+          totalProducts: totalProducts,
+        },
       });
     } catch (error) {
       res.status(500).json({ message: error.message });

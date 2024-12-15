@@ -73,7 +73,9 @@ const ToppingUpdatePage = () => {
       </div>
     );
   }
-
+  const subcategories = categories.data.filter(
+    (category: Category) => category.parent_id !== null
+  );
   return (
     <>
       <div className="flex items-center justify-between mb-5">
@@ -149,9 +151,9 @@ const ToppingUpdatePage = () => {
               placeholder="Chọn danh mục"
               disabled={isLoadingCategories}
             >
-              {categories?.data?.map((category: Category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.title}
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
                 </Select.Option>
               ))}
             </Select>
