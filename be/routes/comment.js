@@ -5,6 +5,7 @@ const commentRouter = express.Router();
 
 const commentController = new CommentController();
 commentRouter.get("/", commentController.getAllComments);
+commentRouter.get("/:id", commentController.GetById);
 commentRouter.get("/parent/:parent_id", commentController.getCommentParent);
 commentRouter.get("/product/:product_id", commentController.getCommentProduct);
 commentRouter.post("/", commentController.createComment);
