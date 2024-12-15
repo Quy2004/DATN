@@ -49,7 +49,7 @@ const TeaPage: React.FC = () => {
 
   return (
     <div className="containerAll mt-[60px] mx-4 md:px-4 md:mx-auto">
-      <div className="mb-6 md:mb-8">
+      <div className="*:mx-auto mb-6 *:md:mx-0 md:mb-8">
         <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">
           Trà
         </h1>
@@ -75,7 +75,7 @@ const TeaPage: React.FC = () => {
               </Link>
               <div>
                 <Link to="#">
-                  <h3 className="text-2xl mt-0 md:mt-2">{tea.name}</h3>
+                  <h3 className="text-sm mt-0 md:mt-2 max-w-[190px] md:max-w-[250px]">{tea.name}</h3>
                 </Link>
                 <div className="flex justify-between">
                   <p className="text-sm text-gray-500">

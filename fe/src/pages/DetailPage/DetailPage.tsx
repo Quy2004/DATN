@@ -442,7 +442,7 @@ const DetailPage = () => {
 							</div>
 						</div>
 						<div className="my-2  md:my-2 md:px-0">
-							<div className="p-6 border space-y-6 ">
+							<div className="px-[15px] border space-y-6 md:p-6">
 								<h1 className="text-2xl font-semibold">Nội dung đánh giá</h1>
 								<div className="max-h-[600px] overflow-auto">
 									{comments?.map((review: Comment) => (
@@ -531,7 +531,7 @@ const DetailPage = () => {
 													</div>
 												</Link>
 												<Link to={`/detail/${item._id}`}>
-													<h3 className="text-sm font-semibold text-gray-800 text-center line-clamp-1">
+													<h3 className="text-sm font-semibold text-gray-800 text-center line-clamp-1 max-w-[190px] md:max-w-[250px]">
 														{item.name}
 													</h3>
 												</Link>

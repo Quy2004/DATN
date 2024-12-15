@@ -30,24 +30,24 @@ const Detail = () => {
 		},
 		enabled: !!id, // Chỉ fetch khi có ID
 	});
-	
-		const fetchComments = async () => {
-			if (!id) return; // Kiểm tra nếu id không tồn tại
 
-			setLoading(true);
-			setError(null); // Đặt lỗi về null trước khi gọi API
+	const fetchComments = async () => {
+		if (!id) return; // Kiểm tra nếu id không tồn tại
 
-			try {
-				const response = await instance.get(`/comment/parent/${id}`);
-				setRepComment(response.data); // Giả sử dữ liệu trả về là mảng
-			} catch (err) {
-				console.error("Lỗi khi gọi API:", err);
-				setError(err); // Cập nhật trạng thái lỗi
-			} finally {
-				setLoading(false); // Kết thúc trạng thái tải
-			}
-		};
-        useEffect(() => {
+		setLoading(true);
+		setError(null); // Đặt lỗi về null trước khi gọi API
+
+		try {
+			const response = await instance.get(`/comment/parent/${id}`);
+			setRepComment(response.data); // Giả sử dữ liệu trả về là mảng
+		} catch (err) {
+			console.error("Lỗi khi gọi API:", err);
+			setError(err); // Cập nhật trạng thái lỗi
+		} finally {
+			setLoading(false); // Kết thúc trạng thái tải
+		}
+	};
+	useEffect(() => {
 
 		fetchComments();
 	}, [id]); // Chạy lại khi id thay đổi
@@ -72,25 +72,25 @@ const Detail = () => {
 			// Reset form sau khi thêm thành công
 			form.resetFields();
 			// Chuyển hướng về trang quản lý bình luận
-            fetchComments();
+			fetchComments();
 		},
 		onError(error) {
 			messageApi.error(`Lỗi: ${error.message}`);
 		},
 	});
 
-    const mutationSoftDelete = useMutation<void, Error, string>({
+	const mutationSoftDelete = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
 				return await instance.delete(`/comment/${_id}`);
-                
+
 			} catch (error) {
 				throw new Error("Xóa bình luận thất bại");
 			}
 		},
 		onSuccess: () => {
 			messageApi.success("Xóa bình luận thành công");
-             fetchComments();
+			fetchComments();
 			queryClient.invalidateQueries({ queryKey: ["comment"] });
 		},
 		onError: error => {
@@ -98,7 +98,7 @@ const Detail = () => {
 		},
 	});
 
-    
+
 	// Khi dữ liệu đang tải hoặc có lỗi
 	if (isCommentLoading) return <div>Đang tải dữ liệu...</div>;
 	if (commentError) return <div>Có lỗi xảy ra khi tải dữ liệu!</div>;
@@ -133,41 +133,38 @@ const Detail = () => {
 	};
 
 	return (
-		<div className="bg-white">
+		<div className="bg-white p-6">
 			{contextHolder}
-			<h1 className="text-3xl font-semibold">Chi tiết bình luận</h1>
-			<div className="mx-auto mt-5 rounded-lg p-6 overflow-auto max-h-[400px] w-[98%]">
+			<h1 className="text-3xl font-semibold text-center mb-6">Chi tiết bình luận</h1>
+
+			<div className="mx-auto mt-5 rounded-lg p-6 overflow-auto max-h-[400px] w-[98%] border shadow-sm">
 				{/* Thông tin tài khoản */}
-				<div className="border-b pb-4 mb-4">
-					<h2 className="text-xl font-semibold text-gray-800">
-						Thông tin người dùng
-					</h2>
+				<div className="border-b pb-4 mb-6">
+					<h2 className="text-xl font-semibold text-gray-800 mb-2">Thông tin người dùng</h2>
 					<p className="text-gray-600">
-						Tên: {comment.user_id?.userName || "Không có thông tin"}
+						<span className="font-medium">Tên:</span> {comment.user_id?.userName || "Không có thông tin"}
 					</p>
 					<p className="text-gray-600">
-						Email: {comment.user_id?.email || "Không có thông tin"}
+						<span className="font-medium">Email:</span> {comment.user_id?.email || "Không có thông tin"}
 					</p>
 				</div>
 
 				{/* Thông tin sản phẩm */}
-				<div className="border-b pb-4 mb-4">
-					<h2 className="text-xl font-semibold text-gray-800">
-						Thông tin sản phẩm
-					</h2>
-					<div className="flex">
+				<div className="border-b pb-4 mb-6">
+					<h2 className="text-xl font-semibold text-gray-800 mb-2">Thông tin sản phẩm</h2>
+					<div className="flex items-start">
 						{comment.product_id?.image && (
 							<img
 								src={comment.product_id.image}
 								alt={comment.product_id.name}
-								className="w-64 h-64 object-cover rounded-lg mt-2"
+								className="w-32 h-32 object-cover rounded-lg shadow-sm border"
 							/>
 						)}
-						<div className="ml-5 text-xl">
-							<p className="font-semibold">
+						<div className="ml-5 text-lg">
+							<p className="font-semibold mb-2">
 								Tên sản phẩm: {comment.product_id?.name || "Không có thông tin"}
 							</p>
-							<p className="text-lg mt-2">
+							<p className="text-gray-600">
 								Giá:{" "}
 								{comment.product_id?.price
 									? `${comment.product_id.price.toLocaleString()} VNĐ`
@@ -178,76 +175,68 @@ const Detail = () => {
 				</div>
 
 				{/* Nội dung bình luận */}
-				<div>
-					<h2 className="text-xl font-semibold text-gray-800">
-						Nội dung bình luận
-					</h2>
+				<div className="mb-6">
+					<h2 className="text-xl font-semibold text-gray-800 mb-2">Nội dung bình luận</h2>
 					<textarea
-						className="w-full "
+						className="w-full p-4 border rounded-lg bg-gray-50 text-gray-800"
 						readOnly
+						rows="4"
 					>
 						{comment.content || "Không có nội dung"}
 					</textarea>
-					{
-						(comment.image.length = 0 ? (
-							<div className="flex flex-wrap gap-2 mt-2">
-								{comment.image?.map((img, idx) => (
-									<img
-										key={idx}
-										src={img}
-										alt={`image-${idx}`}
-										className="w-16 h-16 object-cover rounded"
-									/>
-								))}
-							</div>
-						) : (
-							""
-						))
-					}
-
-					<div>
-						<div className="space-y-2 max-h-[300px] overflow-auto">
-							{loading && <div>Đang tải...</div>}
-							{repComment.length === 0
-								? ""
-								: repComment.map((reply: Comment) => (
-										<div
-											className="flex"
-											key={reply._id}
-										>
-											<div className="text-sm ml-3 w-[90%]">
-                                                <p className="font-semibold ">Câu trả lời của admin</p>
-												<p className="ml-5 font-normal">{reply.content}</p>
-                                                <Popconfirm
-													title="Xóa bình luận"
-													description="Bạn có chắc muốn xóa bình luận này không?"
-													onConfirm={() =>
-														mutationSoftDelete.mutate(reply._id)
-													}
-													okText="Yes"
-													cancelText="No"
-												>
-													<Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-														Xóa
-													</Button>
-												</Popconfirm>
-											</div>
-										</div>
-								  ))}
+					{comment.image.length !== 0 && (
+						<div className="flex flex-wrap gap-2 mt-4">
+							{comment.image?.map((img, idx) => (
+								<img
+									key={idx}
+									src={img}
+									alt={`image-${idx}`}
+									className="w-16 h-16 object-cover rounded border shadow-sm"
+								/>
+							))}
 						</div>
-					</div>
+					)}
 				</div>
 
-				{/* Nút trả lời */}
-				<Button
-					type="primary"
-					onClick={() => showModalRep(comment)}
-					className="mt-[10px]"
-				>
-					Trả lời
-				</Button>
+				{/* Phần trả lời */}
+				<div>
+					<div className="space-y-4 max-h-[300px] overflow-auto">
+						{loading && <div className="text-center text-gray-500">Đang tải...</div>}
+						{repComment.length > 0 &&
+							repComment.map((reply: Comment) => (
+								<div className="flex items-start border-b pb-4" key={reply._id}>
+									<div className="ml-3 w-full">
+										<p className="font-semibold text-gray-800">Câu trả lời của admin</p>
+										<div className="flex">
+											<p className="w-[70%] ml-5 mt-2 text-gray-700">{reply.content}</p>
+											<Popconfirm className=" w-[30%]"
+												title="Xóa bình luận"
+												description="Bạn có chắc muốn xóa bình luận này không?"
+												onConfirm={() => mutationSoftDelete.mutate(reply._id)}
+												okText="Yes"
+												cancelText="No"
+											>
+												{/* Nút trả lời */}
+												<div className="flex justify-end items-center gap-x-2">
+													<Button
+														onClick={() => showModalRep(comment)}
+														className="bg-blue-600 text-white"
+													>
+														Trả lời
+													</Button>
+													{/* Nút xóa trả lời admin */}
+													<Button className="bg-red-600 text-white">
+														Xóa
+													</Button>
+												</div>
+											</Popconfirm>
+										</div>
+									</div>
+								</div>
+							))}
+					</div>
+				</div>
 			</div>
-
 			{/* Modal Trả lời */}
 			<Modal
 				title="Trả lời bình luận"
@@ -268,17 +257,13 @@ const Detail = () => {
 							form={form}
 							onFinish={onFinish}
 							initialValues={{
-								repcontent: selectedComment.content, // Nội dung bình luận hiển thị ở đây
-								userName: comment.user_id?.userName, // Tên người dùng
-								name: comment.product_id?.name, // Tên sản phẩm
-								id: selectedComment._id, // ID của bình luận
+								repcontent: selectedComment.content,
+								userName: comment.user_id?.userName,
+								name: comment.product_id?.name,
+								id: selectedComment._id,
 							}}
 						>
-							<Form.Item
-								label="id comment"
-								name="id"
-								className="hidden"
-							>
+							<Form.Item label="id comment" name="id" className="hidden">
 								<Input
 									disabled
 									className="Input-antd text-sm placeholder-gray-400"
@@ -286,10 +271,7 @@ const Detail = () => {
 								/>
 							</Form.Item>
 
-							<Form.Item
-								label="Tên người dùng"
-								name="userName"
-							>
+							<Form.Item label="Tên người dùng" name="userName">
 								<Input
 									disabled
 									className="Input-antd text-sm placeholder-gray-400"
@@ -297,10 +279,7 @@ const Detail = () => {
 								/>
 							</Form.Item>
 
-							<Form.Item
-								label="Tên sản phẩm"
-								name="name"
-							>
+							<Form.Item label="Tên sản phẩm" name="name">
 								<Input
 									disabled
 									className="Input-antd text-sm placeholder-gray-400"
@@ -308,10 +287,7 @@ const Detail = () => {
 								/>
 							</Form.Item>
 
-							<Form.Item
-								label="Nội dung bình luận"
-								name="repcontent"
-							>
+							<Form.Item label="Nội dung bình luận" name="repcontent">
 								<Input.TextArea
 									disabled
 									className="Input-antd text-sm placeholder-gray-400"
@@ -341,7 +317,7 @@ const Detail = () => {
 								<Button
 									type="primary"
 									htmlType="submit"
-									className="ml-[130px]"
+									className="bg-green-500 hover:bg-green-600 focus:ring-2 focus:ring-green-300 text-white rounded"
 								>
 									Trả lời
 								</Button>
