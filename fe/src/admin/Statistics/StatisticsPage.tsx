@@ -1,21 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  List,
-  Row,
-  Col,
-  Typography,
-  Spin,
-  Select,
-  DatePicker,
-} from "antd";
+import { Card, List, Row, Col, Typography, Select, DatePicker } from "antd";
 import { Bar, Line, Pie } from "react-chartjs-2";
 
 import instance from "../../services/api";
 import {
   CheckCircleOutlined,
   DollarOutlined,
-  RiseOutlined,
   ShoppingCartOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -300,15 +290,21 @@ const OrderStatusDistribution = () => {
 // Top Products Component
 const TopProducts = () => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    getTopProducts()
-      .then((res) => {
+    const fetchTopProducts = async () => {
+      try {
+        const res = await getTopProducts();
         setData(res.data.data);
+      } catch (error) {
+        console.error("Error fetching top products:", error);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+
+    fetchTopProducts();
   }, []);
 
   return (
@@ -324,26 +320,50 @@ const TopProducts = () => {
         marginLeft: "20px",
       }}
     >
+      {" "}
       <List
-        dataSource={data || []}
+        dataSource={data}
         renderItem={(item) => (
           <div className="flex mb-5">
+            {" "}
             <img
-              src={item.product.image}
-              alt={item.product.name}
+              src={item.productImage}
+              alt={item.productName}
               style={{ width: "80px", height: "80px", borderRadius: "8px" }}
-            />
+            />{" "}
             <div className="ml-9">
-              <strong style={{ fontSize: "16px" }}>{item.product.name}</strong>
+              {" "}
+              <strong style={{ fontSize: "16px" }}>
+                {item.productName}
+              </strong>{" "}
               <p style={{ margin: 0 }}>
-                Giá: {formatCurrency(item.product.sale_price)} (Giảm giá:{" "}
-                {item.product.discount}%)
-              </p>
-              <p style={{ margin: 0 }}>Đã bán: {item.totalQuantity}</p>
-            </div>
+                {" "}
+                {item.originalPrice === item.salePrice ? (
+                  <span>Giá: {formatCurrency(item.salePrice)}</span>
+                ) : (
+                  <>
+                    {" "}
+                    Giá gốc:{" "}
+                    <span
+                      style={{
+                        textDecoration: "line-through",
+                        marginRight: "5px",
+                      }}
+                    >
+                      {" "}
+                      {formatCurrency(item.originalPrice)}{" "}
+                    </span>{" "}
+                    Giá giảm: {formatCurrency(item.salePrice)} (Giảm:{" "}
+                    {item.discount}%){" "}
+                  </>
+                )}{" "}
+              </p>{" "}
+              <p style={{ margin: 0 }}>Đã bán: {item.totalQuantity}</p>{" "}
+            </div>{" "}
           </div>
         )}
-      />
+      />{" "}
+      {data.length === 0 && !loading && <p>Không có dữ liệu để hiển thị.</p>}{" "}
     </Card>
   );
 };
@@ -483,7 +503,7 @@ const Dashboard = () => {
       </Row>
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12} lg={8}>
-          <OrderStatusDistribution
+          <CustomerStats
             style={{
               height: "100%",
               boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
@@ -493,9 +513,8 @@ const Dashboard = () => {
             className="hover:scale-[1.02]"
           />
         </Col>
-
         <Col xs={24} md={12} lg={8}>
-          <CustomerStats
+          <OrderStatusDistribution
             style={{
               height: "100%",
               boxShadow: "0 4px 15px rgba(0,0,0,0.1)",

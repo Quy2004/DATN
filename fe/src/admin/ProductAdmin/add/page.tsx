@@ -148,8 +148,13 @@ const ProductAddPage: React.FC = () => {
       setSelectedCategoryId(null);
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
-      message.error("Thêm sản phẩm thất bại!");
-      console.error(error);
+      if (error.response?.data?.isDeleted) {
+        message.info("Danh mục đã bị xóa mềm và không thể thêm lại.");
+      } else {
+        message.error(
+          "Lỗi: Sản phẩm này đã bị ẩn hoặc xóa, vui lòng kiểm tra lại trong danh sách đã xóa"
+        );
+      }
     }
   };
 
@@ -175,7 +180,9 @@ const ProductAddPage: React.FC = () => {
   const handleCategoryChange = (value: number | null) => {
     setSelectedCategoryId(value);
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   return (
     <div>
       {contextHolder}
@@ -276,10 +283,10 @@ const ProductAddPage: React.FC = () => {
               disabled={isLoadingCategories}
               onChange={handleCategoryChange}
             >
-              {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
-                  {category.title}
-                </Option>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -305,6 +312,11 @@ const ProductAddPage: React.FC = () => {
                   if (numericValue <= 0) {
                     return Promise.reject(
                       new Error("Giá sản phẩm phải lớn hơn 0")
+                    );
+                  }
+                  if (numericValue > 100000) {
+                    return Promise.reject(
+                      new Error("Giá sản phẩm không được lớn hơn 100.000 đ")
                     );
                   }
 

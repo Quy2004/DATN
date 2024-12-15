@@ -57,8 +57,14 @@ const CategoryUpdatePage = () => {
     },
   });
 
+  // Xử lý khi submit form
   const onFinish = (values: FieldType) => {
-    const isParentCategoryValid = categories?.some(
+    if (!Array.isArray(categories)) {
+      messageApi.error("Dữ liệu danh mục không hợp lệ!");
+      return;
+    }
+
+    const isParentCategoryValid = categories.some(
       (category: Category) => category._id === values.parent_id
     );
 
@@ -66,22 +72,24 @@ const CategoryUpdatePage = () => {
       ...values,
       parent_id: isParentCategoryValid ? values.parent_id : null, // Gán null nếu không hợp lệ
     };
+
     setLoading(true);
     mutate(updatedValues);
   };
 
+  // Xử lý khi có dữ liệu categoryData hoặc categories
   useEffect(() => {
-    if (categoryData) {
-      const isParentCategoryValid = categories?.some(
+    if (categoryData && Array.isArray(categories)) {
+      const isParentCategoryValid = categories.some(
         (category: Category) =>
-          category._id === categoryData?.category?.parent_id?._id
+          category._id === categoryData.category?.parent_id?._id
       );
 
       form.setFieldsValue({
-        title: categoryData?.category?.title,
+        title: categoryData.category?.title,
         parent_id: isParentCategoryValid
-          ? categoryData?.category?.parent_id?._id
-          : null, // Gán null nếu danh mục cha không hợp lệ
+          ? categoryData.category?.parent_id?._id
+          : null,
       });
     }
   }, [categoryData, categories, form]);
@@ -178,7 +186,7 @@ const CategoryUpdatePage = () => {
                       );
                     }
 
-                    return Promise.resolve(); 
+                    return Promise.resolve();
                   } catch (error) {
                     return Promise.reject(
                       new Error("Lỗi kết nối, vui lòng thử lại!")

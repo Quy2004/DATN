@@ -3,6 +3,7 @@ import axios from "axios";
 import crypto from "crypto-browserify";
 import Order from "../models/OderModel";
 import Cart from "../models/Cart";
+import OrderDetailModel from "../models/OrderDetailModel";
  // Chỉnh lại tên đúng của model
 
 class MomoController {
@@ -25,7 +26,7 @@ createMomoPayment = async (req, res) => {
     const orderInfo = `Thanh toán đơn hàng ${order.orderNumber}`;
     const redirectUrl = "http://localhost:5173/order-result";
     const cancelUrl = encodeURIComponent("http://localhost:5173/order-error");
-    const ipnUrl = "https://94b2-113-189-171-22.ngrok-free.app/payments/momo/notify"; //lưu ý thay đường dẫn ngrok mới nhất 
+    const ipnUrl = "https://e759-42-117-78-66.ngrok-free.app/payments/momo/notify"; //lưu ý thay đường dẫn ngrok mới nhất 
     const amount = order.totalPrice.toString(); // Chuyển tổng giá trị đơn hàng thành chuỗi
     const requestType = "captureWallet";
     const extraData = ""; // Dữ liệu bổ sung (tuỳ chọn)
@@ -86,73 +87,113 @@ createMomoPayment = async (req, res) => {
   // Xử lý IPN (Thông báo thanh toán từ MoMo)
   handleMomoIPN = async (req, res) => {
     const { orderId, resultCode } = req.body;
-  
+
     try {
-      // Log thông tin nhận được
-      console.log('Received IPN Data:', { 
-          orderId, 
-          resultCode,
-      });
-  
-      // Kiểm tra tính hợp lệ của orderId
-      if (!mongoose.Types.ObjectId.isValid(orderId)) {
-          return res.status(400).json({ 
-              message: "ID đơn hàng không hợp lệ" 
-          });
-      }
-  
-      // Xác định trạng thái paymentStatus dựa trên resultCode
-      const newPaymentStatus = 
-          resultCode === 0 
-              ? "paid"   // Thanh toán thành công
-              : "failed";   // Thanh toán thất bại
-  
-      // Cập nhật chỉ paymentStatus của đơn hàng
-      const updatedOrder = await Order.findByIdAndUpdate(
-          orderId, 
-          { 
-              paymentStatus: newPaymentStatus 
-          }, 
-          { 
-              new: true,           // Trả về document mới
-              runValidators: true  // Chạy validators
-          });
-  
-      // Kiểm tra xem đơn hàng có tồn tại không
-      if (!updatedOrder) {
-          return res.status(404).json({ 
-              message: "Không tìm thấy đơn hàng" 
-          });
-      }
-      if (resultCode === 0) {
-        await Cart.findOneAndDelete({ userId: updatedOrder.user_id});
-    }
-      // Nếu thanh toán thất bại, trả về cancelUrl cho người dùng
-      if (resultCode !== 0) {
-          return res.status(200).json({
-              message: "Thanh toán thất bại, đơn hàng đã bị hủy",
-             cancelUrl: "http://localhost:5173/order-error" // Chuyển hướng tới trang lỗi
-          });
-      }
-  
-      // Trả về phản hồi thành công khi thanh toán thành công
-      return res.status(200).json({
-          message: resultCode === 0 
-              ? "Cập nhật trạng thái thanh toán đơn hàng thành công" 
-              : "Thanh toán đơn hàng thất bại",
-          order: {
-              id: updatedOrder._id,
-              paymentStatus: updatedOrder.paymentStatus
-          }
-      });
-  
+        console.log('Received IPN Data:', { 
+            orderId, 
+            resultCode,
+        });
+
+        // Kiểm tra tính hợp lệ của orderId
+        if (!mongoose.Types.ObjectId.isValid(orderId)) {
+            return res.status(400).json({ 
+                message: "ID đơn hàng không hợp lệ" 
+            });
+        }
+
+        const newPaymentStatus = resultCode === 0 ? "paid" : "failed";
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId, 
+            { paymentStatus: newPaymentStatus }, 
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ 
+                message: "Không tìm thấy đơn hàng" 
+            });
+        }
+
+        // Nếu thanh toán thành công
+        if (resultCode === 0) {
+            console.log('Đơn hàng được thanh toán:', updatedOrder);
+
+            // Tìm giỏ hàng của user
+            const cart = await Cart.findOne({ userId: updatedOrder.user_id });
+            console.log('Giỏ hàng trước khi cập nhật:', cart);
+
+            if (cart && cart.products.length > 0) {
+                // Lấy danh sách sản phẩm từ orderDetail_id
+                const orderDetails = await OrderDetailModel.find({ _id: { $in: updatedOrder.orderDetail_id } });
+                console.log('Sản phẩm đã đặt:', orderDetails);
+
+                // Xóa sản phẩm khỏi giỏ hàng
+                for (const detail of orderDetails) {
+                    const productId = detail.product_id;
+                    const size = detail.product_size; // Sử dụng product_size từ orderDetail
+                    const toppings = detail.product_toppings || []; // Toppings của sản phẩm
+
+                    console.log(`Processing Product ID: ${productId}, Size: ${size}, Toppings:`, toppings);
+
+                    // Kiểm tra trường hợp sản phẩm có topping hay không
+                    if (toppings.length > 0) {
+                        // Nếu có topping, xóa sản phẩm theo product_id, size và topping
+                        const result = await Cart.updateMany(
+                            { userId: updatedOrder.user_id },
+                            {
+                                $pull: {
+                                    products: {
+                                        product: productId,
+                                        product_sizes: size, // Xóa theo size
+                                        product_toppings: { $in: toppings }, // Xóa theo topping nếu có
+                                    },
+                                },
+                            }
+                        );
+                        console.log("Cart Update Result with Toppings:", result);
+                    } else {
+                        // Nếu không có topping, xóa sản phẩm theo product_id và size
+                        const result = await Cart.updateMany(
+                            { userId: updatedOrder.user_id },
+                            {
+                                $pull: {
+                                    products: {
+                                        product: productId,
+                                        product_sizes: size, // Xóa theo size
+                                        product_toppings: { $size: 0 }, // Không có topping
+                                    },
+                                },
+                            }
+                        );
+                        console.log("Cart Update Result without Toppings:", result);
+                    }
+                }
+            }
+        }
+
+        if (resultCode !== 0) {
+            return res.status(200).json({
+                message: "Thanh toán thất bại, đơn hàng đã bị hủy",
+                cancelUrl: "http://localhost:5173/order-error"
+            });
+        }
+
+        return res.status(200).json({
+            message: resultCode === 0 ? 
+                "Cập nhật trạng thái thanh toán đơn hàng thành công" : 
+                "Thanh toán đơn hàng thất bại",
+            order: {
+                id: updatedOrder._id,
+                paymentStatus: updatedOrder.paymentStatus
+            }
+        });
+
     } catch (error) {
         console.error('Lỗi cập nhật trạng thái thanh toán đơn hàng:', error);
         return res.status(500).json({ message: "Lỗi xử lý", errorDetails: error.message });
     }
-  };
-  
-
+};
 }
 
 export default MomoController;

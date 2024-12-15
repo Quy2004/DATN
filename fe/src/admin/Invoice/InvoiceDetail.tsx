@@ -174,12 +174,13 @@ const InvoiceDetail: React.FC = () => {
         <Title level={3} className="text-2xl font-semibold text-gray-800 mb-4">
           Chi tiết hóa đơn
         </Title>
+
         <div className="relative max-w-6xl">
           {/* Nút Quay lại */}
           <Link to={`/admin/invoice`}>
             <button className="flex items-center text-gray-600 hover:text-gray-900 transition duration-300 transform hover:scale-105 hover:translate-x-1 absolute top-[-65px] right-0">
               <ArrowLeftOutlined className="h-5 w-5" />
-              <span className="font-medium">Quay lại</span>
+              <span className="font-medium mr-8">Quay lại</span>
             </button>
           </Link>
 
@@ -262,7 +263,16 @@ const InvoiceDetail: React.FC = () => {
               <Col span={14}>
                 <p>
                   <strong>Phương Thức Thanh Toán:</strong>{" "}
-                  <span className="text-blue-600 font-medium">
+                  <span
+                    className={`font-medium ${
+                      {
+                        "cash on delivery": "text-gray-700",
+                        momo: "text-pink-500",
+                        zalopay: "text-green-500",
+                        vnpay: "text-blue-600",
+                      }[order.paymentMethod] || "text-gray-400"
+                    }`}
+                  >
                     {order.paymentMethod === "cash on delivery"
                       ? "Thanh toán khi nhận hàng"
                       : order.paymentMethod === "momo"
@@ -273,9 +283,18 @@ const InvoiceDetail: React.FC = () => {
                       ? " VNPay"
                       : "Không xác định"}
                   </span>{" "}
-                  -{" "}
-                  <span>
-                    Trạng thái: {paymentStatusDisplay(order.paymentStatus)}
+                  - Trạng thái:{" "}
+                  <span
+                    className={`font-medium ${
+                      {
+                        pending: "text-yellow-500",
+                        unpaid: "text-red-500",
+                        paid: "text-green-600",
+                        failed: "text-red-600",
+                      }[order.paymentStatus] || "text-gray-500"
+                    }`}
+                  >
+                    {paymentStatusDisplay(order.paymentStatus)}
                   </span>
                 </p>
               </Col>

@@ -629,15 +629,13 @@ const OrderDetail: React.FC = () => {
                     <FontAwesomeIcon icon={faCreditCard} className="mr-2" />
                     Phương thức thanh toán:{" "}
                     <span
-                      className={`font-medium ${
-                        [
-                          "momo",
-                          "zalopay",
-                          "vnpay",
-                          "cash on delivery",
-                        ].includes(order.paymentMethod)
-                          ? "text-blue-600" // Highlight text with blue color
-                          : "text-gray-900"
+                      className={`ml-2 font-medium ${
+                        {
+                          momo: "text-pink-500",
+                          zalopay: "text-green-500",
+                          vnpay: "text-blue-600",
+                          "cash on delivery": "text-gray-700",
+                        }[order.paymentMethod] || "text-gray-900"
                       }`}
                     >
                       {paymentMethodDisplay(order.paymentMethod)}
@@ -657,16 +655,18 @@ const OrderDetail: React.FC = () => {
                           Trạng thái thanh toán:
                           <span
                             className={`font-medium ml-1 ${
-                              order.orderStatus === "delivered" ||
-                              order.orderStatus === "completed"
-                                ? "text-green-600" // Highlight with green color
-                                : "text-gray-900"
+                              {
+                                pending: "text-yellow-500",
+                                unpaid: "text-red-500",
+                                paid: "text-green-600",
+                                failed: "text-red-600",
+                              }[order.paymentStatus] || "text-gray-900"
                             }`}
                           >
                             {order.orderStatus === "delivered" ||
                             order.orderStatus === "completed"
                               ? " Đã Thanh Toán "
-                              : paymentStatusDisplay(order.paymentStatus)}{" "}
+                              : paymentStatusDisplay(order.paymentStatus)}
                           </span>
                         </p>
 
