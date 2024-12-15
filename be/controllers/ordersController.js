@@ -128,23 +128,9 @@ export const createOrder = async (req, res) => {
         paymentMethod === "cash on delivery" ? "pending" : "unpaid", // Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
-    const notification = new NotificationModel({
-      title: "Đặt hàng thành công",
-      message: `Đơn hàng mã "${
-        order._id
-      }" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái hiện tại: "${paymentMethod}". Với trạng thái "${
-        order.paymentStatus === "paid" ? "Chưa thanh toán" : "Đã thanh toán"
-      }"`,
-
-      user_Id: userId || null, // Null nếu không đăng nhập
-      order_Id: order._id, // Gắn ID đơn hàng để tiện theo dõi
-      type: "general",
-      isGlobal: false, // Chỉ thông báo cho người dùng liên quan
-    });
-
-    await notification.save();
+   
     await order.save();
-    console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 5 phút...`);
+    console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 1 phút...`);
 
     setTimeout(async () => {
       const foundOrder = await Order.findById(order._id);
@@ -172,7 +158,7 @@ export const createOrder = async (req, res) => {
       } else {
         console.log(`Không tìm thấy đơn hàng với ID ${order._id}`);
       }
-    }, 5 * 60 * 1000); // 5 phút = 300.000ms
+    }, 1 * 60 * 1000); // 1 phút = 60.000ms
     // Create order details including size and topping
     const orderDetailPromises = cart.products.map(async (item) => {
       if (!item.product?._id || !item.product?.price) {
@@ -226,6 +212,16 @@ if (paymentMethod === "cash on delivery") {
           },
         }
       );
+      const notification = new NotificationModel({
+        title: "Đặt hàng thành công",
+        message: `Đơn hàng mã "${order._id}" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái phương thức thanh toán: thanh toán sau khi nhận hàng.`,
+        user_Id: userId || null, // Null nếu không đăng nhập
+        order_Id: order._id,
+        type: "general",
+        isGlobal: false,
+      });
+
+      await notification.save(); // Lưu thông báo vào cơ sở dữ liệu
 
       if (result.modifiedCount > 0) {
         console.log(`Đã xóa sản phẩm ${item.product.name} khỏi giỏ hàng.`);
