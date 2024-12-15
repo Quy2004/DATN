@@ -29,20 +29,20 @@ const CoffeePage: React.FC = () => {
     };
 
     return (
-        <div className="containerAll mt-[60px] mx-4 md:px-4 md:mx-auto">
+        <div className="containerAll my-[60px] mx-4 md:px-4 md:mx-auto">
             <div className="*:mx-auto mb-6 *:md:mx-0 md:mb-8">
                 <h1 className="w-max pt-4 text-xl font-semibold mb-1 mt-6 md:text-3xl md:mb-3 md:pt-10">Cà Phê</h1>
                 <p className=" border-b-orange-400 w-[62px] md:w-[91px] border-b-[4px]"></p>
             </div>
             <div className="flex flex-wrap gap-x-5 gap-y-4 justify-center md:gap-5 text-left mb-4 md:justify-start md:grid-cols-4">
                 {productsData?.map((coffee: Product) => (
-                    <div key={coffee._id} className="item">
+                    <div key={coffee._id} className="item ">
                         <Link to={`/detail/${coffee._id}`} className="md:product_img">
                             <img src={coffee.image} alt={coffee.name} className="w-[180px] h-[180px] border-2 rounded-lg md:w-full md:h-auto object-cover" />
                         </Link>
                         <div className="*:leading-4 ">
                             <Link to="#">
-                                <h3 className="text-2xl mt-0 md:mt-2">{coffee.name}</h3>
+                                <h3 className="text-sm max-w-[180px] mt-0 md:mt-2">{coffee.name}</h3>
                             </Link>
                             <p className="text-sm text-gray-500">{formatPrice(coffee.price)} VNĐ</p>
                         </div>
