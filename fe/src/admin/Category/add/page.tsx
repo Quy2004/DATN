@@ -40,7 +40,14 @@ const CategoryAddPage = () => {
       }, 2000);
     },
     onError(error) {
-      messageApi.error(`Lỗi: ${error.message}`);
+      // Giả sử error có thông tin về isDeleted, bạn sẽ kiểm tra lỗi này.
+      if (error.response?.data?.isDeleted) {
+        messageApi.info("Danh mục đã bị xóa mềm và không thể thêm lại.");
+      } else {
+        messageApi.error(
+          "Lỗi: Danh mục này đã bị ẩn hoặc xóa, vui lòng kiểm tra lại trong danh sách đã xóa"
+        );
+      }
     },
   });
 
