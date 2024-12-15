@@ -11,6 +11,7 @@ body {
   filter: none !important;
   height: calc(var(--vh) - 1px);
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 100%;
   margin: 0;
   background-color: transparent !important;

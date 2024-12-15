@@ -77,35 +77,66 @@ class CommentController {
 		}
 	}
 
-	async getCommentParent(req, res) {
+	async GetById(req, res) {
 		try {
-			const { parent_id } = req.params; // Lấy parent_id từ URL params
-
-			// Kiểm tra nếu không có parent_id trong request
-			if (!parent_id) {
-				return res.status(400).json({ message: "parent_id is required" });
-			}
-
-			// Tìm tất cả các bình luận có parent_id tương ứng
-			const comments = await Comment.find({ parent_id })
-				.populate("product_id") // Nếu bạn muốn lấy thông tin sản phẩm liên quan
-				.populate("user_id") // Nếu bạn muốn lấy thông tin người dùng liên quan
-				.sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo giảm dần (tùy chọn)
-
-			// Kiểm tra nếu không tìm thấy bình luận nào
-			if (comments.length === 0) {
-				return res
-					.status(404)
-					.json({ message: "No comments found for this parent_id" });
-			}
-
-			// Trả về danh sách bình luận
-			return res.status(200).json(comments);
+			const { id } = req.params;
+			// Kiểm tra id có tồn tại hay không
+			if (!id) {
+				return res.status(400).json({ message: "ID không được để trống" });
+			  }
+		  
+			  // Tìm bình luận theo ID, đồng thời populate thông tin người dùng và sản phẩm liên quan
+			  const comment = await Comment.findById(id)
+				.populate("user_id", "userName email") // Populate user_id lấy userName và email
+				.populate("product_id", "name image price"); // Populate product_id lấy name
+		  
+			  // Nếu không tìm thấy bình luận
+			  if (!comment) {
+				return res.status(404).json({ message: "Không tìm thấy bình luận" });
+			  }
+		  
+			  // Trả về dữ liệu bình luận chi tiết
+			  res.status(200).json({
+				message: "Lấy chi tiết bình luận thành công",
+				data: comment,
+			  });
 		} catch (error) {
-			console.error(error);
-			return res.status(500).json({ message: "Server error", error });
+			res.status(400).json({
+				message: error.message,
+			});
 		}
 	}
+
+	async getCommentParent(req, res) {
+		try {
+		  const { parent_id } = req.params; // Lấy parent_id từ URL params
+	  
+		  // Kiểm tra nếu không có parent_id trong request
+		  if (!parent_id) {
+			return res.status(400).json({ message: "parent_id is required" });
+		  }
+	  
+		  // Tìm tất cả các bình luận có parent_id tương ứng
+		  const comments = await Comment.find({ parent_id })
+			.populate("product_id") // Nếu bạn muốn lấy thông tin sản phẩm liên quan
+			.populate("user_id") // Nếu bạn muốn lấy thông tin người dùng liên quan
+			.sort({ createdAt: -1 }); // Sắp xếp theo thời gian tạo giảm dần (tùy chọn)
+	  
+		  // Kiểm tra nếu không tìm thấy bình luận nào
+		  if (comments.length === 0) {
+			return res
+			  .status(404)
+			  .json({ message: "No comments found for this parent_id" });
+		  }
+	  
+		  // Trả về danh sách bình luận
+		  return res.status(200).json(comments);
+		} catch (error) {
+		  console.error(error);
+		  return res.status(500).json({ message: "Server error", error });
+		}
+	  }
+	  
 
 	//   hiển thị theo sản phẩm
 	async getCommentProduct(req, res) {

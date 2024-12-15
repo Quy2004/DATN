@@ -14,7 +14,8 @@ const OrderSuccess: React.FC = () => {
   };
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200 p-4 sm:p-6">
-      <div className="absolute inset-0 bg-opacity-30 bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200"></div> {/* Nền gradient mờ */}
+      <div className="absolute inset-0 bg-opacity-30 bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200"></div>{" "}
+      {/* Nền gradient mờ */}
       <div className="relative z-10 bg-white p-6 sm:p-8 rounded-lg shadow-lg text-center transform transition-all duration-500 scale-95 hover:scale-100">
         <div className="flex justify-center items-center mb-6">
           <div className="bg-green-100 text-green-500 rounded-full p-4 animate-bounce">
@@ -41,18 +42,20 @@ const OrderSuccess: React.FC = () => {
           Chúng tôi hy vọng bạn sẽ tận hưởng hương vị tuyệt vời!
           <br />
         </p>
-        <button
-          className="bg-[#ea8025] text-white font-bold py-2 px-4 rounded-lg  transition-colors duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:shadow-outline"
-          onClick={handleContinueShopping}
-        >
-          Tiếp tục mua sắm
-        </button>
-        <button
-          className="bg-[#ea8025] ml-2 text-white font-bold py-2 px-4 rounded-lg  transition-colors duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:shadow-outline"
-          onClick={handleCheckBill}
-        >
-          Xem hóa đơn thanh toán
-        </button>
+        <div className="flex ">
+          <button
+            className="bg-[#ea8025] text-sm md:text-base text-white font-bold py-2 px-3 md:px-4 rounded-lg  transition-colors duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:shadow-outline"
+            onClick={handleContinueShopping}
+          >
+            Tiếp tục mua sắm
+          </button>
+          <button
+            className="bg-[#ea8025] text-sm md:text-base ml-2 text-white font-bold py-2 px-4 rounded-lg  transition-colors duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:shadow-outline"
+            onClick={handleCheckBill}
+          >
+            Xem hóa đơn thanh toán
+          </button>
+        </div>
       </div>
     </div>
   );

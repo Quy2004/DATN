@@ -66,7 +66,9 @@ const SizeUpdatePage = () => {
   const onFinish = (values: Size) => {
     mutate(values);
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   // Hiển thị loading khi dữ liệu chưa sẵn sàng
   if (isSizeLoading || isLoadingCategories) {
     return (
@@ -141,10 +143,10 @@ const SizeUpdatePage = () => {
               loading={isLoadingCategories}
               disabled={isLoadingCategories}
             >
-              {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
-                  {category.title}
-                </Option>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>

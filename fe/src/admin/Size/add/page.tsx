@@ -53,7 +53,9 @@ const SizeAddPage = () => {
     console.log("Success:", values);
     mutate(values);
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   return (
     <>
       <div className="flex items-center justify-between mb-5">
@@ -119,10 +121,10 @@ const SizeAddPage = () => {
               loading={isLoadingCategories}
               disabled={isLoadingCategories}
             >
-              {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
-                  {category.title}
-                </Option>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
