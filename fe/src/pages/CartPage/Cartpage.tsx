@@ -340,7 +340,12 @@ const CartPage: React.FC<{
                           {item.product.name}
                         </Link>
                         <div className="space-y-2 text-sm text-gray-600">
-                          <p>Size: {item?.product_sizes?.name}</p>
+                          <p>
+                            Size: {item?.product_sizes?.name}{" "}
+                            {item?.product_sizes?.priceSize && (
+                              <span className="text-gray-500">{`(+${item?.product_sizes?.priceSize} đ)`}</span>
+                            )}
+                          </p>
                           <p>
                             Topping:{" "}
                             {item?.product_toppings &&
@@ -352,9 +357,9 @@ const CartPage: React.FC<{
                                     className="font-medium"
                                   >
                                     {topping?.topping_id?.nameTopping}
-                                    {topping?.priceTopping && (
+                                    {topping?.topping_id?.priceTopping && (
                                       <span className="text-gray-500">
-                                        {` (+${topping?.priceTopping} đ)`}
+                                        {` (+${topping?.topping_id?.priceTopping} đ)`}
                                       </span>
                                     )}
                                     {index <
@@ -369,6 +374,7 @@ const CartPage: React.FC<{
                             )}
                           </p>
                         </div>
+
                         <button
                           onClick={() => handleDeleteCartItem(item._id)}
                           className="mt-2 border-2 border-red-500 px-2 rounded-lg hover:bg-red-500 text-sm font-medium text-red-500 hover:text-white transition-colors duration-200"
