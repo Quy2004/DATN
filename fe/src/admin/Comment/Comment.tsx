@@ -1,6 +1,7 @@
 import {
 	CheckOutlined,
 	CloseOutlined,
+	EyeOutlined,
 	LockOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ import {
 import Search from "antd/es/input/Search";
 import Title from "antd/es/typography/Title";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { Comment } from "../../types/comment";
 import { Product } from "../../types/product";
@@ -180,7 +181,7 @@ const CommentAdmin = () => {
 	const mutationSoftDelete = useMutation<void, Error, string>({
 		mutationFn: async (_id: string) => {
 			try {
-				return await instance.patch(`/comment/${_id}/soft-delete`);
+				return await instance.delete(`/comment/${_id}`);
 			} catch (error) {
 				throw new Error("Xóa bình luận thất bại");
 			}
@@ -217,6 +218,8 @@ const CommentAdmin = () => {
 		setIsModalRep(false);
 		setSelectedComment(null); // Reset sản phẩm khi đóng Modal
 	};
+
+	
 
 	const columns = [
 		{
@@ -278,21 +281,19 @@ const CommentAdmin = () => {
 		},
 
 		{
-			title: "Hành động",
-			key: "action",
-			render: (_: string, size: Comment) => (
-				<Space size="middle">
-					{!size.isDeleted && (
-						<Button
-							onClick={() => showModalRep(size)}
-							className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all"
-						>
-							Trả lời
-						</Button>
-					)}
-				</Space>
+			key: "actions",
+			ellipsis: true,
+			render: (_: string, comment: Comment) => (
+			  <Tooltip title="Xem chi tiết">
+				<Link to={`detail-comment/${comment._id}`}>
+				<Button
+				  type="link"
+				  icon={<EyeOutlined />}
+				></Button>
+				</Link>
+			  </Tooltip>
 			),
-		},
+		  },
 	];
 
 	const dataSource = comments?.data?.map((item: Comment, index: number) => ({

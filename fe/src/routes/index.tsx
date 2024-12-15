@@ -66,6 +66,7 @@ import InvoiceDetail from "../admin/Invoice/InvoiceDetail";
 import OrderResult from "../pages/Order-result/Order-result";
 import ChangePassword from "../account/SettingAuth/ChangePassword";
 import CommentPage from "../pages/DetailPage/CommentPage";
+import Detail from "../admin/Comment/repComment/Detail";
 
 const Router = () => {
   return (
@@ -154,6 +155,9 @@ const Router = () => {
 
             <Route path="invoice" element={<InvoiceManagement />} />
             <Route path="invoice-detail" element={<InvoiceDetail />} />
+
+            <Route path="comment/detail-comment/:id" element={<Detail />} />
+            {/* <Route path="invoice-detail" element={<InvoiceDetail />} /> */}
           </Route>
         </Route>
       </Routes>
