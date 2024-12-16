@@ -346,10 +346,11 @@ const OrderDetail: React.FC = () => {
     };
     return statusLabels[status];
   };
-  const formatPrice = (price: number) => {
-    // Sử dụng Intl.NumberFormat để định dạng số theo tiền tệ VNĐ
-    return new Intl.NumberFormat("vi-VN").format(price);
+  const formatPrice = (price: number): string => {
+    // Sử dụng Intl.NumberFormat để định dạng số
+    return `${new Intl.NumberFormat("vi-VN").format(price)} VNĐ`;
   };
+
   const discountAmount = order.discountAmount;
   console.log(discountAmount);
 
@@ -401,12 +402,16 @@ const OrderDetail: React.FC = () => {
         return productToppings
           .map(
             (item: ProductTopping) =>
-              `${item.topping_id.priceTopping.toLocaleString("vi-VN")} VNĐ`
+              `${item.topping_id.nameTopping} (${item.topping_id.priceTopping
+                .toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })
+                .replace("₫", "VNĐ")})`
           )
           .join(", ");
       },
     },
-
     {
       title: "Giá",
       key: "price",
