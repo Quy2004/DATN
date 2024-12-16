@@ -340,7 +340,6 @@ const InvoiceManagement: React.FC = () => {
           rowKey="_id"
           pagination={{
             pageSize: 10,
-            showSizeChanger: true,
           }}
           scroll={{ x: "max-content", y: 340 }}
         />

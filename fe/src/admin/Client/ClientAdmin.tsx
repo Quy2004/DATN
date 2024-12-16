@@ -261,7 +261,7 @@ const ClientAdmin = () => {
 			render: (role: string, user: any) => (
 				<Select
 					value={role}
-					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
+					// onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
 					style={{ width: 150 }}
 				>
 					<Option value="admin">Admin</Option>
@@ -271,39 +271,7 @@ const ClientAdmin = () => {
 			),
 		},
 
-		{
-			title: "Hành động",
-			dataIndex: "action",
-			render: (_: any, user: any) => (
-				<div className="flex flex-wrap gap-4">
-					{user.isDeleted ? (
-						<Popconfirm
-							title="Khôi phục user"
-							description="Bạn có chắc muốn mở khóa tài khoản này không?"
-							onConfirm={() => mutationRestoreUser.mutate(user._id)}
-							okText="Yes"
-							cancelText="No"
-						>
-							<Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-								Mở khóa
-							</Button>
-						</Popconfirm>
-					) : (
-						<Popconfirm
-							title="Khóa user"
-							description="Bạn có chắc muốn khóa tài khoản này không?"
-							onConfirm={() => mutationSoftDeleteUser.mutate(user._id)}
-							okText="Yes"
-							cancelText="No"
-						>
-							<Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-								Khóa tài khoản
-							</Button>
-						</Popconfirm>
-					)}
-				</div>
-			),
-		},
+		
 	];
 
 	const dataSource = data?.data?.map((item: any, index: number) => ({
@@ -353,13 +321,13 @@ const ClientAdmin = () => {
 						allowClear
 						style={{ width: 300 }}
 					/>
-					<Button
+					{/* <Button
 						type="primary"
 						icon={<DeleteOutlined />}
 						onClick={() => setIsDelete(!isDelete)}
 					>
 						{isDelete ? "" : ""}
-					</Button>
+					</Button> */}
 					{/* <Select
 						value={filterRole}
 						style={{ width: 200 }}
