@@ -95,14 +95,18 @@ const Header: React.FC = () => {
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user");
 		if (storedUser) {
-			const user = JSON.parse(storedUser);
-			setUserName(user.userName || "");
-			setAvatarUrl(user.avatarUrl || null);
-		} else {
-			setUserName("");
-			setAvatarUrl(null);
+		  const user = JSON.parse(storedUser);
+		  const fetchUserData = async () => {
+			try {
+			  const response = await instance.get(`/users/${user._id}`);
+			  setUserName(response.data.userName || ""); 
+			} catch (error) {
+			  console.error("Error fetching user data:", error);
+			}
+		  };
+		  fetchUserData();
 		}
-	}, []);
+	  }, []); // Chạy một lần khi component mount
 	const getInitials = (name: string) => (name ? name[0].toUpperCase() : "");
 	const { isDropdownOpen, setIsDropdownOpen, dropdownRef } =
 		useClickOutside(false);
