@@ -34,26 +34,25 @@ const PostManagerPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     undefined
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const {
     data: posts,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["posts", showDeleted],
+    queryKey: ["posts", showDeleted, currentPage],
     queryFn: async () => {
-      try {
-        const response = await instance.get("posts", {
-          params: {
-            isDeleted: showDeleted,
-          },
-        });
-        return response.data;
-      } catch (error) {
-        throw new Error("Lỗi khi tải danh sách bài viết");
-      }
+      const response = await instance.get("posts", {
+        params: {
+          isDeleted: showDeleted,
+          page: currentPage,
+          limit: pageSize,
+        },
+      });
+      return response.data;
     },
   });
-  console.log(selectedPost);
 
   // Lấy danh sách danh mục
   const {
@@ -131,7 +130,7 @@ const PostManagerPage = () => {
     )
     .map((post: Post, index: number) => ({
       _id: post._id,
-      key: index + 1,
+      key: index + 1 + (currentPage - 1) * pageSize,
       title: post.title,
       categoryPost: post.categoryPost.title,
       excerpt: post.excerpt,
@@ -386,9 +385,11 @@ const PostManagerPage = () => {
         rowKey={(record) => record._id}
         loading={isLoading}
         pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Tổng ${total} bài viết`,
+          current: currentPage,
+          pageSize: pageSize,
+          total: posts?.total || 0,
+          onChange: (page) => setCurrentPage(page),
+          pageSizeOptions: ["10", "20", "50", "100"],
         }}
         className="bg-white rounded-lg shadow-sm"
         scroll={{ x: "max-content", y: 350 }}
