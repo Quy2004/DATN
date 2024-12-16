@@ -285,7 +285,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
+      render: (price: number) => `${price.toLocaleString("vi-VN")} VNĐ`,
     },
 
     {
@@ -532,13 +532,13 @@ const ProductManagerPage: React.FC = () => {
 
               <Descriptions.Item label="Giá sản phẩm">
                 <span className="font-medium text-blue-600">
-                  {`${selectedProduct.price.toLocaleString("vi-VN")} VND`}
+                  {`${selectedProduct.price.toLocaleString("vi-VN")} VNĐ`}
                 </span>
               </Descriptions.Item>
 
               <Descriptions.Item label="Giá Sale">
                 <span className="font-medium text-blue-600">
-                  {`${selectedProduct.sale_price.toLocaleString("vi-VN")} VND`}
+                  {`${selectedProduct.sale_price.toLocaleString("vi-VN")} VNĐ`}
                 </span>
 
                 {selectedProduct.discount > 0 && (

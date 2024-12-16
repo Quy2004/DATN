@@ -178,11 +178,11 @@ const ToppingManagerPage = () => {
       title: "Giá Topping",
       dataIndex: "priceTopping",
       key: "priceTopping",
-      render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
+      render: (price: number) => `${price.toLocaleString("vi-VN")} VNĐ`,
       filters: [
-        { text: "Dưới 5,000 VND", value: "low" },
-        { text: "Từ 5,000 VND - 10,000 VND", value: "medium" },
-        { text: "Trên 10,000 VND", value: "high" },
+        { text: "Dưới 5,000 VNĐ", value: "low" },
+        { text: "Từ 5,000 VNĐ - 10,000 VNĐ", value: "medium" },
+        { text: "Trên 10,000 VNĐ", value: "high" },
       ],
       onFilter: (value, record) => {
         if (value === "low") return record.priceTopping < 5000;

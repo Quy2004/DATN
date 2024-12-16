@@ -250,7 +250,7 @@ const InvoiceManagement: React.FC = () => {
       dataIndex: "totalPrice",
       key: "totalPrice",
       ellipsis: true,
-      render: (text: number) => `${text.toLocaleString()} đ`,
+      render: (text: number) => `${text.toLocaleString()} VNĐ`,
     },
     {
       title: "Trạng Thái",
@@ -308,7 +308,7 @@ const InvoiceManagement: React.FC = () => {
               max={500000}
               step={10000}
               marks={{
-                0: "0đ",
+                0: "0 VNĐ",
                 250000: "250k",
                 500000: "500k",
               }}

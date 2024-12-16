@@ -43,8 +43,8 @@ const CommentPage = () => {
   
 
   // Fetch phản hồi
-  const fetchReplies = async (parentId: string) => {
-    const response = await instance.get(`/comment/parent/${parentId}`);
+  const fetchReplies = async (id: string) => {
+    const response = await instance.get(`/comment/parent/${id}`);
     return response.data;
   };
 
@@ -81,7 +81,13 @@ const CommentPage = () => {
 
         {/* Thông tin sản phẩm */}
         <div className="p-6">
-          <p className="text-gray-700 text-base leading-relaxed">{product.description}</p>
+          <p className="text-gray-700 text-base leading-relaxed"><div
+                  dangerouslySetInnerHTML={{
+                    __html: product.description
+                      ? product.description
+                      : "Không có mô tả sản phẩm",
+                  }}
+                /></p>
         </div>
 
         {/* Đánh giá và bình luận */}
@@ -92,7 +98,15 @@ const CommentPage = () => {
           ) : comments.length > 0 ? (
             comments.map((review: Comment) => (
               <div key={review._id} className="flex space-x-4 items-start border-b pb-4">
-                <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+                {review.user_id.avatars[0].url === "" ? (
+												<div className="w-10 h-10 rounded-full bg-gray-200"></div>
+											) : (
+												<img
+													src={review.user_id.avatars[0].url}
+													alt="Reviewer Avatar"
+													className="w-10 h-10 rounded-full object-cover"
+												/>
+											)}
                 <div className="flex-1">
                   <p className="font-bold">{review.user_id.userName}</p>
                   <p className="text-gray-500 text-sm">
@@ -114,29 +128,44 @@ const CommentPage = () => {
                     ))}
                   </div>
 
-                  {/* Phản hồi */}
+                  {/* Phần phản hồi */}
                   {showReplies === review._id && (
-                    <div className="mt-4 pl-6">
-                      {replies.map(reply => (
-                        <div key={reply._id} className="flex items-start space-x-4">
-                          <div className="w-8 h-8 rounded-full bg-gray-300"></div>
-                          <div className="flex-1">
-                            <p className="font-semibold">{reply.user_id.userName}</p>
-                            <p className="text-sm">{reply.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+													<div className="mt-4 pl-6">
+														{replies.map(reply => (
+															<div
+																key={reply._id}
+																className="flex items-start space-x-4"
+															>
+																{/* Avatar phản hồi */}
+																<div>
+																	<img
+																		className="w-[40px] h-[40px] border border-black rounded-full"
+																		src="/src/assets/images/LogoCozyHaven.png"
+																		alt="Logo"
+																	/>
+																</div>
+																<div className="flex-1 mt-[10px]">
+																	<h2 className="font-medium">Người bán</h2>
+																	<p className="text-sm ml-3">
+																		{reply.content ||
+																			"Không có nội dung phản hồi."}
+																	</p>
+																</div>
+															</div>
+														))}
+													</div>
+												)}
 
-                  {/* Hiển thị/ẩn phản hồi */}
-                  <Button
-                    type="link"
-                    onClick={() => handleToggleReplies(review._id)}
-                    className="text-blue-500"
-                  >
-                    {showReplies === review._id ? "Ẩn phản hồi" : "Xem phản hồi"}
-                  </Button>
+												{/* Nút hiển thị/ẩn phản hồi */}
+												<Button
+													type="link"
+													onClick={() => handleToggleReplies(review._id)}
+													className="text-blue-500"
+												>
+													{showReplies === review._id
+														? "Ẩn phản hồi"
+														: "Xem phản hồi"}
+												</Button>
                 </div>
               </div>
             ))

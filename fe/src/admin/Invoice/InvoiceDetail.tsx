@@ -22,11 +22,13 @@ const InvoiceDetail: React.FC = () => {
     return <div>Không tìm thấy thông tin hóa đơn.</div>;
   }
   const formatPrice = (price: number) => {
-    // Sử dụng Intl.NumberFormat để định dạng số theo tiền tệ VNĐ
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(price);
+      currencyDisplay: "code", 
+    })
+      .format(price)
+      .replace("VND", "VNĐ");
   };
 
   const paymentStatusDisplay = (status: string) => {
@@ -73,13 +75,7 @@ const InvoiceDetail: React.FC = () => {
       key: "size",
       render: (selectedSize: Product) => {
         if (!selectedSize) return "Không có kích cỡ";
-        return `${selectedSize.name} (${selectedSize.priceSize.toLocaleString(
-          "vi-VN",
-          {
-            style: "currency",
-            currency: "VND",
-          }
-        )})`;
+        return `${selectedSize.name} (${selectedSize.priceSize.toLocaleString("vi-VN")} VNĐ)`;
       },
     },
     {
@@ -106,10 +102,7 @@ const InvoiceDetail: React.FC = () => {
       render: (_: string, record) => {
         const salePrice = record.product_id.sale_price || null;
         return salePrice
-          ? salePrice.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+          ? `${salePrice.toLocaleString("vi-VN")} VNĐ`
           : "Không giảm giá";
       },
     },
@@ -124,10 +117,7 @@ const InvoiceDetail: React.FC = () => {
       render: () => (
         <div>
           {order.discountAmount ? (
-            order.discountAmount.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+            `${order.discountAmount.toLocaleString("vi-VN")} VNĐ`
           ) : (
             <span>Không giảm giá</span>
           )}
@@ -157,10 +147,7 @@ const InvoiceDetail: React.FC = () => {
         // Trừ đi giá trị voucher nếu có
         totalPrice = totalPrice - voucherAmount;
 
-        return totalPrice.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        });
+        return `${totalPrice.toLocaleString("vi-VN")} VNĐ`
       },
     },
   ];
@@ -246,7 +233,7 @@ const InvoiceDetail: React.FC = () => {
                     .toLocaleString("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    })}
+                    }).replace("₫", "VNĐ")}
                 </p>
               </Col>
 

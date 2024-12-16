@@ -58,8 +58,8 @@ const DetailPage = () => {
 	const handleToppingChange = (topping: ProductTopping) => {
 		setSelectedToppings((prevToppings: ProductTopping[] | undefined) => {
 			// Nếu topping đã có trong danh sách, thì xóa nó
-			if (prevToppings?.some((t) => t.topping_id === topping.topping_id)) {
-				return prevToppings.filter((t) => t.topping_id !== topping.topping_id);
+			if (prevToppings?.some(t => t.topping_id === topping.topping_id)) {
+				return prevToppings.filter(t => t.topping_id !== topping.topping_id);
 			} else {
 				// Nếu chưa có, thêm vào danh sách
 				return [...(prevToppings || []), topping];
@@ -100,7 +100,7 @@ const DetailPage = () => {
 	const formatPrice = (
 		basePrice: number,
 		sizePrice: number,
-		quantity: number
+		quantity: number,
 	) => {
 		const totalPrice = (basePrice + sizePrice) * quantity;
 		return totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -112,7 +112,7 @@ const DetailPage = () => {
 	};
 
 	const handleQuantityChange = (
-		eventOrValue: React.ChangeEvent<HTMLInputElement> | number
+		eventOrValue: React.ChangeEvent<HTMLInputElement> | number,
 	) => {
 		let newQuantity;
 
@@ -134,7 +134,7 @@ const DetailPage = () => {
 			selectedToppings?.reduce(
 				(acc: string, topping: ProductTopping) =>
 					acc + (topping.priceTopping || 0),
-				0
+				0,
 			) || 0;
 
 		return (basePrice + sizePrice + toppingPrice) * quantity;
@@ -148,7 +148,7 @@ const DetailPage = () => {
 	const addToCart = async (productId: string) => {
 		if (!productId) {
 			return toast.error(
-				"Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ"
+				"Vui lòng đăng nhập tài khoản hoặc chọn sản phẩm hợp lệ",
 			);
 		}
 
@@ -168,7 +168,7 @@ const DetailPage = () => {
 			};
 			console.log(
 				"Mapped Toppings (productToppings):",
-				selectedToppings?.map((t: ProductTopping) => t.topping_id) || []
+				selectedToppings?.map((t: ProductTopping) => t.topping_id) || [],
 			);
 			console.log("Payload gửi lên:", payload);
 
@@ -238,7 +238,7 @@ const DetailPage = () => {
 									</h2>
 									<div className="mb-4 flex items-center">
 										{product.sale_price &&
-											product.sale_price < product.price ? (
+										product.sale_price < product.price ? (
 											<div className="flex items-center gap-2">
 												<p className="text-2xl md:text-lg text-gray-500 italic line-through font-medium mr-2">
 													{new Intl.NumberFormat("vi-VN").format(product.price)}{" "}
@@ -268,15 +268,16 @@ const DetailPage = () => {
 											{selectedProduct ? (
 												selectedProduct.product_sizes.length > 0 ? (
 													<div className="flex flex-wrap gap-3">
-														{selectedProduct.product_sizes.map((size) => (
+														{selectedProduct.product_sizes.map(size => (
 															<button
 																key={size.size_id._id}
 																onClick={() => handleSizeChange(size)}
 																className={`flex items-center justify-center rounded-lg h-10 text-sm shadow-md transition duration-200 px-2
-                              ${selectedSize?.size_id._id === size.size_id._id
-																		? "bg-[#ea8025] text-white border border-[#ea8025]"
-																		: "bg-white text-black border border-[#ea8025] hover:bg-[#ea8025] hover:text-white"
-																	}`}
+                              ${
+																selectedSize?.size_id._id === size.size_id._id
+																	? "bg-[#ea8025] text-white border border-[#ea8025]"
+																	: "bg-white text-black border border-[#ea8025] hover:bg-[#ea8025] hover:text-white"
+															}`}
 																disabled={size.status === "unavailable"}
 															>
 																<span>{size.size_id.name}</span>
@@ -306,44 +307,42 @@ const DetailPage = () => {
 														Chọn topping
 													</h2>
 													<div className="grid grid-cols-2 gap-4">
-														{selectedProduct?.product_toppings.map(
-															(topping) => (
-																<label
-																	key={topping?.topping_id?._id}
-																	className={`
+														{selectedProduct?.product_toppings.map(topping => (
+															<label
+																key={topping?.topping_id?._id}
+																className={`
             border rounded-lg p-3 flex items-center justify-between cursor-pointer
-            ${selectedToppings?.some((t) => t.topping_id === topping.topping_id)
-																			? "border-[#ea8025] bg-[#ea8025]/10"
-																			: "border-gray-200"
-																		}
+            ${
+							selectedToppings?.some(t => t.topping_id === topping.topping_id)
+								? "border-[#ea8025] bg-[#ea8025]/10"
+								: "border-gray-200"
+						}
             ${topping?.stock <= 0 ? "opacity-50 cursor-not-allowed" : ""}
           `}
-																>
-																	<div className="flex items-center space-x-3">
-																		<input
-																			type="checkbox"
-																			checked={selectedToppings?.some(
-																				(t) =>
-																					t.topping_id === topping.topping_id
-																			)}
-																			onChange={() =>
-																				handleToppingChange(topping)
-																			}
-																			disabled={topping?.stock <= 0}
-																			className="form-checkbox text-[#ea8025] rounded focus:ring-[#ea8025]"
-																		/>
-																		<span className="text-gray-700">
-																			{topping?.topping_id?.nameTopping}
-																		</span>
-																	</div>
-																	<span className="text-[#ea8025] font-semibold">
-																		{topping?.priceTopping
-																			? `+${listPrice(topping?.priceTopping)} đ`
-																			: ""}
+															>
+																<div className="flex items-center space-x-3">
+																	<input
+																		type="checkbox"
+																		checked={selectedToppings?.some(
+																			t => t.topping_id === topping.topping_id,
+																		)}
+																		onChange={() =>
+																			handleToppingChange(topping)
+																		}
+																		disabled={topping?.stock <= 0}
+																		className="form-checkbox text-[#ea8025] rounded focus:ring-[#ea8025]"
+																	/>
+																	<span className="text-gray-700">
+																		{topping?.topping_id?.nameTopping}
 																	</span>
-																</label>
-															)
-														)}
+																</div>
+																<span className="text-[#ea8025] font-semibold">
+																	{topping?.priceTopping
+																		? `+${listPrice(topping?.priceTopping)} đ`
+																		: ""}
+																</span>
+															</label>
+														))}
 													</div>
 												</div>
 											)}
@@ -383,7 +382,7 @@ const DetailPage = () => {
 
 									<div className="flex space-x-4 mb-6">
 										{product?.isDeleted === false &&
-											product?.status === "unavailable" ? (
+										product?.status === "unavailable" ? (
 											<p className="bg-red-100 border-l-4 border-[#ea8025] text-red-600 font-semibold py-2 px-4 rounded-md shadow-md">
 												Sản phẩm này đã hết hàng. Bạn có thể chọn sản phẩm khác
 												để mua.
@@ -450,9 +449,22 @@ const DetailPage = () => {
 											key={review._id}
 											className="flex space-x-4 items-start border-b pb-4"
 										>
-											<div className="w-10 h-10 rounded-full bg-gray-200"></div>
+											{/* Avatar của người bình luận */}
+											{review.user_id.avatars[0].url === "" ? (
+												<div className="w-10 h-10 rounded-full bg-gray-200"></div>
+											) : (
+												<img
+													src={review.user_id.avatars[0].url}
+													alt="Reviewer Avatar"
+													className="w-10 h-10 rounded-full object-cover"
+												/>
+											)}
+
 											<div className="flex-1">
-												<p className="font-bold">{review.user_id.userName}</p>
+												{/* Thông tin người dùng */}
+												<p className="font-bold">
+													{review.user_id?.userName || "Ẩn danh"}
+												</p>
 												<p className="text-gray-500 text-sm">
 													Ngày bình luận:{" "}
 													{new Date(review.createdAt).toLocaleString("vi-VN", {
@@ -461,39 +473,53 @@ const DetailPage = () => {
 														timeZone: "Asia/Ho_Chi_Minh",
 													})}
 												</p>
-												<p className="mt-2 text-sm">{review.content}</p>
+
+												{/* Nội dung bình luận */}
+												<p className="mt-2 text-sm">
+													{review.content || "Không có nội dung bình luận."}
+												</p>
+
+												{/* Hình ảnh bình luận */}
 												<div className="flex flex-wrap gap-2 mt-2">
 													{review.image?.map((img, idx) => (
 														<img
 															key={idx}
 															src={img}
-															alt={`image-${idx}`}
+															alt={`Review Image ${idx + 1}`}
 															className="w-16 h-16 object-cover rounded"
 														/>
 													))}
 												</div>
 
-												{/* Phản hồi */}
+												{/* Phần phản hồi */}
 												{showReplies === review._id && (
 													<div className="mt-4 pl-6">
-														{replies.map((reply) => (
+														{replies.map(reply => (
 															<div
 																key={reply._id}
 																className="flex items-start space-x-4"
 															>
-																<div className="w-8 h-8 rounded-full bg-gray-300"></div>
-																<div className="flex-1">
-																	<p className="font-semibold">
-																		{reply.user_id?.userName}
+																{/* Avatar phản hồi */}
+																<div>
+																	<img
+																		className="w-[40px] h-[40px] border border-black rounded-full"
+																		src="/src/assets/images/LogoCozyHaven.png"
+																		alt="Logo"
+																	/>
+																</div>
+																<div className="flex-1 mt-[10px]">
+																	<h2 className="font-medium">Người bán</h2>
+																	<p className="text-sm ml-3">
+																		{reply.content ||
+																			"Không có nội dung phản hồi."}
 																	</p>
-																	<p className="text-sm">{reply.content}</p>
 																</div>
 															</div>
 														))}
 													</div>
 												)}
 
-												{/* Hiển thị/ẩn phản hồi */}
+												{/* Nút hiển thị/ẩn phản hồi */}
 												<Button
 													type="link"
 													onClick={() => handleToggleReplies(review._id)}
@@ -515,7 +541,7 @@ const DetailPage = () => {
 									Sản phẩm khác
 								</h1>
 								<div className="flex flex-wrap justify-center md:grid md:grid-cols-6 gap-x-4">
-									{products.slice(0, 6).map((item) =>
+									{products.slice(0, 6).map(item =>
 										item._id !== product._id ? (
 											<div
 												key={item._id}
@@ -539,7 +565,7 @@ const DetailPage = () => {
 													{listPrice(item.price)} VNĐ
 												</p>
 											</div>
-										) : null
+										) : null,
 									)}
 								</div>
 							</div>

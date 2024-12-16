@@ -351,10 +351,7 @@ const OrderDetail: React.FC = () => {
   };
   const formatPrice = (price: number) => {
     // Sử dụng Intl.NumberFormat để định dạng số theo tiền tệ VNĐ
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
+    return new Intl.NumberFormat("vi-VN").format(price);
   };
   const discountAmount = order.discountAmount;
   console.log(discountAmount);
@@ -393,13 +390,8 @@ const OrderDetail: React.FC = () => {
       key: "size",
       render: (selectedSize: Product) => {
         if (!selectedSize) return "Không có kích cỡ";
-        return `${selectedSize.name} (${selectedSize.priceSize.toLocaleString(
-          "vi-VN",
-          {
-            style: "currency",
-            currency: "VND",
-          }
-        )})`;
+        return `${selectedSize.name} (${selectedSize.priceSize.toLocaleString("vi-VN")} VNĐ
+      )`;
       },
     },
     {
@@ -412,12 +404,7 @@ const OrderDetail: React.FC = () => {
         return productToppings
           .map(
             (item: ProductTopping) =>
-              `${
-                item.topping_id.nameTopping
-              } (${item.topping_id.priceTopping.toLocaleString("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              })})`
+              `${item.topping_id.priceTopping.toLocaleString("vi-VN")} VNĐ`
           )
           .join(", ");
       },
@@ -429,10 +416,7 @@ const OrderDetail: React.FC = () => {
       render: (_: string, record) => {
         const salePrice = record.product_id.price || null;
         return salePrice
-          ? salePrice.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+          ? `${salePrice.toLocaleString("vi-VN")} VNĐ`
           : "Không giảm giá";
       },
     },
@@ -442,10 +426,7 @@ const OrderDetail: React.FC = () => {
       render: (_: string, record) => {
         const salePrice = record.product_id.sale_price || null;
         return salePrice
-          ? salePrice.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+          ? `${salePrice.toLocaleString("vi-VN")} VNĐ`
           : "Không giảm giá";
       },
     },
@@ -455,10 +436,7 @@ const OrderDetail: React.FC = () => {
       render: () => (
         <div>
           {order.discountAmount ? (
-            order.discountAmount.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+            `${order.discountAmount.toLocaleString("vi-VN")} VNĐ`
           ) : (
             <span>Không giảm giá</span>
           )}
@@ -492,10 +470,7 @@ const OrderDetail: React.FC = () => {
         const totalPrice = totalPriceWithoutDiscount - discountAmount;
 
         return totalPrice > 0 // Đảm bảo giá trị không âm
-          ? totalPrice.toLocaleString("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            })
+          ? `${totalPrice.toLocaleString("vi-VN")} VNĐ`
           : "Không áp dụng giảm giá";
       },
     },
