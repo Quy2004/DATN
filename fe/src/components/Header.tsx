@@ -208,10 +208,10 @@ const Header: React.FC = () => {
 					</button>
 
 					{/* Logo - Center */}
-					<div className="flex-grow ml-5 md:ml-0 md:flex-grow-0 flex justify-center items-center">
-						<Link to="/">
+					<div className="flex-grow ml-5 md:ml-0 md:flex-grow-0 flex justify-center items-center overflow-y-hidden">
+						<Link to="/" className="overflow-y-hidden block">
 							<img
-								className="w-40 h-40 mx-auto"
+								className="w-40 h-16 mx-auto object-cover overflow-y-hidden"
 								src="/src/assets/images/LogoCozyHaven.png"
 								alt="Logo"
 							/>
@@ -383,7 +383,7 @@ const Header: React.FC = () => {
 															</li>
 															<li>
 																<Link
-																	to="oder-history"
+																	to="order-history"
 																	className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
 																>
 																	<h3>Đơn mua</h3>
