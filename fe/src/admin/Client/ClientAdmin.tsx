@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import instance from "../../services/api";
 import { User } from "../../types/user";
 import { DeleteOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -71,7 +72,7 @@ const ClientAdmin = () => {
 			try {
 				const trashParam = isDelete ? `&isDeleted=true` : "";
 				const response = await instance.get(
-					`/users?&search=${searchTerm}&role=${filterRole}&page=${currentPage}&limit=${pageSize}${trashParam}`, // Thêm điều kiện vai trò
+					`/users?&search=${searchTerm}&role=user&page=${currentPage}&limit=${pageSize}${trashParam}`, // Thêm điều kiện vai trò
 				);
 				return response.data;
 			} catch (error) {
@@ -120,10 +121,29 @@ const ClientAdmin = () => {
 	const mutationUpdateUserRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
+				// Kiểm tra số lượng người dùng có vai trò admin
+				const adminCount = await instance.get("/users?role=admin");
+				if (adminCount.data.length <= 1) {
+					throw new Error("Không thể xóa quyền quản lý vì chỉ còn 1 quản lý");
+				}
+			
+				// Nếu điều kiện trên không vi phạm, tiếp tục gửi yêu cầu PATCH
 				return await instance.patch(`/users/${_id}/user`);
-			} catch (error) {
-				throw new Error("Cập nhật vai trò user thất bại");
+			} catch (error: unknown) {
+				// Kiểm tra xem lỗi có phải là một lỗi Axios (có thuộc tính `response`)
+				if (axios.isAxiosError(error)) {
+					// Kiểm tra xem lỗi Axios có chứa dữ liệu response với message hay không
+					if (error.response && error.response.data && error.response.data.message) {
+						throw new Error(error.response.data.message);  // Lấy thông báo lỗi từ backend
+					}
+				}
+				
+				// Nếu không phải lỗi Axios hoặc không có thông báo lỗi, ném lỗi chung
+				throw new Error("Cập nhật vai trò user thất bại: " + (error instanceof Error ? error.message : 'Lỗi không xác định'));
 			}
+			
+			
+			
 		},
 		onSuccess: () => {
 			messageApi.success("Cập nhật vai trò user thành công");
@@ -138,13 +158,13 @@ const ClientAdmin = () => {
 	const mutationUpdateManagerRole = useMutation<void, Error, { _id: string }>({
 		mutationFn: async ({ _id }) => {
 			try {
-				return await instance.patch(`/users/${_id}/manager`);
+				return await instance.patch(`/users/${_id}/admin`);
 			} catch (error) {
-				throw new Error("Cập nhật vai trò manager thất bại");
+				throw new Error("Cập nhật vai trò quản lý thất bại");
 			}
 		},
 		onSuccess: () => {
-			messageApi.success("Cập nhật vai trò manager thành công");
+			messageApi.success("Cập nhật vai trò quản lý thành công");
 			queryClient.invalidateQueries({ queryKey: ["user"] });
 		},
 		onError: error => {
@@ -156,7 +176,7 @@ const ClientAdmin = () => {
 	const handleRoleChange = (_id: string, newRole: string) => {
 		if (newRole === "user") {
 			mutationUpdateUserRole.mutate({ _id });
-		} else if (newRole === "manager") {
+		} else if (newRole === "admin") {
 			mutationUpdateManagerRole.mutate({ _id });
 		} else {
 			messageApi.error("Vai trò không hợp lệ");
@@ -200,9 +220,10 @@ const ClientAdmin = () => {
 			title: "STT",
 			dataIndex: "key",
 			key: "key",
+			width: 60,
 		},
 		{
-			title: "Tên user",
+			title: "Tên người dùng",
 			dataIndex: "userName",
 			key: "userName",
 			render: (text: string, user: User) => (
@@ -218,6 +239,7 @@ const ClientAdmin = () => {
 			title: "Email",
 			dataIndex: "email",
 			key: "email",
+			width: 250,
 		},
 		{
 			title: "Hình ảnh",
@@ -239,49 +261,17 @@ const ClientAdmin = () => {
 			render: (role: string, user: any) => (
 				<Select
 					value={role}
-					onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
+					// onChange={newRole => handleRoleChange(user._id, newRole)} // Gọi hàm thay đổi vai trò
 					style={{ width: 150 }}
 				>
 					<Option value="admin">Admin</Option>
-					<Option value="manager">Manager</Option>
+					{/* <Option value="manager">Manager</Option> */}
 					<Option value="user">User</Option>
 				</Select>
 			),
 		},
 
-		{
-			title: "Hành động",
-			dataIndex: "action",
-			render: (_: any, user: any) => (
-				<div className="flex flex-wrap gap-4">
-					{user.isDeleted ? (
-						<Popconfirm
-							title="Khôi phục user"
-							description="Bạn có chắc muốn mở khóa tài khoản này không?"
-							onConfirm={() => mutationRestoreUser.mutate(user._id)}
-							okText="Yes"
-							cancelText="No"
-						>
-							<Button className="bg-blue-500 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-								Mở khóa
-							</Button>
-						</Popconfirm>
-					) : (
-						<Popconfirm
-							title="Khóa user"
-							description="Bạn có chắc muốn khóa tài khoản này không?"
-							onConfirm={() => mutationSoftDeleteUser.mutate(user._id)}
-							okText="Yes"
-							cancelText="No"
-						>
-							<Button className="bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-2 focus:ring-yellow-300">
-								Khóa tài khoản
-							</Button>
-						</Popconfirm>
-					)}
-				</div>
-			),
-		},
+		
 	];
 
 	const dataSource = data?.data?.map((item: any, index: number) => ({
@@ -289,7 +279,7 @@ const ClientAdmin = () => {
 		key: index + 1,
 		userName: item.userName,
 		email: item.email,
-		avatar: item.avatar,
+		avatar: item.avatars[0].url,
 		role: item.role,
 		isDeleted: item.isDeleted,
 	}));
@@ -322,23 +312,23 @@ const ClientAdmin = () => {
 		<>
 			{contextHolder}
 			<div className="flex items-center justify-between mb-5">
-				<Title level={3}>Danh sách user</Title>
+				<Title level={3}>Danh sách tài khoản</Title>
 
 				<div className="flex space-x-3">
 					<Search
-						placeholder="Tìm kiếm user"
+						placeholder="Tìm kiếm tài khoản"
 						onSearch={handleSearch}
 						allowClear
 						style={{ width: 300 }}
 					/>
-					<Button
+					{/* <Button
 						type="primary"
 						icon={<DeleteOutlined />}
 						onClick={() => setIsDelete(!isDelete)}
 					>
 						{isDelete ? "" : ""}
-					</Button>
-					<Select
+					</Button> */}
+					{/* <Select
 						value={filterRole}
 						style={{ width: 200 }}
 						onChange={handleRoleFilterChange} // Gọi hàm thay đổi vai trò
@@ -347,7 +337,7 @@ const ClientAdmin = () => {
 						<Option value="admin">Quản lý</Option>
 						<Option value="manager">Nhân viên</Option>
 						<Option value="user">Người dùng</Option>
-					</Select>
+					</Select> */}
 				</div>
 			</div>
 			<Table
@@ -382,7 +372,7 @@ const ClientAdmin = () => {
 						>
 							{/* Tên user */}
 							<Descriptions.Item
-								label="Tên user"
+								label="Tên người dùng"
 								span={2}
 							>
 								<span className="font-semibold text-lg text-gray-900">
@@ -392,7 +382,7 @@ const ClientAdmin = () => {
 
 							{/* email user */}
 							<Descriptions.Item
-								label="Email user"
+								label="Email người dùng"
 								span={2}
 							>
 								<span className="font-medium text-blue-600">
@@ -402,12 +392,12 @@ const ClientAdmin = () => {
 
 							{/* Ảnh user  */}
 							<Descriptions.Item
-								label="Avatar user"
+								label="Ảnh người dùng"
 								span={2}
 							>
 								<Image
 									src={selectedUser.avatars}
-									alt="Ảnh user"
+									alt="Ảnh người dùng"
 									width={100}
 									className="rounded-md border border-gray-200 shadow-sm"
 								/>
@@ -415,7 +405,7 @@ const ClientAdmin = () => {
 
 							{/* trạng thái user */}
 							<Descriptions.Item
-								label="Trạng thái user"
+								label="Trạng thái"
 								span={2}
 							>
 								<span className="font-semibold">
@@ -429,8 +419,8 @@ const ClientAdmin = () => {
 										? "Admin"
 										: selectedUser.role === "user"
 										? "Người dùng"
-										: selectedUser.role === "manager"
-										? "Nhân viên"
+										// : selectedUser.role === "manager"
+										// ? "Nhân viên"
 										: "Không xác định"}
 								</span>
 							</Descriptions.Item>

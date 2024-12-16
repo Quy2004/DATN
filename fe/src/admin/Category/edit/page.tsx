@@ -1,5 +1,5 @@
 import { Button, Form, Input, message, Select, Space, Spin } from "antd";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import instance from "../../../services/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ const CategoryUpdatePage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
-
+  const [loading, setLoading] = useState(false);
   const { data: categoryData, isLoading: isCategoryLoading } = useQuery({
     queryKey: ["category", id],
     queryFn: async () => {
@@ -43,7 +43,7 @@ const CategoryUpdatePage = () => {
     },
     onSuccess: () => {
       messageApi.success("Cập nhật danh mục thành công");
-
+      setLoading(false); // Dừng loading khi thành công
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       queryClient.invalidateQueries({ queryKey: ["category", id] });
 
@@ -53,26 +53,46 @@ const CategoryUpdatePage = () => {
     },
     onError(error) {
       messageApi.error(`Lỗi: ${error.message}`);
+      setLoading(false);
     },
   });
 
+  // Xử lý khi submit form
   const onFinish = (values: FieldType) => {
+    if (!Array.isArray(categories)) {
+      messageApi.error("Dữ liệu danh mục không hợp lệ!");
+      return;
+    }
+
+    const isParentCategoryValid = categories.some(
+      (category: Category) => category._id === values.parent_id
+    );
+
     const updatedValues = {
       ...values,
-      parent_id: values.parent_id || null,
+      parent_id: isParentCategoryValid ? values.parent_id : null, // Gán null nếu không hợp lệ
     };
 
+    setLoading(true);
     mutate(updatedValues);
   };
 
+  // Xử lý khi có dữ liệu categoryData hoặc categories
   useEffect(() => {
-    if (categoryData) {
+    if (categoryData && Array.isArray(categories)) {
+      const isParentCategoryValid = categories.some(
+        (category: Category) =>
+          category._id === categoryData.category?.parent_id?._id
+      );
+
       form.setFieldsValue({
-        title: categoryData?.category?.title,
-        parent_id: categoryData?.category?.parent_id?._id || null,
+        title: categoryData.category?.title,
+        parent_id: isParentCategoryValid
+          ? categoryData.category?.parent_id?._id
+          : null,
       });
     }
-  }, [categoryData, form]);
+  }, [categoryData, categories, form]);
 
   const parentCategories = Array.isArray(categories)
     ? categories.filter((category: Category) => !category.parent_id)
@@ -112,10 +132,68 @@ const CategoryUpdatePage = () => {
         >
           <Form.Item
             label="Tên danh mục"
+            required
             name="title"
             rules={[
-              { required: true, message: "Vui lòng nhập tên danh mục!" },
-              { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự!" },
+              {
+                min: 3,
+                message: "Tên danh mục phải có ít nhất 3 ký tự!",
+              },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên danh mục!")
+                    );
+                  }
+                  const trimmedValue = value.trim();
+
+                  // Kiểm tra không chứa số
+                  if (/\d/.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên danh mục không được chứa số!")
+                    );
+                  }
+
+                  // Kiểm tra không chứa ký tự đặc biệt
+                  if (/[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên danh mục không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  // Cho phép giữ nguyên tên danh mục
+                  if (categoryData?.category?.title === trimmedValue) {
+                    return Promise.resolve(); // Nếu không thay đổi gì thì cho qua
+                  }
+
+                  // Kiểm tra danh mục đã tồn tại
+                  try {
+                    const response = await instance.get(
+                      `/categories?title=${trimmedValue}`
+                    );
+                    const existingCategory = response.data.data.find(
+                      (category: Category) =>
+                        category.title.toLowerCase() ===
+                        trimmedValue.toLowerCase()
+                    );
+
+                    if (existingCategory) {
+                      return Promise.reject(
+                        new Error(
+                          "Tên danh mục đã tồn tại. Vui lòng chọn tên khác!"
+                        )
+                      );
+                    }
+
+                    return Promise.resolve();
+                  } catch (error) {
+                    return Promise.reject(
+                      new Error("Lỗi kết nối, vui lòng thử lại!")
+                    );
+                  }
+                },
+              },
             ]}
           >
             <Input
@@ -130,13 +208,15 @@ const CategoryUpdatePage = () => {
               loading={isCategoriesLoading || isCategoryLoading}
               placeholder="Chọn danh mục cha (nếu có)"
               allowClear
-            >
-              {parentCategories?.map((category: Category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.title}
-                </Select.Option>
-              ))}
-            </Select>
+              options={parentCategories
+                .filter(
+                  (category) => category._id !== categoryData?.category?._id
+                )
+                .map((category) => ({
+                  value: category._id,
+                  label: category.title,
+                }))}
+            />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

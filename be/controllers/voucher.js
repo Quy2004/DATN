@@ -190,6 +190,50 @@ class VoucherController {
 			res.status(404).json({ message: error.message });
 		}
 	}
+	async useVoucher(req, res) {
+		try {
+		  // Lấy ID voucher từ tham số URL
+		  const { id } = req.params;
+	  
+		  // Tìm voucher trong cơ sở dữ liệu theo ID
+		  const voucher = await Voucher.findById(id);
+	  
+		  // Kiểm tra nếu voucher không tồn tại
+		  if (!voucher) {
+			return res.status(404).json({ message: "Voucher không tìm thấy!" });
+		  }
+	  
+		  // Kiểm tra thời gian hiệu lực của voucher (minOrderDate)
+		  const currentDate = new Date();
+		  const voucherStartDate = new Date(voucher.minOrderDate);
+	  
+		  // Nếu minOrderDate nhỏ hơn thời điểm hiện tại, cập nhật minOrderDate về giờ hiện tại
+		  if (voucherStartDate < currentDate) {
+			voucher.minOrderDate = currentDate; // Cập nhật minOrderDate về thời gian hiện tại
+		  }
+	  
+		  // Kiểm tra số lượng voucher
+		  if (voucher.quantity <= 0) {
+			return res.status(400).json({ message: "Voucher đã hết số lượng sử dụng." });
+		  }
+	  
+		  // Giảm số lượng voucher sau khi áp dụng
+		  voucher.quantity -= 1;
+	  
+		  // Lưu lại voucher sau khi cập nhật minOrderDate và quantity
+		  await voucher.save();
+	  
+		  // Trả về thông báo thành công và dữ liệu voucher đã được cập nhật
+		  res.status(200).json({
+			message: "Voucher đã được áp dụng thành công!",
+			data: voucher, // Trả về dữ liệu voucher đã được cập nhật
+		  });
+		} catch (error) {
+		  console.error("Lỗi khi áp dụng voucher:", error); // Ghi lỗi trong console để dễ dàng debug
+		  res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại.", error: error.message });
+		}
+	  }
+	  
 }
 
 export default VoucherController;

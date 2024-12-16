@@ -11,7 +11,6 @@ const UserSchema = new Schema(
     },
     avatars: {
       type: [Object],
-      default: "be/image/avt.jpg"
     },
     userName:{
         type: String,
@@ -28,9 +27,11 @@ const UserSchema = new Schema(
     },
     role: {
         type: String,
-        enum: ["user", "manager", "admin"],
+        enum: ["user", "admin"],
         default: "user",
-    }
+    },
+    resetToken: { type: String , required: false},
+    resetTokenExpires: { type: Date , required: false}
   },
   {
     timestamps: true,
@@ -50,5 +51,6 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-const User = mongoose.models.users || mongoose.model("users", UserSchema);
+const User = mongoose.model("User", UserSchema);
+
 export default User;

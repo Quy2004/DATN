@@ -16,6 +16,7 @@ import {
   FaFileAlt,
   FaThList,
   FaFolderOpen,
+  FaFileInvoice,
 } from "react-icons/fa"; // Import icons
 import { Button } from "antd";
 import { BackwardFilled } from "@ant-design/icons"; // Import icons
@@ -61,11 +62,12 @@ const AdminLayout = () => {
     { name: "Quản lí sản phẩm", link: "product", icon: <FaBoxOpen /> },
     { name: "Quản lí voucher", link: "voucher", icon: <FaTags /> },
     { name: "Quản lí đơn hàng", link: "order", icon: <FaShoppingCart /> },
+    { name: "Quản lí hóa đơn", link: "invoice", icon: <FaFileInvoice /> },
     { name: "Quản lí bình luận", link: "comment", icon: <FaComments /> },
     { name: "Quản lí tài khoản", link: "client", icon: <FaUser /> },
     { name: "Quản lí banner", link: "banner", icon: <FaImage /> },
     {
-      name: "Quản lí danh mục post",
+      name: "Quản lí danh mục bài viết",
       link: "CategoryPost",
       icon: <FaFolderOpen />,
     },
@@ -93,9 +95,11 @@ const AdminLayout = () => {
     } else if (location.pathname.includes("banner")) {
       return "Quản lý banner";
     } else if (location.pathname.includes("CategoryPost")) {
-      return "Quản lý danh mục post";
+      return "Quản lý danh mục bài viết";
     } else if (location.pathname.includes("post")) {
       return "Quản lý bài viết";
+    } else if (location.pathname.includes("invoice")) {
+      return "Quản lý hóa đơn";
     } else {
       return "Thống kê "; // Default breadcrumb
     }

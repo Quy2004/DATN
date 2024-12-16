@@ -10,6 +10,7 @@ import Upload, { RcFile, UploadFile } from "antd/es/upload";
 import axios from "axios";
 import instance from "../../../services/api";
 import {
+  Product,
   ProductFormValues,
   ProductSize,
   ProductTopping,
@@ -34,6 +35,7 @@ const ProductEditPage: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null
   );
+  const [isUploading, setIsUploading] = useState(false);
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -43,27 +45,27 @@ const ProductEditPage: React.FC = () => {
   });
 
   const { data: sizes, isLoading: isLoadingSizes } = useQuery({
-    queryKey: ["sizes", selectedCategoryId], // Thêm selectedCategoryId làm phần của key
+    queryKey: ["sizes", selectedCategoryId],
     queryFn: async () => {
-      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      if (!selectedCategoryId) return [];
       const response = await instance.get(
         `/sizes?category=${selectedCategoryId}`
       );
       return response.data;
     },
-    enabled: !!selectedCategoryId, // Chỉ enable query khi có selectedCategoryId
+    enabled: !!selectedCategoryId,
   });
 
   const { data: toppings, isLoading: isLoadingToppings } = useQuery({
-    queryKey: ["toppings", selectedCategoryId], // Thêm selectedCategoryId vào queryKey
+    queryKey: ["toppings", selectedCategoryId],
     queryFn: async () => {
-      if (!selectedCategoryId) return []; // Không gọi API nếu không có danh mục được chọn
+      if (!selectedCategoryId) return [];
       const response = await instance.get(
         `/toppings?category=${selectedCategoryId}`
-      ); // Gọi API với selectedCategoryId
+      );
       return response.data;
     },
-    enabled: !!selectedCategoryId, // Chỉ gọi query khi có selectedCategoryId
+    enabled: !!selectedCategoryId,
   });
 
   // Fetch dữ liệu sản phẩm hiện tại
@@ -100,24 +102,21 @@ const ProductEditPage: React.FC = () => {
     if (products) {
       const categoryId = products.category_id[0]?._id;
       setSelectedCategoryId(categoryId);
+      const productSizes = products.product_sizes.map(
+        (size: ProductSize) => size.size_id?._id
+      );
+      const productToppings = products.product_toppings.map(
+        (topping: ProductTopping) => topping.topping_id?._id
+      );
       form.setFieldsValue({
         name: products.name,
         price: products.price,
         category_id: products.category_id[0]?._id,
-        stock: products.stock,
         discount: products.discount,
         description: products.description,
         status: products.status,
-        product_sizes: products?.product_sizes.map((size: ProductSize) => ({
-          size_id: size.size_id?._id,
-          status: size.status,
-        })),
-        product_toppings: products?.product_toppings.map(
-          (topping: ProductTopping) => ({
-            topping_id: topping.topping_id?._id,
-            stock: topping.stock,
-          })
-        ),
+        size_id: productSizes,
+        topping_id: productToppings,
       });
       setImage(products.image);
       setThumbnails(products.thumbnail);
@@ -141,8 +140,103 @@ const ProductEditPage: React.FC = () => {
     }
   }, [products, form]);
 
+  // const mutation = useMutation({
+  //   mutationFn: async (values: ProductFormValues) => {
+  //     const product_sizes = values.size_id.map((sizeId: string) => ({
+  //       size_id: sizeId,
+  //       status: "available",
+  //     }));
+
+  //     const product_toppings = values.topping_id.map((toppingId: string) => ({
+  //       topping_id: toppingId,
+  //     }));
+
+  //     const productData = {
+  //       ...values,
+  //       image: image || mainImageFileList[0]?.url,
+  //       thumbnail:
+  //         thumbnails.length > 0
+  //           ? thumbnails
+  //           : thumbnailFileList.map((file) => file.url),
+
+  //       product_sizes,
+  //       product_toppings,
+  //     };
+
+  //     // Gửi yêu cầu cập nhật sản phẩm
+  //     await instance.put(`/products/${id}`, productData);
+  //   },
+  //   onSuccess: () => {
+  //     message.success("Cập nhật sản phẩm thành công!");
+  //     queryClient.invalidateQueries({ queryKey: ["products"] });
+  //     form.resetFields();
+  //     setImage("");
+  //     setThumbnails([]);
+  //     setMainImageFileList([]);
+  //     setThumbnailFileList([]);
+  //     setTimeout(() => {
+  //       navigate(`/admin/product`);
+  //     }, 2000);
+  //   },
+  //   onError: (error) =>
+  //     message.error(
+  //       error instanceof Error ? error.message : "Cập nhật sản phẩm thất bại!"
+  //     ),
+  // });
+
   const mutation = useMutation({
     mutationFn: async (values: ProductFormValues) => {
+      // First check if selected category still exists and is active
+      const categoryResponse = await instance.get(
+        `/categories/${values.category_id}`
+      );
+      const selectedCategory = categoryResponse.data;
+
+      if (!selectedCategory || selectedCategory.isDeleted) {
+        throw new Error("Danh mục đã bị xóa, vui lòng chọn danh mục khác");
+      }
+
+      // Validate sizes
+      const selectedSizes = values.size_id;
+      const availableSizes = sizes?.data.filter(
+        (size: Size) => size.status === "available" && !size.isDeleted
+      );
+      const invalidSizes = selectedSizes.filter(
+        (sizeId: string) => !availableSizes?.find((s: Size) => s._id === sizeId)
+      );
+
+      if (invalidSizes.length > 0) {
+        throw new Error(
+          "Một số size đã bị xóa hoặc không khả dụng, vui lòng chọn lại"
+        );
+      }
+
+      // Validate toppings
+      const selectedToppings = values.topping_id;
+      const availableToppings = toppings?.data.filter(
+        (topping: Topping) =>
+          topping.statusTopping === "available" && !topping.isDeleted
+      );
+      const invalidToppings = selectedToppings.filter(
+        (toppingId: string) =>
+          !availableToppings?.find((t: Topping) => t._id === toppingId)
+      );
+
+      if (invalidToppings.length > 0) {
+        throw new Error(
+          "Một số topping đã bị xóa hoặc không khả dụng, vui lòng chọn lại"
+        );
+      }
+
+      const product_sizes = values.size_id.map((sizeId: string) => ({
+        size_id: sizeId,
+        status: "available",
+      }));
+
+      const product_toppings = values.topping_id.map((toppingId: string) => ({
+        topping_id: toppingId,
+      }));
+
       const productData = {
         ...values,
         image: image || mainImageFileList[0]?.url,
@@ -150,33 +244,29 @@ const ProductEditPage: React.FC = () => {
           thumbnails.length > 0
             ? thumbnails
             : thumbnailFileList.map((file) => file.url),
-
-        product_sizes: values.product_sizes.map((size: ProductSize) => ({
-          size_id: size.size_id,
-          status: size.status,
-        })),
-
-        product_toppings: values.product_toppings.map(
-          (topping: ProductTopping) => ({
-            topping_id: topping.topping_id,
-          })
-        ),
+        product_sizes,
+        product_toppings,
       };
 
-      // Gửi yêu cầu cập nhật sản phẩm
       await instance.put(`/products/${id}`, productData);
     },
     onSuccess: () => {
       message.success("Cập nhật sản phẩm thành công!");
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      form.resetFields();
+      setImage("");
+      setThumbnails([]);
+      setMainImageFileList([]);
+      setThumbnailFileList([]);
       setTimeout(() => {
-        navigate(`/admin/product`);
+        navigate("/admin/product");
       }, 2000);
     },
-    onError: (error) =>
+    onError: (error) => {
       message.error(
         error instanceof Error ? error.message : "Cập nhật sản phẩm thất bại!"
-      ),
+      );
+    },
   });
 
   const handleMainImageChange = ({ fileList }: { fileList: UploadFile[] }) => {
@@ -201,26 +291,135 @@ const ProductEditPage: React.FC = () => {
       prev.filter((item) => item.uid !== file.uid)
     );
   };
-  // Handle category change
-  const handleCategoryChange = (value: number | null) => {
-    setSelectedCategoryId(value);
 
-    // Reset size and topping fields when category changes
-    form.setFieldsValue({
-      product_sizes: [{ size_id: undefined }],
-      product_toppings: [{ topping_id: undefined }],
-    });
+  const handleCategoryChange = async (value: number | null) => {
+    try {
+      if (value) {
+        // Check if selected category exists and is active
+        const categoryResponse = await instance.get(`/categories/${value}`);
+        const selectedCategory = categoryResponse.data;
+
+        if (!selectedCategory || selectedCategory.isDeleted) {
+          message.error("Danh mục này đã bị xóa, vui lòng chọn danh mục khác");
+          setSelectedCategoryId(null);
+          form.setFieldsValue({
+            category_id: undefined,
+            size_id: [],
+            topping_id: [],
+          });
+          return;
+        }
+
+        // Get current form values
+        const currentSizes = form.getFieldValue("size_id") || [];
+        const currentToppings = form.getFieldValue("topping_id") || [];
+
+        // Fetch new sizes and toppings for selected category
+        const [sizesResponse, toppingsResponse] = await Promise.all([
+          instance.get(`/sizes?category=${value}`),
+          instance.get(`/toppings?category=${value}`),
+        ]);
+
+        const availableSizes = sizesResponse.data.data.filter(
+          (size: Size) => size.status === "available" && !size.isDeleted
+        );
+
+        const availableToppings = toppingsResponse.data.data.filter(
+          (topping: Topping) =>
+            topping.statusTopping === "available" && !topping.isDeleted
+        );
+
+        // Filter out invalid sizes and toppings
+        const validSizes = currentSizes.filter((sizeId: string) =>
+          availableSizes.some((size: Size) => size._id === sizeId)
+        );
+
+        const validToppings = currentToppings.filter((toppingId: string) =>
+          availableToppings.some(
+            (topping: Topping) => topping._id === toppingId
+          )
+        );
+
+        // If any items were removed, show warning message
+        if (validSizes.length < currentSizes.length) {
+          message.warning("Một số size đã bị xóa hoặc không còn khả dụng");
+        }
+
+        if (validToppings.length < currentToppings.length) {
+          message.warning("Một số topping đã bị xóa hoặc không còn khả dụng");
+        }
+
+        form.setFieldsValue({
+          size_id: validSizes,
+          topping_id: validToppings,
+        });
+      }
+
+      setSelectedCategoryId(value);
+    } catch (error) {
+      message.error("Không thể kiểm tra trạng thái danh mục");
+    }
   };
 
-  // Submit form với mutation
-  const onFinish = (values: ProductFormValues) => {
+  useEffect(() => {
+    if (sizes?.data) {
+      const currentSizes = form.getFieldValue("size_id") || [];
+      const availableSizes = sizes.data.filter(
+        (size: Size) => size.status === "available" && !size.isDeleted
+      );
+
+      const validSizes = currentSizes.filter((sizeId: string) =>
+        availableSizes.some((size: Size) => size._id === sizeId)
+      );
+
+      if (validSizes.length < currentSizes.length) {
+        form.setFieldsValue({ size_id: validSizes });
+      }
+    }
+  }, [sizes]);
+
+  useEffect(() => {
+    if (toppings?.data) {
+      const currentToppings = form.getFieldValue("topping_id") || [];
+      const availableToppings = toppings.data.filter(
+        (topping: Topping) =>
+          topping.statusTopping === "available" && !topping.isDeleted
+      );
+
+      const validToppings = currentToppings.filter((toppingId: string) =>
+        availableToppings.some((topping: Topping) => topping._id === toppingId)
+      );
+
+      if (validToppings.length < currentToppings.length) {
+        form.setFieldsValue({ topping_id: validToppings });
+      }
+    }
+  }, [toppings]);
+  const onFinish = async (values: ProductFormValues) => {
     if (!image && mainImageFileList.length === 0) {
       message.error("Vui lòng chọn ảnh chính trước khi cập nhật!");
       return;
     }
-    mutation.mutate(values);
-  };
 
+    try {
+      // Check category status
+      const categoryResponse = await instance.get(
+        `/categories/${values.category_id}`
+      );
+      const selectedCategory = categoryResponse.data;
+
+      if (!selectedCategory || selectedCategory.isDeleted) {
+        return;
+      }
+
+      mutation.mutate(values);
+    } catch (error) {
+      message.error("Không thể kiểm tra trạng thái danh mục");
+    }
+  };
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   if (
     isLoadingProduct ||
     isLoadingCategories ||
@@ -252,22 +451,81 @@ const ProductEditPage: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto max-h-[450px] overflow-y-auto">
+      <div className="w-full mx-auto max-h-[450px] overflow-y-auto">
         <Form
           form={form}
           name="basic"
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
+          style={{ width: 500, marginLeft: 240 }}
           onFinish={onFinish}
         >
           {/* Tên sản phẩm */}
           <Form.Item
             label="Tên sản phẩm"
             name="name"
+            required
             rules={[
-              { required: true, message: "Vui lòng nhập tên sản phẩm" },
               { min: 3, message: "Tên sản phẩm phải có ít nhất 3 ký tự" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên sản phẩm")
+                    );
+                  }
+
+                  // Loại bỏ khoảng trắng thừa ở đầu và cuối, và thay thế nhiều khoảng trắng bằng 1 khoảng trắng
+                  const trimmedValue = value.trim().replace(/\s+/g, " ");
+                  const hasNumber = /\d/;
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
+
+                  // Kiểm tra số và ký tự đặc biệt
+                  if (hasNumber.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên sản phẩm không được chứa số!")
+                    );
+                  }
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên sản phẩm không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  try {
+                    const response = await instance.get(
+                      `/products?name=${encodeURIComponent(
+                        trimmedValue
+                      )}&limit=50`
+                    );
+
+                    // Loại trừ sản phẩm hiện tại bằng cách kiểm tra id
+                    const existingProduct = response.data.data.find(
+                      (product: Product) =>
+                        product.name
+                          .trim()
+                          .replace(/\s+/g, " ")
+                          .toLowerCase() === trimmedValue.toLowerCase() &&
+                        product._id !== id // Loại trừ sản phẩm hiện tại
+                    );
+
+                    if (existingProduct) {
+                      return Promise.reject(
+                        new Error(
+                          "Tên sản phẩm đã tồn tại. Vui lòng chọn tên khác!"
+                        )
+                      );
+                    }
+                  } catch (error) {
+                    return Promise.reject(
+                      new Error("Có lỗi xảy ra khi kiểm tra tên sản phẩm!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input
@@ -283,10 +541,10 @@ const ProductEditPage: React.FC = () => {
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
             <Select placeholder="Chọn danh mục" onChange={handleCategoryChange}>
-              {categories?.data?.map((category: Category) => (
-                <Option key={category._id} value={category._id}>
-                  {category.title}
-                </Option>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -294,25 +552,31 @@ const ProductEditPage: React.FC = () => {
           <Form.Item
             label="Giá sản phẩm"
             name="price"
+            required
             rules={[
               {
                 validator(_, value) {
-                  if (!value) {
+                  if (value === undefined || value === "") {
                     return Promise.reject(
                       new Error("Vui lòng nhập giá sản phẩm")
                     );
                   }
-                  const numericValue = Number(value);
-                  if (isNaN(numericValue)) {
+                  const numericValue = parseFloat(value);
+                  if (isNaN(numericValue) || !isFinite(numericValue)) {
                     return Promise.reject(
                       new Error("Giá sản phẩm phải là một số hợp lệ")
                     );
-                  } else if (numericValue <= 0) {
+                  }
+                  if (numericValue <= 0) {
                     return Promise.reject(
                       new Error("Giá sản phẩm phải lớn hơn 0")
                     );
                   }
-
+                  if (numericValue > 100000) {
+                    return Promise.reject(
+                      new Error("Giá sản phẩm không được lớn hơn 100.000 đ")
+                    );
+                  }
                   return Promise.resolve();
                 },
               },
@@ -356,7 +620,10 @@ const ProductEditPage: React.FC = () => {
                 multiple
                 fileList={thumbnailFileList}
                 beforeUpload={(file) => {
-                  uploadImage(file, false);
+                  setIsUploading(true);
+                  uploadImage(file, false).finally(() => {
+                    setIsUploading(false);
+                  });
                   return false;
                 }}
                 onChange={handleThumbnailChange}
@@ -364,206 +631,133 @@ const ProductEditPage: React.FC = () => {
                 className="upload-thumbnail-images"
               >
                 {thumbnailFileList.length < 4 && (
-                  <Button icon={<FileImageOutlined />}></Button>
+                  <Button
+                    icon={<FileImageOutlined />}
+                    loading={isUploading}
+                    disabled={isUploading}
+                  />
                 )}
               </Upload>
             </div>
           </div>
 
-          <div className="flex flex-col items-center mt-5">
-            {/* Size sản phẩm */}
-            <Form.List name="product_sizes">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map((field) => (
-                    <div
-                      key={field.key}
-                      className="flex items-center space-x-4 mb-4 w-full"
-                    >
-                      <Form.Item
-                        name={[field.name, "size_id"]}
-                        label="Size"
-                        rules={[
-                          { required: true, message: "Chọn size" },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              if (!value) {
-                                return Promise.reject(
-                                  new Error("Vui lòng chọn một size")
-                                );
-                              }
-                              const sizeValues = getFieldValue(
-                                "product_sizes"
-                              ).map((item: ProductSize) => item.size_id);
-                              if (
-                                sizeValues.filter((v: string) => v === value)
-                                  .length > 1
-                              ) {
-                                return Promise.reject(
-                                  new Error("Size đã bị trùng lặp")
-                                );
-                              }
-                              return Promise.resolve();
-                            },
-                          }),
-                        ]}
-                        className="flex-1 mb-0"
-                      >
-                        <Select
-                          placeholder="Chọn size"
-                          loading={isLoadingSizes}
-                          disabled={isLoadingSizes}
-                          className="w-full"
-                          onChange={(value) => {
-                            // Xử lý khi kích thước bị xóa
-                            const selectedSize = sizes?.data.find(
-                              (size: Size) => size._id === value
-                            );
-                            if (selectedSize?.isDeleted) {
-                              form.setFieldsValue({
-                                product_sizes: fields.map((item) =>
-                                  item.name === field.name
-                                    ? { size_id: null }
-                                    : item
-                                ),
-                              });
-                              return;
-                            }
-                          }}
-                        >
-                          {sizes?.data
-                            .filter(
-                              (size: Size) =>
-                                size.status === "available" &&
-                                size.isDeleted === false
-                            )
-                            .map((size: Size) => (
-                              <Option key={size._id} value={size._id}>
-                                {size.name}
-                              </Option>
-                            ))}
-                        </Select>
-                      </Form.Item>
-
-                      {fields.length > 1 && (
-                        <Button
-                          onClick={() => remove(field.name)}
-                          danger
-                          className="text-red-500 mb-0"
-                        >
-                          Xóa
-                        </Button>
-                      )}
-                    </div>
+          <div className="flex items-center space-x-4 mb-4 w-full mt-8">
+            <Form.Item
+              name="size_id"
+              label="Size"
+              rules={[
+                { required: true, message: "Vui lòng chọn ít nhất một size" },
+              ]}
+              className="flex-1 mb-0"
+            >
+              <Select
+                mode="multiple"
+                placeholder="Chọn size"
+                loading={isLoadingSizes}
+                disabled={isLoadingSizes}
+                className="w-full"
+                onSelect={(value) => {
+                  const selectedSize = sizes?.data.find(
+                    (size: Size) => size._id === value
+                  );
+                  if (
+                    !selectedSize ||
+                    selectedSize.isDeleted ||
+                    selectedSize.status !== "available"
+                  ) {
+                    message.error("Size này không còn khả dụng");
+                    const currentValues = form.getFieldValue("size_id") || [];
+                    form.setFieldsValue({
+                      size_id: currentValues.filter((v: string) => v !== value),
+                    });
+                  }
+                }}
+              >
+                {sizes?.data
+                  .filter(
+                    (size: Size) =>
+                      size.status === "available" && !size.isDeleted
+                  )
+                  .map((size: Size) => (
+                    <Option key={size._id} value={size._id}>
+                      {size.name}
+                    </Option>
                   ))}
+              </Select>
+            </Form.Item>
+          </div>
 
-                  <Button
-                    className="mt-2 bg-blue-500 text-white"
-                    onClick={() => add()}
-                  >
-                    Thêm kích thước
-                  </Button>
-                </>
-              )}
-            </Form.List>
+          {/* Topping sản phẩm */}
+          <div className="flex items-center space-x-4 mb-10 w-full mt-10">
+            <Form.Item
+              name="topping_id"
+              label="Topping"
+              rules={[
+                {
+                  validator: (_, values) => {
+                    // Kiểm tra trùng lặp
+                    if (values && new Set(values).size !== values.length) {
+                      return Promise.reject(
+                        new Error("Topping không được trùng lặp")
+                      );
+                    }
 
-            {/* Topping sản phẩm */}
-            <Form.List name="product_toppings">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map((field) => (
-                    <div
-                      key={field.key}
-                      className="flex items-center space-x-4 mb-4 w-full max-w-3xl mt-6"
-                    >
-                      {/* Validate không trùng topping và kiểm tra nếu không có topping nào được chọn */}
-                      <Form.Item
-                        name={[field.name, "topping_id"]}
-                        label="Topping"
-                        rules={[
-                          {
-                            validator: (_, value) => {
-                              const toppingValues = fields
-                                .map((item) =>
-                                  form.getFieldValue([
-                                    "product_toppings",
-                                    item.name,
-                                    "topping_id",
-                                  ])
-                                )
-                                .filter((v) => v);
+                    // Giới hạn số lượng topping
+                    if (values && values.length > 5) {
+                      return Promise.reject(
+                        new Error("Chỉ được chọn tối đa 5 topping")
+                      );
+                    }
 
-                              if (
-                                toppingValues.filter((v) => v === value)
-                                  .length > 1
-                              ) {
-                                return Promise.reject(
-                                  new Error("Topping đã bị trùng lặp")
-                                );
-                              }
-                              return Promise.resolve();
-                            },
-                          },
-                        ]}
-                        className="flex-1 mb-0"
-                      >
-                        <Select
-                          placeholder="Chọn topping"
-                          loading={isLoadingToppings}
-                          disabled={isLoadingToppings}
-                          className="w-full"
-                          onChange={(value) => {
-                            // Xử lý khi topping bị xóa
-                            const selectedTopping = toppings?.data.find(
-                              (topping: Topping) => topping._id === value
-                            );
-                            if (selectedTopping?.isDeleted) {
-                              form.setFieldsValue({
-                                product_toppings: fields.map((item) =>
-                                  item.name === field.name
-                                    ? { topping_id: null }
-                                    : item
-                                ),
-                              });
-                              return;
-                            }
-                          }}
-                        >
-                          {toppings?.data
-                            .filter(
-                              (topping: Topping) =>
-                                topping.statusTopping === "available" &&
-                                topping.isDeleted === false
-                            )
-                            .map((topping: Topping) => (
-                              <Option key={topping._id} value={topping._id}>
-                                {topping.nameTopping}
-                              </Option>
-                            ))}
-                        </Select>
-                      </Form.Item>
-
-                      {/* Remove Button */}
-                      <Button
-                        onClick={() => remove(field.name)}
-                        danger
-                        className="text-red-500 mb-0"
-                      >
-                        Xóa
-                      </Button>
-                    </div>
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+              className="flex-1 mb-0"
+            >
+              <Select
+                mode="multiple"
+                placeholder="Chọn topping"
+                loading={isLoadingToppings}
+                disabled={isLoadingToppings}
+                className="w-full"
+                maxTagCount={3}
+                maxTagTextLength={10}
+                maxTagPlaceholder={(omittedValues) =>
+                  `+ ${omittedValues.length} topping`
+                }
+                onSelect={(value) => {
+                  const selectedTopping = toppings?.data.find(
+                    (topping: Topping) => topping._id === value
+                  );
+                  if (
+                    !selectedTopping ||
+                    selectedTopping.isDeleted ||
+                    selectedTopping.statusTopping !== "available"
+                  ) {
+                    const currentValues =
+                      form.getFieldValue("topping_id") || [];
+                    form.setFieldsValue({
+                      topping_id: currentValues.filter(
+                        (v: string) => v !== value
+                      ),
+                    });
+                  }
+                }}
+              >
+                {toppings?.data
+                  .filter(
+                    (topping: Topping) =>
+                      topping.statusTopping === "available" &&
+                      !topping.isDeleted
+                  )
+                  .map((topping: Topping) => (
+                    <Option key={topping._id} value={topping._id}>
+                      {topping.nameTopping}
+                    </Option>
                   ))}
-
-                  {/* Add Button */}
-                  <Button
-                    className="mt-5 bg-green-500 text-white mx-3"
-                    onClick={() => add()}
-                  >
-                    Thêm topping
-                  </Button>
-                </>
-              )}
-            </Form.List>
+              </Select>
+            </Form.Item>
           </div>
 
           {/* Mô tả sản phẩm */}
@@ -582,7 +776,7 @@ const ProductEditPage: React.FC = () => {
 
           {/* Giảm giá */}
           <Form.Item
-            label="Giảm giá (Tính theo %)"
+            label="Giảm giá (%)"
             name="discount"
             initialValue={0}
             rules={[
@@ -619,8 +813,12 @@ const ProductEditPage: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   className="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition"
+                  loading={mutation.isPending}
+                  disabled={mutation.isPending}
                 >
-                  Cập nhật sản phẩm
+                  {mutation.isPending
+                    ? "Đang cập nhật..."
+                    : "Cập nhật sản phẩm"}
                 </Button>
                 <Button
                   htmlType="reset"

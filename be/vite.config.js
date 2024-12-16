@@ -13,7 +13,8 @@ export default defineConfig({
       initAppOnBoot: false,
       tsCompiler: "esbuild",
       swcOptions: {},
+      crypto: true,
     }),
   ],
-  optimizeDeps: {},
+  optimizeDeps: { exclude: ["etag", "crypto"] },
 });

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createOrderDetail,
+  getByUser,
   getOrderDetails,
   // getOrderDetailById,
   // updateOrderDetail,
@@ -22,5 +23,6 @@ router.get("/", getOrderDetails);
 // router.put("/:orderDetailId", updateOrderDetail);
 
 
+router.get("/:user_id/:product_id", getByUser);
 
 export default router;

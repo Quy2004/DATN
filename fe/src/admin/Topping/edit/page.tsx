@@ -1,14 +1,6 @@
 import { BackwardFilled } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Spin,
-} from "antd";
+import { Button, Form, Input, message, Select, Spin } from "antd";
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import instance from "../../../services/api";
@@ -81,7 +73,9 @@ const ToppingUpdatePage = () => {
       </div>
     );
   }
-
+  const subcategories = categories.data.filter(
+    (category: Category) => category.parent_id !== null
+  );
   return (
     <>
       <div className="flex items-center justify-between mb-5">
@@ -106,38 +100,92 @@ const ToppingUpdatePage = () => {
           <Form.Item<FieldType>
             label="Tên Topping"
             name="nameTopping"
-            rules={[{ required: true, message: "Vui lòng nhập tên Topping!" }]}
+            required
+            rules={[
+              { whitespace: true, message: "Tên Topping không được để trống!" },
+              { min: 2, message: "Tên Topping phải có ít nhất 2 ký tự!" },
+              { max: 50, message: "Tên Topping không được quá 50 ký tự!" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên Topping!")
+                    );
+                  }
+                  const trimmedValue = value.trim();
+                  const hasNumber = /\d/;
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
+
+                  // Kiểm tra số và ký tự đặc biệt
+                  if (hasNumber.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên Topping không được chứa số!")
+                    );
+                  }
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên Topping không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input
               className="Input-antd text-sm placeholder-gray-400"
               placeholder="Nhập tên topping"
             />
           </Form.Item>
+
           <Form.Item
             label="Danh mục"
             name="category_id"
             rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
-            <Checkbox.Group
+            <Select
+              mode="multiple"
               style={{ width: "100%" }}
+              placeholder="Chọn danh mục"
               disabled={isLoadingCategories}
             >
-              {categories?.data?.map((category: Category) => (
-                <Checkbox key={category._id} value={category._id}>
-                  {category.title}
-                </Checkbox>
+              {subcategories?.map((subcategory: Category) => (
+                <Select.Option key={subcategory._id} value={subcategory._id}>
+                  {subcategory.title}
+                </Select.Option>
               ))}
-            </Checkbox.Group>
+            </Select>
           </Form.Item>
 
           <Form.Item<FieldType>
             label="Giá Topping"
             name="priceTopping"
-            rules={[{ required: true, message: "Vui lòng giá của Topping!" }]}
+            required
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập giá Topping!")
+                    );
+                  }
+                  if (value <= 0) {
+                    return Promise.reject(new Error("Giá phải lớn hơn 0!"));
+                  }
+                  if (value > 20000) {
+                    return Promise.reject(
+                      new Error("Giá topping không được vượt quá 20.000!")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
-            <InputNumber
-              min={0}
-              style={{ width: "100%" }}
+            <Input
+              type="number"
               className="Input-antd text-sm placeholder-gray-400"
               placeholder="Nhập giá topping"
             />
@@ -146,6 +194,12 @@ const ToppingUpdatePage = () => {
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
             <Button type="primary" htmlType="submit">
               Cập nhật Topping
+            </Button>
+            <Button
+              htmlType="reset"
+              className="bg-gray-300 text-gray-800 rounded-md px-4 py-2 hover:bg-gray-400 transition ml-2"
+            >
+              Làm mới
             </Button>
           </Form.Item>
         </Form>

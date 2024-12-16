@@ -239,9 +239,18 @@ const ProductManagerPage: React.FC = () => {
     setIsModalVisible(false);
     setSelectedProduct(null); // Reset sản phẩm khi đóng Modal
   };
-
+  const subcategories = categories?.data?.filter(
+    (category: Category) => category.parent_id !== null
+  );
   // Cột trong bảng
   const columns = [
+    {
+      title: "STT",
+      key: "stt",
+      render: (_: string, __: Product, index: number) =>
+        (currentPage - 1) * pageSize + index + 1,
+      width: 100,
+    },
     {
       title: "Tên sản phẩm",
       dataIndex: "name",
@@ -259,7 +268,7 @@ const ProductManagerPage: React.FC = () => {
     },
 
     {
-      title: "Ảnh sản phẩm",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
       render: (image: string) => (
@@ -273,16 +282,17 @@ const ProductManagerPage: React.FC = () => {
       ),
     },
     {
-      title: "Giá sản phẩm",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
+      render: (price: number) => `${price.toLocaleString("vi-VN")} VNĐ`,
     },
 
     {
       title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
+      width: 100,
       render: (status: string, record: Product) => (
         <div className="flex items-center space-x-2">
           {/* Tooltip giải thích trạng thái */}
@@ -308,6 +318,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Danh mục",
       dataIndex: "category_id",
       key: "category",
+      width: 100,
       render: (categories: Array<Category>) => {
         const categoryNames = categories
           .map((category) => category.title)
@@ -319,6 +330,7 @@ const ProductManagerPage: React.FC = () => {
       title: "Kích hoạt",
       dataIndex: "active",
       key: "active",
+      width: 100,
       render: (active: boolean, record: Product) => (
         <Tooltip
           title={active ? "Sản phẩm đang hoạt động" : "Sản phẩm tạm dừng"}
@@ -370,7 +382,7 @@ const ProductManagerPage: React.FC = () => {
             <>
               <Popconfirm
                 title="Xóa sản phẩm"
-                description="Bạn có chắc chắn muốn xóa mềm sản phẩm này?"
+                description="Bạn có chắc chắn muốn xóa sản phẩm này?"
                 onConfirm={() => mutationSoftDelete.mutate(product._id)}
                 okText="Có"
                 cancelText="Không"
@@ -432,9 +444,9 @@ const ProductManagerPage: React.FC = () => {
             placeholder="Chọn danh mục"
             options={[
               { label: "Tất cả", value: "allCategory" },
-              ...(categories?.data?.map((category: Category) => ({
-                label: category.title,
-                value: category._id,
+              ...(subcategories?.map((subcategories: Category) => ({
+                label: subcategories.title,
+                value: subcategories._id,
               })) || []),
             ]}
           />
@@ -520,13 +532,13 @@ const ProductManagerPage: React.FC = () => {
 
               <Descriptions.Item label="Giá sản phẩm">
                 <span className="font-medium text-blue-600">
-                  {`${selectedProduct.price.toLocaleString("vi-VN")} VND`}
+                  {`${selectedProduct.price.toLocaleString("vi-VN")} VNĐ`}
                 </span>
               </Descriptions.Item>
 
               <Descriptions.Item label="Giá Sale">
                 <span className="font-medium text-blue-600">
-                  {`${selectedProduct.sale_price.toLocaleString("vi-VN")} VND`}
+                  {`${selectedProduct.sale_price.toLocaleString("vi-VN")} VNĐ`}
                 </span>
 
                 {selectedProduct.discount > 0 && (
@@ -587,16 +599,17 @@ const ProductManagerPage: React.FC = () => {
                 />
               </Descriptions.Item>
               {/* Kích thước sản phẩm */}
-              <Descriptions.Item label="Kích thước và trạng thái" span={2}>
+              <Descriptions.Item label="Size" span={2}>
                 <span className="text-gray-700">
                   {selectedProduct.product_sizes
-                    .map(
-                      (size: ProductSize) =>
-                        `${size.size_id?.name} - ${
-                          size.status === "available" ? "Có sẵn" : "Hết hàng"
-                        }`
-                    )
-                    .join(", ")}
+                    .filter((size: ProductSize) => size.size_id)
+                    .map((size: ProductSize) => {
+                      if (!size.size_id?.name) {
+                        return "Size không xác định";
+                      }
+                      return `${size.size_id.name}`;
+                    })
+                    .join(", ") || "Không có thông tin size"}
                 </span>
               </Descriptions.Item>
 

@@ -40,7 +40,14 @@ const CategoryAddPage = () => {
       }, 2000);
     },
     onError(error) {
-      messageApi.error(`Lỗi: ${error.message}`);
+      // Giả sử error có thông tin về isDeleted, bạn sẽ kiểm tra lỗi này.
+      if (error.response?.data?.isDeleted) {
+        messageApi.info("Danh mục đã bị xóa mềm và không thể thêm lại.");
+      } else {
+        messageApi.error(
+          "Lỗi: Danh mục này đã bị ẩn hoặc xóa, vui lòng kiểm tra lại trong danh sách đã xóa"
+        );
+      }
     },
   });
 
@@ -81,10 +88,59 @@ const CategoryAddPage = () => {
         >
           <Form.Item<FieldType>
             label="Tên danh mục"
+            required
             name="title"
             rules={[
-              { required: true, message: "Vui lòng nhập tên danh mục!" },
-              { min: 3, message: "Tên danh mục phải có ít nhất 3 ký tự" },
+              {
+                min: 3,
+                message: "Tên danh mục phải có ít nhất 3 ký tự!",
+              },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Vui lòng nhập tên danh mục!")
+                    );
+                  }
+
+                  const trimmedValue = value.trim();
+                  const hasNumber = /\d/;
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\/_+=-]/;
+
+                  // Kiểm tra không chứa số
+                  if (hasNumber.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên danh mục không được chứa số!")
+                    );
+                  }
+
+                  // Kiểm tra không chứa ký tự đặc biệt
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tên danh mục không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  // Kiểm tra danh mục đã tồn tại
+                  const response = await instance.get(
+                    `/categories?title=${trimmedValue}`
+                  );
+                  const existingCategory = response.data.data.find(
+                    (category: Category) =>
+                      category.title.toLowerCase() ===
+                      trimmedValue.toLowerCase()
+                  );
+                  if (existingCategory) {
+                    return Promise.reject(
+                      new Error(
+                        "Tên danh mục đã tồn tại. Vui lòng chọn tên khác!"
+                      )
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input

@@ -134,7 +134,21 @@ const BannerUpdatePage: React.FC = () => {
             name="title"
             rules={[
               { required: true, message: "Vui lòng nhập tiêu đề" },
-              { min: 3, message: "Tiêu đề phải có ít nhất 5 ký tự" },
+              { min: 3, message: "Tiêu đề phải có ít nhất 3 ký tự" },
+              {
+                validator: async (_, value) => {
+                  const trimmedValue = value.trim();
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\+=]/;
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tiêu đề không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input
@@ -155,6 +169,18 @@ const BannerUpdatePage: React.FC = () => {
               customRequest={handleUpload}
               onRemove={handleRemoveImage}
               maxCount={1}
+              fileList={
+                imageUrl
+                  ? [
+                      {
+                        uid: "1",
+                        name: "banner.png",
+                        status: "done",
+                        url: imageUrl,
+                      },
+                    ]
+                  : []
+              }
             >
               <Button icon={<FileImageOutlined />}></Button>
             </Upload>

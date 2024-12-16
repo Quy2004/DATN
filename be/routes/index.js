@@ -13,6 +13,13 @@ import ordersDetailRouter from"./ordersDetail.js"
 import bannerRouter from "./banners.js";
 import categoryPostRouter from "./categoryPost.js";
 import postRouter from "./post.js";
+import commentRouter from "./comment.js";
+import momoRouter from "./momoRoutes.js";
+import zaloRouter from "./zaloRoter.js";
+import vnPayRouter from "./vnPay.js";
+import NotificationRouter from "./notification.js";
+
+
 
 const router = Router();
 
@@ -26,6 +33,7 @@ router.use("/toppings", toppingsRouter);
 router.use("/users", userRouter);
 router.use("/vouchers", voucherRouter);
 router.use("/auth", authRouter); 
+router.use("/comment", commentRouter); 
 router.use("/sizes", sizeRouter); 
 router.use("/address", addressRouter); 
 router.use("/cart", RouterCart); 
@@ -34,5 +42,9 @@ router.use("/orders-detail", ordersDetailRouter);
 router.use("/banners", bannerRouter);
 router.use("/categoryPost", categoryPostRouter);
 router.use("/posts", postRouter);
+router.use("/payments", momoRouter);
+router.use("/payments", zaloRouter);
+router.use("/vnpay", vnPayRouter);
+router.use("/notification", NotificationRouter);
 
 export default router;

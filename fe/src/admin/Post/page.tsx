@@ -10,6 +10,7 @@ import {
   Modal,
   Descriptions,
   Input,
+  Select,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "../../services/api";
@@ -22,6 +23,7 @@ import {
   UndoOutlined,
 } from "@ant-design/icons";
 import Title from "antd/es/typography/Title";
+import { CategoryPost } from "../../types/categoryPost";
 
 const PostManagerPage = () => {
   const queryClient = useQueryClient();
@@ -29,27 +31,41 @@ const PostManagerPage = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [searchText, setSearchText] = useState("");
   const [showDeleted, setShowDeleted] = useState(false);
-
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const {
     data: posts,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["posts", showDeleted],
+    queryKey: ["posts", showDeleted, currentPage],
     queryFn: async () => {
-      try {
-        const response = await instance.get("posts", {
-          params: {
-            isDeleted: showDeleted,
-          },
-        });
-        return response.data;
-      } catch (error) {
-        throw new Error("Lỗi khi tải danh sách bài viết");
-      }
+      const response = await instance.get("posts", {
+        params: {
+          isDeleted: showDeleted,
+          page: currentPage,
+          limit: pageSize,
+        },
+      });
+      return response.data;
     },
   });
-  console.log(selectedPost);
+
+  // Lấy danh sách danh mục
+  const {
+    data: categoryPost,
+    isLoading: loadingCategories,
+    isError: errorCategories,
+  } = useQuery({
+    queryKey: ["categoryPost"],
+    queryFn: async () => {
+      const response = await instance.get("categoryPost");
+      return response.data;
+    },
+  });
   // Mutation để xóa mềm bài viết
   const softDeleteMutation = useMutation<void, Error, string>({
     mutationFn: async (_id: string) => {
@@ -109,11 +125,12 @@ const PostManagerPage = () => {
     ?.filter(
       (item: Post) =>
         showDeleted === Boolean(item.isDeleted) &&
-        item.title.toLowerCase().includes(searchText.toLowerCase())
+        item.title.toLowerCase().includes(searchText.toLowerCase()) &&
+        (selectedCategory ? item.categoryPost._id === selectedCategory : true)
     )
     .map((post: Post, index: number) => ({
       _id: post._id,
-      key: index + 1,
+      key: index + 1 + (currentPage - 1) * pageSize,
       title: post.title,
       categoryPost: post.categoryPost.title,
       excerpt: post.excerpt,
@@ -125,6 +142,12 @@ const PostManagerPage = () => {
     }));
 
   const columns = [
+    {
+      title: "STT",
+      dataIndex: "key",
+      key: "key",
+      width: 100,
+    },
     {
       title: "Tiêu đề",
       dataIndex: "title",
@@ -219,7 +242,7 @@ const PostManagerPage = () => {
       ),
     },
   ];
-  if (isLoading) {
+  if (isLoading || loadingCategories) {
     return (
       <div style={{ textAlign: "center", padding: "20px" }}>
         <Spin size="large" tip="Đang tải dữ liệu..." />
@@ -227,10 +250,10 @@ const PostManagerPage = () => {
     );
   }
 
-  if (isError) {
+  if (isError || errorCategories) {
     return (
       <div style={{ margin: "20px 0" }}>
-        <Alert message="Lỗi khi tải danh sách bài viết" type="error" showIcon />
+        <Alert message="Lỗi khi tải dữ liệu" type="error" showIcon />
       </div>
     );
   }
@@ -238,18 +261,32 @@ const PostManagerPage = () => {
     <div>
       <div className="flex items-center justify-between mb-5">
         <Title level={3}>Danh sách bài viết</Title>
+
         <Space>
+          <Select
+            placeholder="Chọn danh mục"
+            style={{ width: 200 }}
+            onChange={setSelectedCategory}
+            allowClear
+          >
+            {categoryPost?.data?.map((category: CategoryPost) => (
+              <Select.Option key={category._id} value={category._id}>
+                {category.title}
+              </Select.Option>
+            ))}
+          </Select>
           <Button
             onClick={handleToggleDeleted}
-            className={`flex items-center gap-2 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-white font-semibold transition-colors duration-300 ${
               showDeleted
-                ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-gray-500 hover:bg-gray-600"
+                ? "bg-red-500 hover:bg-red-600 active:bg-red-700"
+                : " bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
             } text-white`}
           >
             <DeleteOutlined className="h-4 w-4" />
             {showDeleted ? "Quay lại" : "Thùng rác"}
           </Button>
+
           <Link to="/admin/post/add" className="flex items-center space-x-2">
             <Button
               type="primary"
@@ -348,9 +385,11 @@ const PostManagerPage = () => {
         rowKey={(record) => record._id}
         loading={isLoading}
         pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Tổng ${total} bài viết`,
+          current: currentPage,
+          pageSize: pageSize,
+          total: posts?.total || 0,
+          onChange: (page) => setCurrentPage(page),
+          pageSizeOptions: ["10", "20", "50", "100"],
         }}
         className="bg-white rounded-lg shadow-sm"
         scroll={{ x: "max-content", y: 350 }}

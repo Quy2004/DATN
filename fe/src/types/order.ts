@@ -1,29 +1,53 @@
-import { Product } from "./product"; 
+import { Product } from "./product";
 
-export interface Order {
-    user_id: string;
-    customerInfo: {
-        name: string;
-        address: string;
-        phone: string;
-        email: string;
-    };
-    totalPrice: number | { $numberDecimal: string };
-    orderStatus: "pending" | "confirmed" | "preparing" | "shipping" | "delivered" | "completed" | "canceled";
-    orderDetail_id: string[];
-    paymentMethod: "bank transfer" | "cash on delivery";
-    orderNumber?: string;
-    note?: string;
-    createdAt: Date;
-    updatedAt: Date;
+export type OrderStatus =
+    | "pending"
+    | "confirmed"
+    | "shipping"
+    | "delivered"
+    | "completed"
+    | "canceled";
+
+export interface CustomerInfo {
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
 }
 
 export interface OrderDetail {
-    order_id: string;  
-    product_id: Product;  
+    _id: string;
+    product: Product;
     quantity: number;
     price: number;
-    image?: string;
+    sale_price: number;
+    image?: string; // Nếu cần hiển thị hình ảnh sản phẩm trong đơn hàng
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export interface Order {
+    _id: string;
+    user_id: string;
+    customerInfo: CustomerInfo;
+    totalPrice: number | { $numberDecimal: string };
+    orderStatus: OrderStatus;
+    orderDetail_id: Array<{
+        product_id: Product;
+        _id: string;
+        product: Product;
+        quantity: number;
+        price: number;
+        sale_price: number;
+    }>;
+    paymentMethod: "bank transfer" | "cash on delivery" | "momo" | "zalopay" | "vnpay";
+    paymentStatus: "unpaid" | "paid" | "failed";
+    orderNumber?: string;
+    note?: string;
+    discountAmount: number,
+    cancellationReason?: string;
+    createdAt: Date;
+    updatedAt: Date;
+
+
 }

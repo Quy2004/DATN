@@ -49,13 +49,6 @@
         background-color: #ea8025;  /* Giữ nguyên màu nền khi focus */
         outline: none;               /* Loại bỏ outline khi focus */
     }
-    .cow_left img {
-        width: 542px;
-        height: 333px;
-        border-radius: 10px;
-        margin-left: auto;
-    
-    }
     
     .product_img img {
         width: 255px;
@@ -65,20 +58,16 @@
     }
     
     .item h3 {
-        padding-top: 0.5rem;
+        /* padding-top: 0.5rem; */
         font-weight: 600;
         font-size: 16px;
     }
     
-    .item p {
+    /* .item p {
         color: #838080;
         font-size: 14px;
-    }
+    } */
     
-    .banner-mid img {
-        height: 600px;
-        margin: 40px 0;
-    }
     
     h3{
         /* font-size: 17px; */
@@ -93,7 +82,7 @@
     }
     
     button{
-        color: #ea8025 ;
+        /* color: #ea8025 ; */
         -o-transition: .5s;
         -ms-transition: .5s;
         -moz-transition: .5s;

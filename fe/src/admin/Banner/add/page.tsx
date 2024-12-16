@@ -114,10 +114,40 @@ const BannerAddPage: React.FC = () => {
         >
           <Form.Item
             label="Tiêu đề"
+            required
             name="title"
             rules={[
-              { required: true, message: "Vui lòng nhập tiêu đề" },
-              { min: 3, message: "Tiêu đề phải có ít nhất 5 ký tự" },
+              { min: 3, message: "Tiêu đề phải có ít nhất 3 ký tự" },
+              {
+                validator: async (_, value) => {
+                  if (!value) {
+                    return Promise.reject(new Error("Vui lòng nhập tiêu đề!"));
+                  }
+                  const trimmedValue = value.trim();
+                  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>[\]\\+=]/;
+
+                  if (hasSpecialChar.test(trimmedValue)) {
+                    return Promise.reject(
+                      new Error("Tiêu đề không được chứa ký tự đặc biệt!")
+                    );
+                  }
+
+                  // Kiểm tra danh mục đã tồn tại
+                  const response = await instance.get(
+                    `/banners?title=${trimmedValue}`
+                  );
+                  const existingBanner = response.data.data.find(
+                    (banner: Banner) =>
+                      banner.title.toLowerCase() === trimmedValue.toLowerCase()
+                  );
+                  if (existingBanner) {
+                    return Promise.reject(
+                      new Error("Tiêu đề đã tồn tại. Vui lòng chọn tên khác!")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Input
