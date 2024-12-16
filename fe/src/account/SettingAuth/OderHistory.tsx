@@ -23,11 +23,9 @@ const OderHistory = () => {
 
   const [messageApi, contextHolder] = message.useMessage();
   const formatNumberVND = (number: number) => {
-    return number.toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
+    return `${number.toLocaleString("vi-VN")} VNĐ`;
   };
+  
   const getOrderHistory = async () => {
     try {
       const response = await instance.get(`/orders/${userId}`);
@@ -405,7 +403,7 @@ const OderHistory = () => {
                             item.product_size?.priceSize !== null
                               ? `(${item.product_size.priceSize.toLocaleString(
                                   "vi-VN"
-                                )} ₫)`
+                                )} VNĐ)`
                               : ""}
                           </p>
 
@@ -419,7 +417,7 @@ const OderHistory = () => {
                                         topping.topping_id.nameTopping
                                       } (${topping.topping_id.priceTopping.toLocaleString(
                                         "vi-VN"
-                                      )} ₫)`
+                                      )} VNĐ)`
                                   )
                                   .join(", ")
                               : "Không có topping"}
