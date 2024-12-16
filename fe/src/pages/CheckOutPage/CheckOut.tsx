@@ -626,7 +626,7 @@ const Checkout: React.FC = () => {
               <div className="space-y-2">
                 <h6 className="font-semibold">Phương thức thanh toán</h6>
                 {!paymentMethod && (
-                  <p className="flex items-center gap-x-4 text-red-600 bg-[#feffd2] py-1 font-semibold rounded-lg">
+                 <p className="flex items-center gap-x-4 text-red-600 bg-[#feffd2] py-1 font-semibold rounded-lg text-sm md:text-base">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
