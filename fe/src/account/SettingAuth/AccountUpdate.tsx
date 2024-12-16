@@ -144,25 +144,15 @@ const AccountUpdate = () => {
         }
     };
 
-    const handlePasswordSubmit = async () => {
+       const onFinish = async () => {
         try {
-            await checkPasswordMutation.mutateAsync(password);
-            setPasswordModalOpen(false);
             const values = await form.validateFields();
             await updateUserMutation.mutateAsync(values);
-            if (!addressData || addressData.length === 0) {
-                await createAddressMutation.mutateAsync(values);
-            } else {
-                await updateAddressMutation.mutateAsync(values);
-            }
             notification.success({ message: "Cập nhật thông tin thành công!" });
+            window.location.reload()
         } catch (error) {
             notification.error({ message: "Mật khẩu không đúng. Vui lòng thử lại." });
         }
-    };
-
-    const onFinish = async () => {
-        setPasswordModalOpen(true);
     };
 
     if (userLoading || addressLoading) return <p>Đang tải...</p>;
@@ -229,22 +219,6 @@ const AccountUpdate = () => {
                     </Form>
                 </section>
             </div>
-
-            {/* Modal kiểm tra mật khẩu */}
-            <Modal
-                title="Nhập mật khẩu"
-                visible={isPasswordModalOpen}
-                onCancel={() => setPasswordModalOpen(false)}
-                onOk={handlePasswordSubmit}
-                okText="Xác nhận"
-                cancelText="Hủy"
-            >
-                <Input.Password
-                    placeholder="Nhập mật khẩu của bạn"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-            </Modal>
         </div>
     );
 };
