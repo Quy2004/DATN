@@ -176,7 +176,7 @@ const AccountUpdate = () => {
                         form={form}
                     >
                         <h1 className="text-xl md:text-2xl font-semibold mb-1">Cập nhật thông tin</h1>
-                        <p className="mb-4 border-b-orange-400 w-[180px] md:w-[205px] border-b-[4px]"></p>
+                        <p className="mb-4 border-b-orange-400 w-[170px] md:w-[205px] border-b-[4px]"></p>
                         <div className="flex justify-center items-start gap-3 h-auto">
                             <div>
                                 <label className="mb-2 mx-1 font-medium">Avatar</label>
