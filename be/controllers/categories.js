@@ -34,7 +34,7 @@ class CategoryController {
       const skip = (currentPage - 1) * pageLimit;
 
       // Thực hiện query với phân trang (nếu có `limit`)
-      const queryExec = Category.find(query).populate("parent_id", "title");
+      const queryExec = Category.find(query).populate("parent_id", "title").sort({ createdAt: -1 });
 
       if (pageLimit) {
         queryExec.skip(skip).limit(pageLimit);

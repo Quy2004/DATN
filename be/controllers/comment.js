@@ -41,6 +41,7 @@ class CommentController {
 				.populate("user_id", "_id userName avatars") // Lấy thông tin người dùng
 				.skip(skip)
 				.limit(pageLimit)
+				.sort({ createdAt: -1 })
 				.lean();
 
 			// Chuyển đổi định dạng dữ liệu trả về
