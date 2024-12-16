@@ -325,7 +325,7 @@ const OderHistory = () => {
             <input
               type="search"
               className="w-full pl-10 pr-4 py-3 rounded-lg bg-white border border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-colors duration-200"
-              placeholder="Tìm kiếm theo mã đơn hàng hoặc Tên sản phẩm"
+              placeholder="Tìm kiếm theo tên sản phẩm"
               value={searchTerm}
               onChange={handleSearchChange}
             />
