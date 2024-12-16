@@ -4,6 +4,7 @@ import crypto from "crypto-browserify";
 import Order from "../models/OderModel";
 import Cart from "../models/Cart";
 import OrderDetailModel from "../models/OrderDetailModel";
+import NotificationModel from "../models/NotificationModel";
  // Chỉnh lại tên đúng của model
 
 class MomoController {
@@ -119,6 +120,23 @@ createMomoPayment = async (req, res) => {
         if (resultCode === 0) {
             console.log('Đơn hàng được thanh toán:', updatedOrder);
 
+    // Tạo thông báo đặt hàng thành công
+    const notification = new NotificationModel({
+        title: "Đặt hàng thành công",
+        message: `Đơn hàng mã "${orderId}" của bạn đã được đặt thành công với phương thức thanh toán Momo. Trạng thái đơn hàng: đã được thanh toán.`,
+        message2 : `âjaj`,
+        user_Id: updatedOrder?.user_id || null,
+        order_Id: orderId,
+        type: "general", // Giá trị hợp lệ
+        isGlobal: false,
+    });
+
+    try {
+        await notification.save();
+        console.log("Thông báo được lưu thành công.");
+    } catch (err) {
+        console.error("Lỗi khi lưu thông báo:", err.message);
+    }
             // Tìm giỏ hàng của user
             const cart = await Cart.findOne({ userId: updatedOrder.user_id });
             console.log('Giỏ hàng trước khi cập nhật:', cart);

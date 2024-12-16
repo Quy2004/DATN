@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import qs from "qs"; // Thêm qs để serialize data cho POST request
 import Cart from "../models/Cart.js";
 import OrderDetailModel from "../models/OrderDetailModel.js";
+import NotificationModel from "../models/NotificationModel.js";
 
 class VnPayController {
   async updateTransaction(req, res) {
@@ -25,6 +26,15 @@ class VnPayController {
                 if (!order) {
                     return res.status(404).json({ message: "Order not found" });
                 }
+                const notification = new NotificationModel({
+                  title: "Đặt hàng thành công",
+                  message: `Đơn hàng mã "${orderId}" của bạn đã được đặt thành công với phương thức thanh toán bằng thẻ VNPay. Trạng thái đơn hàng: đã được thanh toán.`,
+                  user_Id: order?.user_id || null,
+                  order_Id: orderId,
+                  type: "general", // Giá trị hợp lệ
+                  isGlobal: false,
+              });
+              await notification.save();
 
                 // Phần xử lý giỏ hàng như cũ
                 const orderDetails = await OrderDetailModel.find({
@@ -50,6 +60,7 @@ class VnPayController {
                             },
                         }
                     );
+                    
                 }
             } else {
                 // Mở rộng xử lý các trường hợp hủy thanh toán
