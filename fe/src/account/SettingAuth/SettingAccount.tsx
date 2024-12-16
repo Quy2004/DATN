@@ -18,7 +18,7 @@ const SettingAccount = () => {
           </h1>
         </div>
         <div className="w-[400px] text-sm font-medium text-gray-600 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-          <Link to={"account-update"}
+          <Link to={"/account-update"}
             className="block w-full py-2  cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:text-white transition-all duration-200 ease-in-out sm:hover:scale-105 md:hover:scale-110"
           >
             <h4 className="flex items-center gap-1">
@@ -33,7 +33,7 @@ const SettingAccount = () => {
               Cập nhật tài khoản
             </h4>
           </Link>
-          <Link to={""}
+        <Link to={"/change-password"}
             className="block w-full py-2  cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:text-white transition-all duration-200 ease-in-out sm:hover:scale-105 md:hover:scale-110"
           >
             <h4 className="flex items-center gap-1">
@@ -46,7 +46,7 @@ const SettingAccount = () => {
               </svg>Đổi mật khẩu
             </h4>
           </Link>
-          <Link to={""}
+         <Link to={"/order-history"}
             className="block w-full py-2  cursor-pointer hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-500 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:text-white transition-all duration-200 ease-in-out sm:hover:scale-105 md:hover:scale-110"
           >
             <h4 className="flex items-center gap-1">
