@@ -540,24 +540,6 @@ const CommentAdmin = () => {
 							</Descriptions.Item>
 
 							<Descriptions.Item
-								label="Ảnh bình luận"
-								span={2}
-							>
-								<Image
-									src={
-										Array.isArray(selectedComment.image) &&
-										selectedComment.image.length > 0
-											? selectedComment.image[0]
-											: "/path/to/placeholder-image.jpg" // Use a placeholder if no image exists
-									}
-									alt="Không có ảnh"
-									width={100}
-									height={100}
-									className="rounded-md border border-gray-200 shadow-sm object-cover"
-								/>
-							</Descriptions.Item>
-
-							<Descriptions.Item
 								label="Nội dung bình luận"
 								span={2}
 							>

@@ -61,7 +61,7 @@ const CoffeePage: React.FC = () => {
               </Link>
               <div>
                 <Link to="#">
-                  <h3 className="text-2xl mt-0 md:mt-2">{coffee.name}</h3>
+                  <h3 className="text-sm mt-0 md:mt-2 max-w-[190px] md:max-w-[250px]">{coffee.name}</h3>
                 </Link>
                 <div className="flex justify-between">
                   {" "}

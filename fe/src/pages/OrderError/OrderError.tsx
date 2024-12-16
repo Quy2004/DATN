@@ -9,7 +9,7 @@ const OrderErr: React.FC = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-gray-200 via-red-200 to-red-400 p-4 sm:p-6">
+    <div className="mt-20 md:mt-0 relative flex flex-col items-center justify-center md:min-h-screen bg-gradient-to-r from-gray-200 via-red-200 to-red-400 p-4 sm:p-6 ">
       <div className="absolute inset-0 bg-opacity-30 bg-gradient-to-r from-gray-200 via-red-200 to-red-400"></div>
       {/* Nền gradient mờ */}
       <div className="relative z-10 bg-white p-6 sm:p-8 rounded-lg shadow-lg text-center transform transition-all duration-500 scale-95 hover:scale-100">

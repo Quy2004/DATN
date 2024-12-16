@@ -176,9 +176,6 @@ const OrderDetail: React.FC = () => {
     onSuccess: ({ data }) => {
       const { _id: orderId, paymentStatus } = data;
 
-      // Hiển thị thông báo thành công
-      messageApi.success("Trạng thái thanh toán đã được cập nhật thành công.");
-
       // Làm mới danh sách đơn hàng trong query cache
       queryClient.invalidateQueries({
         queryKey: ["orders"],
@@ -711,20 +708,27 @@ const OrderDetail: React.FC = () => {
             className="w-full mb-3"
             placeholder="Chọn lý do hủy đơn"
             onChange={setCancellationReason}
-            options={[
-              { value: "Sản phẩm hết hàng", label: "Sản phẩm đã hết hàng" },
-              { value: "Lỗi đặt hàng", label: "Lỗi từ hệ thống đặt hàng" },
-              {
-                value: "Không liên hệ được",
-                label: "Không thể liên hệ khách hàng",
-              },
-              {
-                value: "Khách hàng yêu cầu hủy",
-                label: "Khách hàng yêu cầu hủy",
-              },
-              { value: "", label: "Lý do khác" },
-            ]}
-          />
+            value={cancellationReason}
+          >
+            {/* Predefined reasons */}
+            <Select.Option value="Sản phẩm hết hàng">
+              Sản phẩm đã hết hàng
+            </Select.Option>
+            <Select.Option value=" Lỗi từ hệ thống đặt hàng ">
+              Lỗi từ hệ thống đặt hàng
+            </Select.Option>
+            <Select.Option value="Không thể liên hệ khách hàng">
+              Không thể liên hệ khách hàng
+            </Select.Option>
+
+            {/* "Lý do khác" option */}
+            <Select.Option
+              value=""
+              disabled={cancellationReason && cancellationReason !== ""}
+            >
+              Lý do khác
+            </Select.Option>
+          </Select>
 
           <Input.TextArea
             rows={4}

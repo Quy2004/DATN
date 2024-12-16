@@ -48,42 +48,44 @@ export const getByUser = async (req, res) => {
   try {
     const { user_id, product_id } = req.params;
 
-    // Tìm tất cả đơn hàng của user_id và có chứa product_id trong chi tiết đơn hàng, đồng thời có orderStatus = "completed"
+    // Tìm tất cả đơn hàng của user_id có orderStatus là "completed"
     const orders = await Order.find({
       user_id,
-      orderStatus: "completed", // Thêm điều kiện orderStatus
+      orderStatus: "completed", // Chỉ lấy đơn hàng hoàn thành
     }).populate({
       path: "orderDetail_id", // Liên kết với OrderDetail
       match: { product_id: product_id }, // Lọc chi tiết đơn hàng theo product_id
     });
 
-    // Kiểm tra nếu không tìm thấy đơn hàng nào
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({
-        message:
-          "Không tìm thấy đơn hàng hoàn thành cho người dùng này và sản phẩm này",
-      });
-    }
+    // Kiểm tra và cập nhật logic nếu cần: paymentStatus = "failed" thì vẫn là completed
+    const filteredOrders = orders.map((order) => {
+      if (order.paymentStatus === "failed") {
+        order.orderStatus = "completed"; // Đảm bảo trạng thái hoàn thành
+      }
+      return order;
+    });
 
-    // Kiểm tra nếu trong các đơn hàng không có chi tiết đơn hàng chứa product_id
-    const filteredOrders = orders.filter(
-      (order) => order.orderDetail_id.length > 0
+    // Lọc các đơn hàng có chứa product_id
+    const validOrders = filteredOrders.filter(
+      (order) => order.orderDetail_id && order.orderDetail_id.length > 0
     );
 
-    if (filteredOrders.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Không có sản phẩm này trong đơn hàng hoàn thành." });
+    if (validOrders.length === 0) {
+      return res.status(404).json({
+        message:
+          "Không tìm thấy sản phẩm này trong đơn hàng hoàn thành của người dùng.",
+      });
     }
 
     res.status(200).json({
       message: "Lấy đơn hàng thành công",
-      data: filteredOrders,
+      data: validOrders,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Create new order
 export const createOrder = async (req, res) => {
@@ -624,7 +626,7 @@ export const getOrderStats = async (req, res) => {
       orderStatus: { $in: ["completed", "delivered"] },
     });
 
-    // Tính tổng doanh thu (bỏ qua đơn hàng đã hủy)
+    // Tính tổng doanh thu (không bao gồm đơn hàng đã hủy)
     const totalRevenueResult = await Order.aggregate([
       { $match: { orderStatus: { $ne: "canceled" } } },
       { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
@@ -666,7 +668,7 @@ export const getOrderStats = async (req, res) => {
       { $sort: { "_id.year": -1, "_id.month": -1 } },
     ]);
 
-    // Số đơn theo ngày trong tuần
+    // Đơn hàng theo ngày trong tuần
     const ordersByDayOfWeek = await Order.aggregate([
       {
         $group: {
@@ -676,8 +678,14 @@ export const getOrderStats = async (req, res) => {
       },
       { $sort: { _id: 1 } },
     ]);
+
     // Thống kê phương thức thanh toán
     const paymentMethodStats = await Order.aggregate([
+      {
+        $match: {
+          orderStatus: { $in: ["delivered", "completed"] }, // Lấy đơn hàng có trạng thái "delivered" hoặc "completed"
+        },
+      },
       {
         $group: {
           _id: "$paymentMethod",
@@ -686,22 +694,24 @@ export const getOrderStats = async (req, res) => {
         },
       },
     ]);
+
     const totalUser = await User.countDocuments({ role: "user" });
+
     return res.status(200).json({
       success: true,
       data: {
-        totalOrders: totalOrders || 0,
-        successfulOrders: successfulOrders || 0,
-        totalRevenue: totalRevenue || 0,
-        totalSoldQuantity: totalSoldQuantity || 0,
-        totalUser: totalUser || 0,
+        totalOrders,
+        successfulOrders,
+        totalRevenue,
+        totalSoldQuantity,
+        totalUser,
         revenueByMonth: revenueByMonth.length ? revenueByMonth : [],
         ordersByDayOfWeek: ordersByDayOfWeek.length ? ordersByDayOfWeek : [],
         paymentMethodStats: paymentMethodStats.length ? paymentMethodStats : [],
       },
     });
   } catch (error) {
-    console.error("Error while fetching order stats:", error); // Logging for debugging
+    console.error("Lỗi khi lấy thống kê đơn hàng:", error); // Ghi log để debug
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê đơn hàng",
@@ -709,6 +719,9 @@ export const getOrderStats = async (req, res) => {
     });
   }
 };
+
+
+
 
 // Get order status distribution
 export const getOrderStatusDistribution = async (req, res) => {
@@ -733,25 +746,57 @@ export const getOrderStatusDistribution = async (req, res) => {
 
 export const getTopProducts = async (req, res) => {
   try {
+    // Lấy số lượng sản phẩm từ query (mặc định là 10)
+    const limit = parseInt(req.query.limit) || 10;
+
     const topProducts = await OrderDetail.aggregate([
       {
         $lookup: {
+          from: "orders",
+          localField: "order_id",
+          foreignField: "_id",
+          as: "order_info",
+        },
+      },
+      { $unwind: "$order_info" },
+      {
+        $match: {
+          "order_info.orderStatus": { $in: ["completed", "delivered"] },
+        },
+      },
+      {
+        $group: {
+          _id: "$product_id",
+          totalQuantity: { $sum: "$quantity" },
+        },
+      },
+      {
+        $lookup: {
           from: "products",
-          localField: "product_id",
+          localField: "_id",
           foreignField: "_id",
           as: "product_info",
         },
       },
       { $unwind: "$product_info" },
       {
-        $group: {
-          _id: "$product_id",
-          totalQuantity: { $sum: "$quantity" },
-          product: { $first: "$product_info" },
+        $sort: { totalQuantity: -1 },
+      },
+      {
+        $limit: limit, 
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id",
+          productName: "$product_info.name",
+          totalQuantity: 1,
+          productImage: "$product_info.image",
+          originalPrice: "$product_info.price",
+          discount: "$product_info.discount",
+          salePrice: "$product_info.sale_price",
         },
       },
-      { $sort: { totalQuantity: -1 } },
-      { $limit: 10 },
     ]);
 
     return res.status(200).json({
@@ -759,6 +804,7 @@ export const getTopProducts = async (req, res) => {
       data: topProducts,
     });
   } catch (error) {
+    console.error("Error while fetching top products:", error); 
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê sản phẩm",
