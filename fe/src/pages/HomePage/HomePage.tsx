@@ -113,7 +113,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 100000); // Thay đổi 3000 thành khoảng thời gian bạn muốn giữa các hình ảnh
+    }, 3000); // Thay đổi 3000 thành khoảng thời gian bạn muốn giữa các hình ảnh
 
     return () => clearInterval(interval);
   }, [currentIndex, images.length]);
@@ -363,7 +363,7 @@ const HomePage: React.FC = () => {
                       ) : (
                         <button
                           className="absolute scale-0 group-hover:scale-100 duration-200 z-[2] lg:w-[152px] mb:w-[136px] lg:h-[64px] mb:h-[48px] rounded-[100px] border-none bg-[#1A1E2630] text-sm text-white backdrop-blur-md 
-                            left-[44%] top-[43%] transform -translate-x-1/2 flex items-center justify-center"
+                            left-[50%] top-[40%] transform -translate-x-1/2 flex items-center justify-center"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
