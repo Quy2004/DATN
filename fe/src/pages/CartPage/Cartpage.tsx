@@ -20,11 +20,22 @@ const CartPage: React.FC<{
     try {
       const { data } = await instance.get(`/cart/${user._id}`);
       const mergedCart = data.cart.reduce((acc: any[], item: any) => {
-        const itemId = `${item.product._id}-${
-          item.product_sizes?._id
+      // Tạo ID duy nhất cho từng sản phẩm trong giỏ hàng
+        const itemId = `${item.product?._id || "invalid"}-${
+          item.product_sizes?._id || "invalid"
         }-${item.product_toppings
-          ?.map((topping: any) => topping.topping_id._id)
+          ?.map((topping: any) => topping.topping_id?._id || "invalid")
           .join(",")}`;
+         // Kiểm tra sản phẩm có hợp lệ không
+        const isValidProduct =
+          item.product && item.product_sizes && item.product_toppings;
+  
+        if (!isValidProduct) {
+          console.warn("Invalid cart item detected and removed:", item);
+          return acc; // Bỏ qua sản phẩm không hợp lệ
+        }
+  
+        // Kiểm tra xem sản phẩm đã có trong danh sách chưa
         const existingItem = acc.find(
           (cartItem: any) => cartItem.itemId === itemId
         );
