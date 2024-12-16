@@ -144,7 +144,7 @@ const AccountUpdate = () => {
         }
     };
 
-       const onFinish = async () => {
+    const onFinish = async () => {
         try {
             const values = await form.validateFields();
             await updateUserMutation.mutateAsync(values);
@@ -203,16 +203,34 @@ const AccountUpdate = () => {
                             </div>
                         </div>
                         <div className="">
-                            <label className="space-y-2 mb-4 mx-1 font-medium">Họ và tên</label>
-                            <Form.Item name="userName">
-                                <Input className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" placeholder="Nhập họ tên" />
+                            <label className="space-y-2 mb-4 mx-1 font-medium">
+                                Họ và tên <span className="text-red-500">*</span>
+                            </label>
+
+                            <Form.Item
+                                name="userName"
+                                rules={[
+                                    { required: true, message: "Họ tên không được để trống" }, // Bắt buộc nhập
+                                    { min: 3, message: "Họ tên phải có ít nhất 3 ký tự" }, // Độ dài tối thiểu
+                                    { max: 50, message: "Họ tên không được vượt quá 50 ký tự" }, // Độ dài tối đa
+                                    {
+                                        pattern: /^[a-zA-Z\sÀ-Ỵà-ỵ]+$/,
+                                        message: "Họ tên chỉ được chứa chữ cái và khoảng trắng", // Kiểm tra định dạng
+                                    },
+                                ]}
+                            >
+                                <Input
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white"
+                                    placeholder="Nhập họ tên"
+                                />
                             </Form.Item>
+
                         </div>
                         <label className="space-y-2 mb-4 mx-1 font-medium">Email</label>
                         <Form.Item name="email">
-                            <Input placeholder="Nhập email" className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
+                            <Input placeholder="Nhập email" disabled className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white" />
                         </Form.Item>
-                        
+
                         <Button htmlType="submit" className="w-full mt-2 px-4 py-5 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">
                             Lưu thay đổi
                         </Button>

@@ -212,7 +212,7 @@ const Header: React.FC = () => {
 					</button>
 
 					{/* Logo - Center */}
-					<div className="flex-grow ml-5 md:ml-0 md:flex-grow-0 flex justify-center items-center overflow-y-hidden">
+					<div className="flex-grow md:flex-grow-0 flex justify-center items-center overflow-y-hidden">
 						<Link to="/" className="overflow-y-hidden block">
 							<img
 								className="w-40 h-16 mx-auto object-cover overflow-y-hidden"
@@ -552,93 +552,6 @@ const Header: React.FC = () => {
 							</div>
 
 							<div className="md:hidden flex items-center gap-x-3">
-								<div ref={Ref} className="">
-									<button
-										onClick={toggleDropdown2}
-										className="relative mt-1 top-[30%] h-[24px] "
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke-width="1.5"
-											stroke="currentColor"
-											className="size-6"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-											/>
-										</svg>
-										{
-											userName ? (
-
-												<span className="absolute bg-red-500 bottom-3 left-4 rounded-[50%] w-[16px] h-[16px] text-xs text-white flex items-center justify-center">
-													{unreadCount >= 0 && <span>{unreadCount}</span>}
-												</span>
-											) : ("")
-										}
-										{isDropdownOpen2 && (
-											<div className="z-10 *:text-left border-2 overflow-auto bg-white divide-y divide-gray-100 rounded-lg shadow-md  min-h-[600px] dark:bg-gray-700 absolute top-7 -right-14 mt-4">
-												<h2 className="text-2xl font-bold ml-20">
-													Thông báo của bạn
-												</h2>
-												{notifications && notifications.length > 0 ? (
-													<div className="space-y-4 mt-4">
-														{notifications.map(
-															(notification: Notification) => (
-																<Link
-																	to={
-																		notification.product_Id
-																			? `http://localhost:5173/detail/${notification.product_Id}`
-																			: `http://localhost:5173/order-tracking/${notification.order_Id}`
-																	}
-																	key={notification._id}
-																	onClick={() => markAsRead(notification._id)} // Đánh dấu thông báo đã đọc khi nhấp
-																>
-																	<div className="p-4 border rounded-lg shadow group">
-																		<div className="flex items-center">
-																			<h3 className="font-semibold text-[20px] w-[390px] truncate">
-																				{notification.title}
-																			</h3>
-
-																			<p className="ml-auto w-[10px] flex justify-center">
-																				{notification.isRead ? (
-																					""
-																				) : (
-																					<span className="bg-red-500 w-3 h-3 rounded-full inline-block"></span>
-																				)}
-																			</p>
-																			<div className="hidden group-hover:block">
-																				<Button className="px-2 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-300 transition-all"
-
-																					onClick={e => {
-																						e.preventDefault(); // Ngăn chặn hành vi mặc định của Link
-																						e.stopPropagation(); // Ngăn sự kiện lan truyền lên thẻ Link
-																						handleDelete(notification._id);
-																					}}
-																				>
-																					xóa
-																				</Button>
-																			</div>
-																		</div>
-
-																		<p className="text-[12px] font-normal ml-[10px]">
-																			{notification.message}
-																		</p>
-																	</div>
-																</Link>
-															),
-														)}
-													</div>
-												) : (
-													<p className="mt-4">Không có thông báo nào.</p>
-												)}
-											</div>
-										)}
-									</button>
-								</div>
 								<Link
 									to={"cart"}
 									className="relative top-[30%] h-[24px] *:hover:text-[#ea8025] *:hover:opacity-80"
@@ -666,6 +579,8 @@ const Header: React.FC = () => {
 									}
 								</Link>
 							</div>
+
+						
 						</div>
 					</nav>
 				</div>

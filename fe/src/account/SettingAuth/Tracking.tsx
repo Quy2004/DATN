@@ -579,7 +579,7 @@ const Tracking = () => {
 											</span>
 										</div>
 									</div>
-									<div className="md:sticky relative bottom-[164px] left-[331px]">
+									<div className="md:sticky relative bottom-[64px] left-[2px]">
 										<p className="font-medium mt-4 sm:mt-0 ">
 											{detail.price &&
 												detail.sale_price &&

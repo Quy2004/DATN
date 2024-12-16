@@ -321,7 +321,7 @@ const HomePage: React.FC = () => {
               .slice(0, 2)
               .map((product: Product) =>
                 product.active ? (
-                  <div className="item mx-auto md:mx-0" key={product._id}>
+                  <div className="item max-w-[260px] mx-auto md:mx-0" key={product._id}>
                     {/* Nội dung hiển thị sản phẩm */}
                     <div className="relative group place-items-center md:product_img">
                       {/* Các phần tử bên trong sản phẩm */}
