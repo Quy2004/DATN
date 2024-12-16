@@ -25,7 +25,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({ filteredOrders }) => {
       );
 
       const products = order.orderDetail_id
-        .map((detail) => `${detail.product_id.name} (${detail.quantity})`)
+        .map((detail) => `${detail.product_id?.name} (${detail.quantity})`)
         .join(", ");
 
       return {

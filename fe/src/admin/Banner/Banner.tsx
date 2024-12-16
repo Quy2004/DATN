@@ -263,8 +263,6 @@ const BannerManagerPage = () => {
           pageSize: pageSize,
           total: banners?.total,
           onChange: handlePageChange,
-          showSizeChanger: true,
-          showTotal: (total) => `Tổng ${total} mục`,
         }}
         scroll={{ x: "max-content", y: 350 }}
       />
