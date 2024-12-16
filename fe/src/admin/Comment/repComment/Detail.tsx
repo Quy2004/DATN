@@ -226,7 +226,7 @@ const Detail = () => {
 								>
 									<div className="ml-3 w-full">
 										<p className="font-semibold text-gray-800">
-											Câu trả lời của admin
+											COVY HAVEN
 										</p>
 										<div className="flex">
 											<p className="w-[70%] ml-5 mt-2 text-gray-700">
