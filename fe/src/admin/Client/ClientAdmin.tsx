@@ -223,7 +223,7 @@ const ClientAdmin = () => {
 			width: 60,
 		},
 		{
-			title: "Tên user",
+			title: "Tên người dùng",
 			dataIndex: "userName",
 			key: "userName",
 			render: (text: string, user: User) => (
@@ -348,7 +348,7 @@ const ClientAdmin = () => {
 
 				<div className="flex space-x-3">
 					<Search
-						placeholder="Tìm kiếm user"
+						placeholder="Tìm kiếm tài khoản"
 						onSearch={handleSearch}
 						allowClear
 						style={{ width: 300 }}
@@ -404,7 +404,7 @@ const ClientAdmin = () => {
 						>
 							{/* Tên user */}
 							<Descriptions.Item
-								label="Tên user"
+								label="Tên người dùng"
 								span={2}
 							>
 								<span className="font-semibold text-lg text-gray-900">
@@ -414,7 +414,7 @@ const ClientAdmin = () => {
 
 							{/* email user */}
 							<Descriptions.Item
-								label="Email user"
+								label="Email người dùng"
 								span={2}
 							>
 								<span className="font-medium text-blue-600">
@@ -424,12 +424,12 @@ const ClientAdmin = () => {
 
 							{/* Ảnh user  */}
 							<Descriptions.Item
-								label="Avatar user"
+								label="Ảnh người dùng"
 								span={2}
 							>
 								<Image
 									src={selectedUser.avatars}
-									alt="Ảnh user"
+									alt="Ảnh người dùng"
 									width={100}
 									className="rounded-md border border-gray-200 shadow-sm"
 								/>
@@ -437,7 +437,7 @@ const ClientAdmin = () => {
 
 							{/* trạng thái user */}
 							<Descriptions.Item
-								label="Trạng thái user"
+								label="Trạng thái"
 								span={2}
 							>
 								<span className="font-semibold">

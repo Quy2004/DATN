@@ -209,17 +209,16 @@ const SizeManagerPage: React.FC = () => {
 
   const columns = [
     {
+      title: "STT",
+      dataIndex: "key",
+      key: "key",      
+      width: 60,
+    },
+    {
       title: "Tên size",
       dataIndex: "name",
       key: "name",
-      render: (text: string, size: Size) => (
-        <span
-          onClick={() => showModal(size)}
-          className="text-gray-950 cursor-pointer hover:text-blue-700"
-        >
-          {text}
-        </span>
-      ),
+      
     },
     {
       title: "Giá size",
@@ -382,8 +381,12 @@ const SizeManagerPage: React.FC = () => {
       </div>
 
       <Table
-        dataSource={sizes?.data}
+        rowKey={(record) => record._id}
         columns={columns}
+        dataSource={sizes?.data?.map((size: Size, index: number) => ({
+          ...size,
+          key: (currentPage - 1) * pageSize + index + 1, // Cập nhật số thứ tự
+        }))}
         pagination={{
           current: currentPage,
           pageSize: pageSize,

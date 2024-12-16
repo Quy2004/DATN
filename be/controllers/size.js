@@ -31,6 +31,7 @@ class SizeController {
       const sizes = await Size.find(query)
         .populate("category_id", "title")
         .limit(pageLimit)
+        .sort({ createdAt: -1 })
         .skip((currentPage - 1) * pageLimit)
         .lean();
 
