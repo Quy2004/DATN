@@ -495,7 +495,6 @@ const Header: React.FC = () => {
 																				</p>
 																				<div className="hidden group-hover:block">
 																					<Button className="px-2 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded focus:outline-none focus:ring-2 focus:ring-red-300 transition-all"
-
 																						onClick={e => {
 																							e.preventDefault(); // Ngăn chặn hành vi mặc định của Link
 																							e.stopPropagation(); // Ngăn sự kiện lan truyền lên thẻ Link

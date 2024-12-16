@@ -379,14 +379,14 @@ const OderHistory = () => {
                   {order.orderDetail_id.map((item: any, index: number) => (
                     <div
                       key={index}
-                      className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-x-4 sm:space-y-0"
+                      className="flex items-start gap-x-2 md:space-x-4 md:space-y-0"
                     >
                       <img
                         src={item?.product_id?.image}
                         alt={item?.product_id?.name}
-                        className="w-20 h-20 object-cover rounded-md flex-shrink-0"
+                        className="w-20 h-20 object-cover rounded-md flex-shrink-0 border"
                       />
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 ">
                         <Link to={`/detail/${item.product_id._id}`}>
                           <h3 className="text-sm font-medium text-gray-900">
                             <a className="text-blue-500 hover:underline">
@@ -395,16 +395,16 @@ const OderHistory = () => {
                           </h3>
                         </Link>
 
-                        <div className="mt-1 text-sm text-gray-500 space-y-1">
-                          <p>
-                            Size: {item.size || item.product_size?.name}{" "}
+                        <div className="mt-1 text-sm text-gray-600  space-y-1">
+                          <div className="flex">
+                            Size:<p className=" mx-1"> {item.size || item.product_size?.name}{" "}</p>
                             {item.product_size?.priceSize !== undefined &&
                             item.product_size?.priceSize !== null
                               ? `(${item.product_size.priceSize.toLocaleString(
                                   "vi-VN"
                                 )} VNĐ)`
                               : ""}
-                          </p>
+                          </div>
 
                           <p>
                             Topping:{" "}
@@ -484,9 +484,9 @@ const OderHistory = () => {
                         </Link>
                       )}
                     </div>
-                    <div className="text-right mt-4 sm:mt-0">
+                    <div className="flex flex-col justify-center text-right sm:mt-0">
                       <p className="text-sm text-gray-600">Thành tiền</p>
-                      <p className="text-lg font-medium text-red-600">
+                      <p className="text-base md:text-lg font-medium text-red-600">
                         {formatNumberVND(
                           (order?.totalPrice || 0) -
                             (order?.discountAmount || 0)
