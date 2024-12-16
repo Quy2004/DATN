@@ -192,18 +192,23 @@ export const getCart = async (req, res) => {
         totalPrice: cart.totalprice,
       });
     }
+const validProductIds = await Product.find({ _id: { $in: cart.products.map(item => item.product?._id) } })
+      .select('_id');
 
+    // Chuyển đổi danh sách sản phẩm hợp lệ thành mảng chứa các _id
+    const validProductIdsSet = new Set(validProductIds.map(product => product._id.toString()));
+
+    // Lọc các sản phẩm bị xóa khỏi giỏ hàng
+    const filteredProducts = cart.products.filter(item => item.product && validProductIdsSet.has(item.product._id.toString()));
     // Xử lý giỏ hàng để kết hợp các sản phẩm có cùng tên, size và topping
    const combinedProducts = [];
 
-   cart.products.forEach((item) => {
+    filteredProducts.forEach((item) => {
      // So sánh chi tiết hơn với sản phẩm, size và topping
      const existingProduct = combinedProducts.find(
        (product) =>
          product.product._id.toString() === item.product._id.toString() &&
-         product.product_sizes._id.toString() ===
-           item.product_sizes._id.toString() &&
-         // So sánh toàn bộ danh sách topping đã sắp xếp
+          product.product_sizes._id.toString() === item.product_sizes._id.toString() &&
          JSON.stringify(
            product.product_toppings
              .map((topping) => topping.topping_id._id.toString())
