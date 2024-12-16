@@ -225,7 +225,7 @@ const SizeManagerPage: React.FC = () => {
       title: "Giá size",
       dataIndex: "priceSize",
       key: "priceSize",
-      render: (price: number) => `${price.toLocaleString("vi-VN")} VND`,
+      render: (price: number) => `${price.toLocaleString("vi-VN")} VNĐ`,
     },
     {
       title: "Danh mục",

@@ -328,7 +328,7 @@ const Tracking = () => {
 												{detail.product_size?.priceSize
 													? `(+${detail.product_size.priceSize.toLocaleString(
 															"vi-VN",
-													  )} ₫)`
+													  )} VNĐ)`
 													: ""}
 											</p>
 											<p className="text-sm text-gray-600">
@@ -341,7 +341,7 @@ const Tracking = () => {
 																		topping.topping_id?.nameTopping
 																	} (+${topping.topping_id?.priceTopping?.toLocaleString(
 																		"vi-VN",
-																	)} ₫)`,
+																	)} VNĐ)`,
 															)
 															.join(", ")
 													: "Không có"}
@@ -353,18 +353,18 @@ const Tracking = () => {
 										{detail.sale_price ? (
 											<>
 												<span className="text-red-600">
-													{detail.sale_price.toLocaleString("vi-VN")} ₫
+													{detail.sale_price.toLocaleString("vi-VN")} VNĐ
 												</span>
 												<span className="line-through text-gray-400 ml-2">
-													{detail.price?.toLocaleString("vi-VN")} ₫
+													{detail.price?.toLocaleString("vi-VN")} VNĐ
 												</span>
 											</>
 										) : (
 											<span>
-												{detail.price?.toLocaleString("vi-VN") || "N/A"} ₫
+												{detail.price?.toLocaleString("vi-VN") || "N/A"} VNĐ
 											</span>
 										)}
-									</p>
+									</p>	
 								</div>
 							))}
 							<div className="border-t pt-4">
@@ -374,13 +374,13 @@ const Tracking = () => {
 										{(
 											order?.totalPrice + (order?.discountAmount || 0)
 										).toLocaleString("vi-VN")}{" "}
-										₫
+										VNĐ
 									</span>
 								</div>
 								<div className="flex flex-wrap justify-between py-2">
 									<span className="text-gray-600">Giảm giá Voucher</span>
 									<span className="font-medium">
-										- {order?.discountAmount?.toLocaleString("vi-VN") || "0"} ₫
+										- {order?.discountAmount?.toLocaleString("vi-VN") || "0"} VNĐ
 									</span>
 								</div>
 								<div className="flex flex-wrap justify-between py-2 border-t">
@@ -391,7 +391,7 @@ const Tracking = () => {
 											(order?.discountAmount || 0) -
 											(order?.discountAmount || 0)
 										).toLocaleString("vi-VN")}{" "}
-										₫
+										VNĐ
 									</span>
 								</div>
 							</div>
@@ -534,11 +534,12 @@ const Tracking = () => {
 						</div>
 					</div>
 
-					<div className="px-4 sm:px-8 py-6 border-t">
+					<div className="px-4 sm:px-8 py-6 border-t ">
 						{order.orderDetail_id?.map((detail, index) => (
-							<div
+							<div className="h-[150px]">
+								<div
 								key={index}
-								className="flex flex-wrap justify-between items-center mb-6"
+								className="flex flex-wrap justify-between items-center mb-6 "
 							>
 								<div className="flex items-center space-x-4">
 									{detail.product_id?.image && (
@@ -560,7 +561,7 @@ const Tracking = () => {
 											{detail.product_size?.priceSize
 												? `(+${detail.product_size.priceSize.toLocaleString(
 														"vi-VN",
-												  )} ₫)`
+												  )} VNĐ)`
 												: ""}
 										</p>
 										<p></p>
@@ -574,24 +575,24 @@ const Tracking = () => {
 																	topping.topping_id?.nameTopping
 																} (+${topping.topping_id?.priceTopping?.toLocaleString(
 																	"vi-VN",
-																)} ₫)`,
+																)} VNĐ)`,
 														)
 														.join(", ")
 												: "Không có"}
 										</p>
 									</div>
 								</div>
-								{order.orderStatus === "completed" ? (
-									<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
+								<div>
+								<p className="font-medium mt-4 sm:mt-0 ">
 										{detail.price &&
 										detail.sale_price &&
 										detail.sale_price !== detail.price ? (
 											<>
 												<span className="text-red-600 ml-[-20px]">
-													{detail.sale_price.toLocaleString("vi-VN")} ₫
+													{detail.sale_price.toLocaleString("vi-VN")} VNĐ
 												</span>
 												<span className="line-through text-gray-400 ml-2">
-													{detail.price.toLocaleString("vi-VN")} ₫
+													{detail.price.toLocaleString("vi-VN")} VNĐ
 												</span>
 											</>
 										) : (
@@ -599,9 +600,18 @@ const Tracking = () => {
 												{detail.price?.toLocaleString("vi-VN") ||
 													detail.sale_price?.toLocaleString("vi-VN") ||
 													"N/A"}{" "}
-												₫
+												VNĐ
 											</span>
 										)}
+									</p>
+								</div>
+
+								
+							</div>
+							<div>
+							{order.orderStatus === "completed" ? (
+									<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
+										
 										<Link
 											to={`/review/${detail.product_id._id}`}
 											className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
@@ -610,28 +620,9 @@ const Tracking = () => {
 										</Link>
 									</p>
 								) : (
-									<p className="font-medium mt-4 sm:mt-0 ">
-										{detail.price &&
-										detail.sale_price &&
-										detail.sale_price !== detail.price ? (
-											<>
-												<span className="text-red-600 ml-[-20px]">
-													{detail.sale_price.toLocaleString("vi-VN")} ₫
-												</span>
-												<span className="line-through text-gray-400 ml-2">
-													{detail.price.toLocaleString("vi-VN")} ₫
-												</span>
-											</>
-										) : (
-											<span className="text-red-600 ml-[-20px]">
-												{detail.price?.toLocaleString("vi-VN") ||
-													detail.sale_price?.toLocaleString("vi-VN") ||
-													"N/A"}{" "}
-												₫
-											</span>
-										)}
-									</p>
+									""
 								)}
+							</div>
 							</div>
 						))}
 						<div className="border-t pt-4">
@@ -641,13 +632,13 @@ const Tracking = () => {
 									{(
 										order?.totalPrice + (order?.discountAmount || 0)
 									).toLocaleString("vi-VN")}
-									₫
+									VNĐ
 								</span>
 							</div>
 							<div className="flex flex-wrap justify-between py-2">
 								<span className="text-gray-600">Giảm giá Voucher</span>
 								<span className="font-medium">
-									- {order?.discountAmount?.toLocaleString("vi-VN") || "0"} ₫
+									- {order?.discountAmount?.toLocaleString("vi-VN") || "0"} VNĐ
 								</span>
 							</div>
 							<div className="flex flex-wrap justify-between py-2 border-t">
@@ -658,7 +649,7 @@ const Tracking = () => {
 										(order?.discountAmount || 0) -
 										(order?.discountAmount || 0)
 									).toLocaleString("vi-VN")}{" "}
-									₫
+									VNĐ
 								</span>
 							</div>
 						</div>
