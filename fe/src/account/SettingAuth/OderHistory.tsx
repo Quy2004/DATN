@@ -298,16 +298,15 @@ const OderHistory = () => {
       {contextHolder}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-[60px]">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <nav className="flex flex-wrap border-b">
+         <div className="bg-white rounded-lg shadow-sm mb-6 ">
+          <nav className="flex overflow-x-auto whitespace-nowrap border-b  scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`
-              flex-1 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium transition-colors duration-200
-              ${
-                activeTab === tab
+               flex-1 text-center px-8 md:px-6 py-3 text-sm md:text-base font-medium transition-colors duration-200
+                ${activeTab === tab
                   ? "border-b-2 border-red-500 text-red-600 bg-red-50/50"
                   : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
               }
@@ -413,8 +412,7 @@ const OderHistory = () => {
                               ? item.product_toppings
                                   .map(
                                     (topping: ProductTopping) =>
-                                      `${
-                                        topping.topping_id.nameTopping
+                                      `${topping.topping_id.nameTopping
                                       } (${topping.topping_id.priceTopping.toLocaleString(
                                         "vi-VN"
                                       )} VNĐ)`
@@ -452,7 +450,7 @@ const OderHistory = () => {
 
                 {/* Order Footer */}
                 <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t">
-                  <div className="flex flex-col sm:flex-row justify-between items-center">
+                 <div className="flex justify-between items-center">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-x-4 sm:space-y-0">
                       {(order?.orderStatus === "pending" ||
                         order?.orderStatus === "confirmed") && (
