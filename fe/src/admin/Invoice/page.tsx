@@ -308,7 +308,7 @@ const InvoiceManagement: React.FC = () => {
               max={500000}
               step={10000}
               marks={{
-                0: "0 VNĐ",
+                0: "0",
                 250000: "250k",
                 500000: "500k",
               }}

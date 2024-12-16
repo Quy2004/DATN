@@ -86,7 +86,6 @@ export const getByUser = async (req, res) => {
   }
 };
 
-
 // Create new order
 export const createOrder = async (req, res) => {
   try {
@@ -130,7 +129,7 @@ export const createOrder = async (req, res) => {
         paymentMethod === "cash on delivery" ? "pending" : "unpaid", // Trạng thái ban đầu là unpaid
       orderDetail_id: [],
     });
-   
+
     await order.save();
     console.log(`Đơn hàng ${order._id} được tạo. Thiết lập xóa sau 1 phút...`);
 
@@ -191,50 +190,50 @@ export const createOrder = async (req, res) => {
     await order.save();
 
     // Xóa giỏ hàng theo điều kiện phương thức thanh toán
-  // Xóa sản phẩm đã thanh toán khỏi giỏ hàng
-if (paymentMethod === "cash on delivery") {
-  try {
-    for (const item of cart.products) {
-      const productId = item.product._id;
-      const sizes = item.product_sizes || [];
-      const toppings = item.product_toppings || [];
+    // Xóa sản phẩm đã thanh toán khỏi giỏ hàng
+    if (paymentMethod === "cash on delivery") {
+      try {
+        for (const item of cart.products) {
+          const productId = item.product._id;
+          const sizes = item.product_sizes || [];
+          const toppings = item.product_toppings || [];
 
-      // Xác định sản phẩm đã thanh toán
-      const result = await Cart.updateOne(
-        { userId: userId },
-        {
-          $pull: {
-            products: {
-              product: productId,
-              product_sizes: { $in: sizes }, // Kích thước giống nhau
-              product_toppings: toppings.length
-                ? toppings // Nếu có topping, so sánh topping
-                : { $size: 0 }, // Nếu không có topping
-            },
-          },
+          // Xác định sản phẩm đã thanh toán
+          const result = await Cart.updateOne(
+            { userId: userId },
+            {
+              $pull: {
+                products: {
+                  product: productId,
+                  product_sizes: { $in: sizes }, // Kích thước giống nhau
+                  product_toppings: toppings.length
+                    ? toppings // Nếu có topping, so sánh topping
+                    : { $size: 0 }, // Nếu không có topping
+                },
+              },
+            }
+          );
+          const notification = new NotificationModel({
+            title: "Đặt hàng thành công",
+            message: `Đơn hàng mã "${order._id}" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái phương thức thanh toán: thanh toán sau khi nhận hàng.`,
+            user_Id: userId || null, // Null nếu không đăng nhập
+            order_Id: order._id,
+            type: "general",
+            isGlobal: false,
+          });
+
+          await notification.save(); // Lưu thông báo vào cơ sở dữ liệu
+
+          if (result.modifiedCount > 0) {
+            console.log(`Đã xóa sản phẩm ${item.product.name} khỏi giỏ hàng.`);
+          } else {
+            console.log(`Không tìm thấy sản phẩm ${item.product.name} để xóa.`);
+          }
         }
-      );
-      const notification = new NotificationModel({
-        title: "Đặt hàng thành công",
-        message: `Đơn hàng mã "${order._id}" của bạn đã được đặt thành công và đang chờ xử lý. Trạng thái phương thức thanh toán: thanh toán sau khi nhận hàng.`,
-        user_Id: userId || null, // Null nếu không đăng nhập
-        order_Id: order._id,
-        type: "general",
-        isGlobal: false,
-      });
-
-      await notification.save(); // Lưu thông báo vào cơ sở dữ liệu
-
-      if (result.modifiedCount > 0) {
-        console.log(`Đã xóa sản phẩm ${item.product.name} khỏi giỏ hàng.`);
-      } else {
-        console.log(`Không tìm thấy sản phẩm ${item.product.name} để xóa.`);
+      } catch (error) {
+        console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
       }
     }
-  } catch (error) {
-    console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
-  }
-}
     // Nếu phương thức thanh toán là MoMo
     if (paymentMethod === "momo") {
       try {
@@ -626,11 +625,20 @@ export const getOrderStats = async (req, res) => {
       orderStatus: { $in: ["completed", "delivered"] },
     });
 
-    // Tính tổng doanh thu (không bao gồm đơn hàng đã hủy)
     const totalRevenueResult = await Order.aggregate([
-      { $match: { orderStatus: { $ne: "canceled" } } },
-      { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } },
+      {
+        $match: {
+          orderStatus: { $in: ["delivered", "completed"] }, 
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalPrice" },
+        },
+      },
     ]);
+
     const totalRevenue = totalRevenueResult[0]?.totalRevenue || 0;
 
     // Tổng số lượng sản phẩm đã bán
@@ -683,7 +691,7 @@ export const getOrderStats = async (req, res) => {
     const paymentMethodStats = await Order.aggregate([
       {
         $match: {
-          orderStatus: { $in: ["delivered", "completed"] }, // Lấy đơn hàng có trạng thái "delivered" hoặc "completed"
+          orderStatus: { $in: ["delivered", "completed"] },
         },
       },
       {
@@ -711,7 +719,7 @@ export const getOrderStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Lỗi khi lấy thống kê đơn hàng:", error); // Ghi log để debug
+    console.error("Lỗi khi lấy thống kê đơn hàng:", error);
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê đơn hàng",
@@ -719,9 +727,6 @@ export const getOrderStats = async (req, res) => {
     });
   }
 };
-
-
-
 
 // Get order status distribution
 export const getOrderStatusDistribution = async (req, res) => {
@@ -783,7 +788,7 @@ export const getTopProducts = async (req, res) => {
         $sort: { totalQuantity: -1 },
       },
       {
-        $limit: limit, 
+        $limit: limit,
       },
       {
         $project: {
@@ -804,7 +809,7 @@ export const getTopProducts = async (req, res) => {
       data: topProducts,
     });
   } catch (error) {
-    console.error("Error while fetching top products:", error); 
+    console.error("Error while fetching top products:", error);
     return res.status(500).json({
       success: false,
       message: "Lỗi khi thống kê sản phẩm",
