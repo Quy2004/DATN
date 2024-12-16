@@ -255,14 +255,14 @@ const CartPage: React.FC<{
   };
 
   return (
-    <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 my-4">
+   <section className="mt-[60px] bg-white py-4 antialiased dark:bg-gray-900 md:py-10 my-2">
       {user ? (
         user?.role !== "admin" ? (
           <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
               Giỏ hàng
             </h2>
-            <p className="border-b-orange-400 w-24 border-b-[4px] my-1"></p>
+             <p className="border-b-orange-400 w-20 md:w-24 border-b-[4px] my-1"></p>
             <div className="mt-6 sm:mt-8 md:gap-8 lg:flex lg:items-start xl:gap-10">
               {/* Main Cart Content */}
               <div className="mx-auto w-full flex-none lg:max-w-3xl xl:max-w-4xl">
@@ -324,12 +324,12 @@ const CartPage: React.FC<{
                                   .join(",")}`
                               )}
                               onChange={() => toggleItemSelection(item)}
-                              className="mr-4 h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                              className="relative md:sticky top-24 mr-4 h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
 
-                            <Link  to={`/detail/${item.product._id}`} className="flex-shrink-0">
+                            <Link  to={`/detail/${item.product._id}`} className="flex-shrink-0 mb-2 md:mb-0">
                               <img
-                                className="h-24 w-24 rounded-lg object-cover dark:hidden"
+                                className="h-24 w-24 rounded-lg object-cover dark:hidden border"
                                 src={item.product.image}
                                 alt="product image"
                               />
@@ -337,18 +337,18 @@ const CartPage: React.FC<{
                           </div>
 
                           {/* Product Details */}
-                          <div className="flex-1 space-y-4 md:order-2">
+                          <div className="flex-1 md:space-y-4 space-y-1 pl-9 md:order-2 md:pl-0">
                             <Link
                               to={`/detail/${item.product._id}`}
                               className="text-lg font-semibold text-gray-900 hover:text-primary-600 transition-colors duration-200 dark:text-white"
                             >
                               {item.product.name}
                             </Link>
-                            <div className="space-y-2 text-sm text-gray-600">
+                            <div className="space-y-1 text-sm text-gray-600">
                               <p>
-                                Size: {item?.product_sizes?.name}{" "}
+                                 Size: <span className="font-medium">{item?.product_sizes?.name}{" "}</span>
                                 {item?.product_sizes?.priceSize > 0 && (
-                                  <span className="text-gray-500">{`(+${item?.product_sizes?.priceSize} VNĐ)`}</span>
+                                  <span className="text-gray-500 font-medium">{`(+${item?.product_sizes?.priceSize} VNĐ)`}</span>
                                 )}
                               </p>
 
@@ -394,7 +394,7 @@ const CartPage: React.FC<{
                           </div>
 
                           {/* Quantity Controls and Price */}
-                          <div className="mt-4 flex items-center justify-between gap-6 md:order-3 md:mt-0">
+                          <div className="mt-4 flex items-center justify-between pl-[35px] gap-6 md:order-3 md:pl-0 md:mt-0">
                             <div className="flex items-center space-x-3">
                               <button
                                 onClick={() =>
