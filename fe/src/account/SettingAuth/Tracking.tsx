@@ -251,7 +251,7 @@ const Tracking = () => {
 									d="M15 19l-7-7 7-7"
 								/>
 							</svg>
-							<Link to={`/oder-history`}>
+							<Link to={`/order-history`}>
 								<span className="text-sm font-medium">Trở lại</span>
 							</Link>
 						</button>
@@ -327,23 +327,22 @@ const Tracking = () => {
 												Size: {detail.product_size?.name || "N/A"}{" "}
 												{detail.product_size?.priceSize
 													? `(+${detail.product_size.priceSize.toLocaleString(
-															"vi-VN",
-													  )} VNĐ)`
+														"vi-VN",
+													)} VNĐ)`
 													: ""}
 											</p>
 											<p className="text-sm text-gray-600">
 												Topping:
 												{detail.product_toppings.length > 0
 													? detail.product_toppings
-															.map(
-																(topping: any) =>
-																	`${
-																		topping.topping_id?.nameTopping
-																	} (+${topping.topping_id?.priceTopping?.toLocaleString(
-																		"vi-VN",
-																	)} VNĐ)`,
-															)
-															.join(", ")
+														.map(
+															(topping: any) =>
+																`${topping.topping_id?.nameTopping
+																} (+${topping.topping_id?.priceTopping?.toLocaleString(
+																	"vi-VN",
+																)} VNĐ)`,
+														)
+														.join(", ")
 													: "Không có"}
 											</p>
 										</div>
@@ -364,7 +363,7 @@ const Tracking = () => {
 												{detail.price?.toLocaleString("vi-VN") || "N/A"} VNĐ
 											</span>
 										)}
-									</p>	
+									</p>
 								</div>
 							))}
 							<div className="border-t pt-4">
@@ -442,9 +441,9 @@ const Tracking = () => {
 	return (
 		<>
 			<div className="min-h-screen bg-gray-50 pt-16">
-				<main className="max-w-6xl mx-auto bg-white shadow-sm rounded-lg">
-					<header className="flex flex-wrap justify-between items-center p-6 border-b">
-						<button className="flex items-center text-gray-600 hover:text-gray-800 transition mb-4 md:mb-0">
+				<main className="max-w-6xl mx-auto  shadow-sm rounded-lg">
+					<nav className="flex flex-wrap bg-[#fff] justify-between items-center md:p-2 border-b">
+						<button className="flex items-center px-4 py-2 bg-gray-50 w-full md:w-max md:bg-inherit text-gray-600 hover:text-gray-800 transition md:mb-0">
 							<svg
 								className="w-5 h-5 mr-2"
 								fill="none"
@@ -458,57 +457,56 @@ const Tracking = () => {
 									d="M15 19l-7-7 7-7"
 								/>
 							</svg>
-							<Link to={`/oder-history`}>
+							<Link to={`/order-history`}>
 								<span className="text-sm font-medium">Trở lại</span>
 							</Link>
 						</button>
-						<div className="flex flex-wrap items-center space-x-4">
-							<div className="flex items-center text-sm mb-4 md:mb-0">
-								<span className="text-gray-600">MÃ ĐƠN HÀNG:</span>
-								<span className="ml-2 text-blue-600 font-medium">
-									{order?.orderNumber}
-								</span>
-							</div>
-							<div className="text-sm font-medium text-red-600">
-								{getStatusString(order?.orderStatus)}
+						<div className="px-5 py-2">
+							<div className="flex items-start space-x-4 ">
+								<div className="flex items-start text-sm md:mb-0  md:p-0">
+									<div className="text-gray-600 md:text-base text-sm">MÃ ĐƠN HÀNG:</div>
+									<div className="ml-2 text-blue-600 font-medium">
+										{order?.orderNumber}
+									</div>
+								</div>
+								<div className="text-sm font-medium text-red-600">
+									{getStatusString(order?.orderStatus)}
+								</div>
 							</div>
 						</div>
-					</header>
+					</nav>
 
-					<div className="py-12 px-4 sm:px-8">
-						<div className="flex flex-wrap justify-between">
+					<div className="mx-24 py-5 md:py-12 px-4 sm:px-8">
+						<div className="flex flex-col md:flex-row justify-between">
 							{filteredStatusSteps.map((step, index) => (
 								<React.Fragment key={step.key}>
 									{index > 0 && order?.orderStatus !== "canceled" && (
-										<div className="flex-1 flex items-center justify-center">
+										<div className="flex-1 flex md:my-8 md:mx-0  mx-[18px] md:justify-center">
 											<div
-												className={`h-1 w-full ${
-													activeStatuses[index] ? "bg-green-500" : "bg-gray-300"
-												}`}
+												className={`h-10 w-1 md:h-1 md:w-24 ${activeStatuses[index] ? "bg-green-500" : "bg-gray-300"
+													}`}
 											/>
 										</div>
 									)}
-									<div className="flex flex-col items-center relative mb-6 sm:mb-0">
+									<div className="flex md:flex-col items-center relative  md:mb-6 sm:mb-0">
 										<div
-											className={`w-16 h-16 rounded-full border-4 ${
-												step.key === "canceled"
-													? "border-red-500"
-													: activeStatuses[index]
+											className={`w-10 h-10 md:w-16 md:h-16 rounded-full border-4 ${step.key === "canceled"
+												? "border-red-500"
+												: activeStatuses[index]
 													? "border-green-500"
 													: "border-gray-300"
-											} flex items-center justify-center bg-white`}
+												} flex items-center justify-center bg-white`}
 										>
 											{step.icon(activeStatuses[index])}
 										</div>
-										<div className="mt-3 text-center">
+										<div className="mt-3 text-center mx-5 md:mx-0 mb-3 md:mb-0">
 											<p
-												className={`font-medium ${
-													step.key === "canceled"
-														? "text-red-500"
-														: activeStatuses[index]
+												className={`font-medium ${step.key === "canceled"
+													? "text-red-500"
+													: activeStatuses[index]
 														? ""
 														: "text-gray-500"
-												}`}
+													}`}
 											>
 												{step.label}
 											</p>
@@ -520,7 +518,7 @@ const Tracking = () => {
 					</div>
 
 					<div className="px-4 sm:px-8 py-6 bg-gray-50">
-						<h2 className="text-xl font-semibold mb-4">Thông Tin Giao Hàng</h2>
+						<h2 className="text-lg md:text-xl font-semibold mb-0 md:mb-4">Thông Tin Giao Hàng</h2>
 						<div className="flex flex-wrap justify-between items-start">
 							<div>
 								<h3 className="font-medium">{order?.customerInfo?.name}</h3>
@@ -538,97 +536,96 @@ const Tracking = () => {
 						{order.orderDetail_id?.map((detail, index) => (
 							<div className="h-[150px]">
 								<div
-								key={index}
-								className="flex flex-wrap justify-between items-center mb-6 "
-							>
-								<div className="flex items-center space-x-4">
-									{detail.product_id?.image && (
-										<img
-											src={detail.product_id.image}
-											className="w-20 h-20 object-cover rounded"
-											alt={detail.product_id.name || "Product"}
-										/>
-									)}
-									<div>
-										<h3 className="font-medium">
-											{detail.product_id?.name || "Tên sản phẩm không xác định"}
-										</h3>
-										<p className="text-sm text-gray-600 mt-1">
-											Số lượng: {detail.quantity || 0}
-										</p>
-										<p className="text-sm text-gray-600">
-											Size: {detail.product_size?.name || "N/A"}{" "}
-											{detail.product_size?.priceSize
-												? `(+${detail.product_size.priceSize.toLocaleString(
-														"vi-VN",
-												  )} VNĐ)`
-												: ""}
-										</p>
-										<p></p>
-										<p className="text-sm text-gray-600">
-											Topping:
-											{detail.product_toppings.length > 0
-												? detail.product_toppings
-														.map(
-															topping =>
-																`${
-																	topping.topping_id?.nameTopping
-																} (+${topping.topping_id?.priceTopping?.toLocaleString(
-																	"vi-VN",
-																)} VNĐ)`,
-														)
-														.join(", ")
-												: "Không có"}
+									key={index}
+									className="flex flex-wrap justify-between items-center mb-6 "
+								>
+									<div className="flex items-center space-x-2">
+										{detail.product_id?.image && (
+											<img
+												src={detail.product_id.image}
+												className="w-[90px] h-[100px] mb-9 md:mb-0 md:w-20 md:h-20 object-cover rounded"
+												alt={detail.product_id.name || "Product"}
+											/>
+										)}
+										<div>
+											<h3 className="font-medium">
+												{detail.product_id?.name || "Tên sản phẩm không xác định"}
+											</h3>
+											<span className="text-sm text-gray-600 mt-1 flex justify-between md:justify-start md:gap-x-2">
+												Số lượng: <p> {detail.quantity || 0}</p>
+											</span>
+											<span className="text-sm text-gray-600  flex justify-between md:justify-start md:gap-x-2">
+												Size: <p> {detail.product_size?.name || "N/A"}{" "}
+													{detail.product_size?.priceSize
+														? `(+${detail.product_size.priceSize.toLocaleString(
+															"vi-VN",
+														)} VNĐ)`
+														: ""}</p>
+											</span>
+											<span className="text-sm text-gray-600 justify-between flex md:gap-x-1">
+												<p>Topping:</p><p className="mx-[43px] md:mx-0"></p><p className="text-right">
+													{detail.product_toppings.length > 0
+														? detail.product_toppings
+															.map(
+																topping =>
+																	`${topping.topping_id?.nameTopping
+																	} (+${topping.topping_id?.priceTopping?.toLocaleString(
+																		"vi-VN",
+																	)} VNĐ)`,
+															)
+															.join(", ")
+														: "Không có"}
+												</p>
+											</span>
+										</div>
+									</div>
+									<div className="md:sticky relative bottom-[164px] left-[331px]">
+										<p className="font-medium mt-4 sm:mt-0 ">
+											{detail.price &&
+												detail.sale_price &&
+												detail.sale_price !== detail.price ? (
+												<>
+													<span className="text-red-600 ml-[-20px]">
+														{detail.sale_price.toLocaleString("vi-VN")} VNĐ
+													</span>
+													<span className="line-through text-gray-400 ml-2">
+														{detail.price.toLocaleString("vi-VN")} VNĐ
+													</span>
+												</>
+											) : (
+												<span className="text-red-600 ml-[-20px]">
+													{detail.price?.toLocaleString("vi-VN") ||
+														detail.sale_price?.toLocaleString("vi-VN") ||
+														"N/A"}{" "}
+													VNĐ
+												</span>
+											)}
 										</p>
 									</div>
+
+
 								</div>
 								<div>
-								<p className="font-medium mt-4 sm:mt-0 ">
-										{detail.price &&
-										detail.sale_price &&
-										detail.sale_price !== detail.price ? (
-											<>
-												<span className="text-red-600 ml-[-20px]">
-													{detail.sale_price.toLocaleString("vi-VN")} VNĐ
-												</span>
-												<span className="line-through text-gray-400 ml-2">
-													{detail.price.toLocaleString("vi-VN")} VNĐ
-												</span>
-											</>
-										) : (
-											<span className="text-red-600 ml-[-20px]">
-												{detail.price?.toLocaleString("vi-VN") ||
-													detail.sale_price?.toLocaleString("vi-VN") ||
-													"N/A"}{" "}
-												VNĐ
-											</span>
-										)}
-									</p>
-								</div>
+									{order.orderStatus === "completed" ? (
+										<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
 
-								
-							</div>
-							<div>
-							{order.orderStatus === "completed" ? (
-									<p className="font-medium mt-4 sm:mt-0 w-[200px] justify-between">
-										
-										<Link
-											to={`/review/${detail.product_id._id}`}
-											className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
-										>
-											Đánh giá
-										</Link>
-									</p>
-								) : (
-									""
-								)}
-							</div>
+											<Link
+												to={`/review/${detail.product_id._id}`}
+												className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300"
+											>
+												Đánh giá
+											</Link>
+										</p>
+									) : (
+										""
+									)}
+								</div>
 							</div>
 						))}
 						<div className="border-t pt-4">
 							<div className="flex flex-wrap justify-between py-2">
-								<span className="text-gray-600">Tổng tiền hàng</span>
-								<span className="font-medium">
+								<span className="text-gray-600 text-sm md:text-base">Tổng tiền hàng</span>
+								<span className="font-medium text-sm md:text-base">
 									{(
 										order?.totalPrice + (order?.discountAmount || 0)
 									).toLocaleString("vi-VN")}
@@ -636,14 +633,14 @@ const Tracking = () => {
 								</span>
 							</div>
 							<div className="flex flex-wrap justify-between py-2">
-								<span className="text-gray-600">Giảm giá Voucher</span>
-								<span className="font-medium">
+								<span className="text-gray-600 text-sm md:text-base">Giảm giá Voucher</span>
+								<span className="font-medium text-sm md:text-base">
 									- {order?.discountAmount?.toLocaleString("vi-VN") || "0"} VNĐ
 								</span>
 							</div>
 							<div className="flex flex-wrap justify-between py-2 border-t">
-								<span className="text-gray-600">Thành tiền</span>
-								<span className="text-xl font-medium text-red-600">
+								<span className="text-gray-600 text-sm md:text-base">Thành tiền</span>
+								<span className="text-lg md:text-xl font-medium text-red-600">
 									{(
 										order?.totalPrice +
 										(order?.discountAmount || 0) -
@@ -674,7 +671,7 @@ const Tracking = () => {
 										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
-								<p className="text-gray-700">
+								<p className="text-gray-700 text-sm md:text-base">
 									Phương thức thanh toán:{" "}
 									<span className="font-medium">
 										{(() => {
