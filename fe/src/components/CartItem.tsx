@@ -67,7 +67,7 @@ const CartItem: React.FC<{
   const formatCurrency = (amount: number) => {
     return `${new Intl.NumberFormat("vi-VN", {
       maximumFractionDigits: 0, // Bỏ phần thập phân nếu không cần
-    }).format(amount)} VND`;
+    }).format(amount)} VNĐ`;
   };
 
   return (

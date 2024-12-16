@@ -29,20 +29,23 @@ const Forgot = () => {
       });
       setTimeout(() => {
         navigate("/login");
-      }, 4000
+      }, 5000
     )     
       
     } catch (error: unknown) {
-      Swal.fire({
-        title: "Thành công!",
-        text: "Email đã được gửi thành công.",
-        icon: "success",
-      });
+      let errorMessage = "Email không tồn tại trong hệ thống!"; // thông báo mặc định
+  
+  if (error instanceof Error && (error as any).response?.data?.message) {
+    errorMessage = (error as any).response.data.message;
+  }
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 4000
-    )
+  Swal.fire({
+    title: "Lỗi!",
+    text: errorMessage,   
+    icon: "error",
+  });
+
+
       setIsError(true);
     } finally {
       setLoading(false);

@@ -178,13 +178,13 @@ const BillPage = () => {
                                         {/* Giá cơ bản */}
                                         <div className="flex justify-between">
                                             <span>Giá cơ bản:</span>
-                                            <span className="font-medium">{basePrice.toLocaleString()} VND</span>
+                                            <span className="font-medium">{basePrice.toLocaleString()} VNĐ</span>
                                         </div>
                                         {/* Size và giá size */}
                                         {item.product_size && (
                                             <div className="flex justify-between">
                                                 <span>Size {item.product_size?.name || ''}:</span>
-                                                <span className="font-medium">{item.product_size?.priceSize.toLocaleString()} VND</span>
+                                                <span className="font-medium">{item.product_size?.priceSize.toLocaleString()} VNĐ</span>
                                             </div>
                                         )}
 
@@ -205,7 +205,7 @@ const BillPage = () => {
                                                         {item.product_toppings
                                                             .map((topping: any) => topping.topping_id?.priceTopping || 0) // Đảm bảo giá luôn là số
                                                             .reduce((total: number, price: number) => total + price, 0) // Tính tổng giá
-                                                            .toLocaleString()} VND
+                                                            .toLocaleString()} VNĐ
                                                     </span>
                                                 </div>
                                             </>
@@ -213,14 +213,14 @@ const BillPage = () => {
                                         {/* Đơn giá tổng (trước khi nhân số lượng) */}
                                         <div className="flex justify-between ">
                                             <span>Đơn giá:</span>
-                                            <span className="font-medium">{totalItemPrice.toLocaleString()} VND</span>
+                                            <span className="font-medium">{totalItemPrice.toLocaleString()} VNĐ</span>
                                         </div>
                                         {/* Giảm giá nếu có */}
                                         {latestOrder.discountAmount > 0 && (
                                             <div className="flex justify-between text-red-500">
                                                 <span>Giảm giá:</span>
                                                 <span className="font-semibold">
-                                                    - {latestOrder.discountAmount.toLocaleString()} VND
+                                                    - {latestOrder.discountAmount.toLocaleString()} VNĐ
                                                 </span>
                                             </div>
                                         )}
@@ -238,7 +238,7 @@ const BillPage = () => {
                                         {/* Thành tiền cuối cùng */}
                                         <div className="flex justify-between text-[#ea8205] font-semibold pt-2 border-t">
                                             <span>Thành tiền:</span>
-                                            <span>{finalPrice.toLocaleString()} VND</span>
+                                            <span>{finalPrice.toLocaleString()} VNĐ</span>
                                         </div>
                                     </div>
                                 </div>
@@ -248,7 +248,7 @@ const BillPage = () => {
                     </div>
                     <div className="mt-4 text-right text-gray-800">
                         <p className="font-bold">
-                            Tổng cộng: <span className="text-xl text-[#ea8205]">{totalPrice.toLocaleString()} VND</span>
+                            Tổng cộng: <span className="text-xl text-[#ea8205]">{totalPrice.toLocaleString()} VNĐ</span>
                         </p>
                         <p className="italic text-gray-600">({numberToWords(totalPrice)})</p>
                     </div>

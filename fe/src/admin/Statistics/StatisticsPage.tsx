@@ -49,10 +49,16 @@ const getRevenueByTime = (period) =>
   instance.get(`/orders/revenue-by-time?period=${period}`);
 
 // Format currency
-const formatCurrency = (amount) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    amount
-  );
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0, // Loại bỏ phần thập phân
+  })
+    .format(amount)
+    .replace("₫", "VNĐ"); // Thay ₫ bằng VNĐ
+};
+
 // Date Range Component
 const DateRangeSelector = ({ onChange, style }) => (
   <RangePicker
@@ -83,7 +89,10 @@ const OrderStats = () => {
         new Intl.NumberFormat("vi-VN", {
           style: "currency",
           currency: "VND",
-        }).format(value),
+          maximumFractionDigits: 0,
+        })
+          .format(value)
+          .replace("₫", "VNĐ"),
       icon: <DollarOutlined className="text-green-500" />,
     },
     {
@@ -342,7 +351,6 @@ const TopProducts = () => {
                   <span>Giá: {formatCurrency(item.salePrice)}</span>
                 ) : (
                   <>
-                    {" "}
                     Giá gốc:{" "}
                     <span
                       style={{
@@ -350,11 +358,10 @@ const TopProducts = () => {
                         marginRight: "5px",
                       }}
                     >
-                      {" "}
-                      {formatCurrency(item.originalPrice)}{" "}
+                      {formatCurrency(item.originalPrice)}
                     </span>{" "}
                     Giá giảm: {formatCurrency(item.salePrice)} (Giảm:{" "}
-                    {item.discount}%){" "}
+                    {item.discount}%)
                   </>
                 )}{" "}
               </p>{" "}
